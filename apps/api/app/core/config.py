@@ -77,6 +77,7 @@ class Settings(BaseSettings):
     deepseek_chat_model: str = Field(default="deepseek-chat", min_length=1, max_length=150)
     deepseek_timeout_seconds: float = Field(default=60.0, gt=0)
     deepseek_max_output_tokens: int = Field(default=1200, gt=0, le=8192)
+    chat_assess_max_output_tokens: int = Field(default=200, gt=0, le=1000)
     chat_retrieval_limit: int = Field(default=5, ge=1, le=20)
     chat_history_limit: int = Field(default=8, ge=0, le=50)
     dashscope_api_key: SecretStr | None = None

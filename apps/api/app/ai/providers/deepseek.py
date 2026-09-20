@@ -6,7 +6,12 @@ from typing import Any
 
 import httpx
 
-from app.ai.providers.chat import ChatMessage, ChatModelError, ChatModelPort
+from app.ai.providers.chat import (
+    ChatMessage,
+    ChatModelError,
+    ChatModelPort,
+    ChatResponseFormat,
+)
 from app.core.config import Settings
 from app.core.errors import ErrorCode
 
@@ -40,6 +45,64 @@ class DeepSeekChatProvider(ChatModelPort):
     @property
     def model(self) -> str:
         return self._model
+
+    async def generate(
+        self,
+        messages: Sequence[ChatMessage],
+        *,
+        max_output_tokens: int,
+        temperature: float = 0.0,
+        response_format: ChatResponseFormat | None = None,
+    ) -> str:
+        if not messages:
+            raise ChatModelError("聊天消息不能为空")
+        if max_output_tokens <= 0:
+            raise ChatModelError("最大输出 Token 必须大于 0")
+        if not 0.0 <= temperature <= 2.0:
+            raise ChatModelError("温度必须在 0 到 2 之间")
+
+        request_payload: dict[str, Any] = {
+            "model": self._model,
+            "messages": [
+                {"role": message.role, "content": message.content}
+                for message in messages
+            ],
+            "stream": False,
+            "max_tokens": max_output_tokens,
+            "temperature": temperature,
+        }
+        if response_format is not None:
+            request_payload["response_format"] = {"type": response_format}
+        headers = {
+            "Authorization": f"Bearer {self._api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
+        try:
+            response = await self._client.post(
+                f"{self._base_url}/chat/completions",
+                headers=headers,
+                json=request_payload,
+            )
+        except httpx.TimeoutException as exc:
+            raise ChatModelError(
+                "模型响应超时，请稍后重试",
+                code=ErrorCode.MODEL_TIMEOUT,
+            ) from exc
+        except httpx.TransportError as exc:
+            raise ChatModelError("模型服务网络请求失败") from exc
+
+        if response.status_code >= 400:
+            raise ChatModelError(
+                _response_error_message(response, response.content),
+                status_code=response.status_code,
+            )
+        try:
+            response_payload = response.json()
+        except ValueError as exc:
+            raise ChatModelError("模型返回了无效的响应数据") from exc
+        return _parse_completion_content(response_payload)
 
     async def stream(
         self,
@@ -154,6 +217,31 @@ def _parse_delta(data: str) -> str:
         return ""
     if not isinstance(content, str):
         raise ChatModelError("模型返回了无效的回答内容")
+    return content
+
+
+def _parse_completion_content(payload: Any) -> str:
+    if not isinstance(payload, dict):
+        raise ChatModelError("模型返回了无效的响应数据")
+
+    choices = payload.get("choices")
+    if not isinstance(choices, list) or not choices:
+        raise ChatModelError(
+            "模型返回了空回答",
+            code=ErrorCode.CHAT_EMPTY_RESPONSE,
+        )
+    first = choices[0]
+    if not isinstance(first, dict):
+        raise ChatModelError("模型返回了无效的响应数据")
+    message = first.get("message")
+    if not isinstance(message, dict):
+        raise ChatModelError("模型返回了无效的响应数据")
+    content = message.get("content")
+    if not isinstance(content, str) or not content.strip():
+        raise ChatModelError(
+            "模型返回了空回答",
+            code=ErrorCode.CHAT_EMPTY_RESPONSE,
+        )
     return content
 
 

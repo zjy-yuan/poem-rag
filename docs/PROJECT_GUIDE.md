@@ -15,7 +15,10 @@ Poem RAG 是一个面向诗词领域的全栈知识库与智能问答项目。�
 
 当前问答已经接入带条件路由的 LangGraph，流程为
 `rewrite -> retrieve -> assess -> generate|refuse -> validate`，并固定使用
-`expanded-lexical-v1` 检索；Dense、Hybrid 和 Rerank 尚未切换为在线问答策略，生成模型也还没有完成真实账号联调。后续设计和实现不能把评估中能力或规划能力写成生产已实现成果。
+`expanded-lexical-v1` 检索；Dense、Hybrid 和 Rerank 尚未切换为在线问答策略。`assess`
+已接入 DeepSeek 非流式 JSON 结构化判定，Provider 已完成真实 `deepseek-chat`
+流式与 JSON 烟测，并完成真实 MySQL + SSE 基础在线联调：有证据问题返回带引用回答，
+无答案问题稳定拒答且不产生引用。后续设计和实现不能把评估中能力或规划能力写成生产已实现成果。
 
 ## 2. 用户与核心流程
 
@@ -62,7 +65,7 @@ flowchart LR
 1. 采用模块化单体，暂不拆微服务。
 2. MySQL 是用户、权限和诗词业务数据的唯一事实来源。
 3. Redis 用于健康检查，后续承担缓存、限流、短期状态和任务基础设施。
-4. Qwen Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid/查询改写检索和 DeepSeek Chat Provider 已实现；在线问答固定使用已评估的 `expanded-lexical-v1`，Dense/Hybrid 仍仅供内部 Service 与离线评估使用。真实 Qwen 索引和四条策略的同集评估已完成；Dense 检索支持 `min_score` 相关性下限，低于门槛的候选不再交给生成模型。v2 评估实测证明该门槛只能防跨域漂移，领域内“话题命中、答案缺失”的样本仍需 `assess` 节点判定。
+4. Qwen Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid/查询改写检索和 DeepSeek Chat Provider 已实现；在线问答固定使用已评估的 `expanded-lexical-v1`，Dense/Hybrid 仍仅供内部 Service 与离线评估使用。真实 Qwen 索引和四条策略的同集评估已完成；Dense 检索支持 `min_score` 相关性下限，低于门槛的候选不再交给生成模型。v2 评估实测证明该门槛只能防跨域漂移，领域内“话题命中、答案缺失”的样本由 `assess` 节点通过 LLM 结构化输出判定；判定失败时 fail-open 继续生成，引用校验仍作为兜底。
 5. FastAPI Router 只处理 HTTP 映射，业务状态变化放在 Service，数据访问放在 Repository。
 6. MySQL 保存会话、消息和引用快照；SSE 只负责传输过程状态，不成为长期数据源。
 
@@ -226,7 +229,7 @@ erDiagram
 | MySQL 可解释检索基线 | 已实现 | `lexical-baseline-v1` 从当前版本的 poem/line/note chunks 返回出处、行号、得分和 `match_types`；只读取已发布且未删除作品 |
 | 索引任务 API 与 Worker | 未实现 | 当前只有 Service 和数据库记录，没有 HTTP 任务接口、租约、超时回收或取消 |
 | 爬虫与任务化导入 | 未实现 | 结构化文件导入已实现；网站爬虫、上传接口、导入任务和 Worker 尚未实现 |
-| Qwen Embedding Provider | 已实现（Provider 层） | 支持批量、维度、超时、有限重试和响应校验；已接入索引 Service，真实 DashScope 烟测已发起但被本地网络审批阻塞 |
+| Qwen Embedding Provider | 已实现（Provider 层） | 支持批量、维度、超时、有限重试和响应校验；已接入索引 Service，真实 DashScope 烟测已通过 |
 | Qdrant 向量索引 | 已实现（最小闭环） | chunks -> Qwen Embedding -> Collection -> upsert -> chunk 映射；真实 Qdrant 1.19.1 已完成临时 Collection 烟测 |
 | Dense 检索 | 已实现（内部 Service） | `dense-baseline-v1` 使用 Qdrant 召回，并回查 MySQL 校验当前版本、发布状态和注释可见性；支持 `min_score` 余弦相似度下限，低于门槛的候选在检索层丢弃，供上层拒答 |
 | 旧向量清理与 Qdrant 对账 | 未实现 | 尚未实现旧版本点清理、active index 切换和跨库全量对账 |
@@ -234,8 +237,8 @@ erDiagram
 | 查询改写与多查询 RRF | 已实现（内部 Service） | `expanded-lexical-v1` 用可审查词典扩展月亮、思乡和已知作者实体，保留原查询并用 RRF 融合多路召回；真实 MySQL 种子集 Top-5 为 `27/27`，平均延迟约 3.4 ms，公开 HTTP 未切换 |
 | 重排 | 未实现 | 已有 `lexical-baseline-v1`、`dense-baseline-v1`、`hybrid-rrf-v1` 和 `expanded-lexical-v1` 四条可比较路径 |
 | 会话与消息持久化 | 已实现 | 会话、消息和引用快照写入 MySQL；按用户隔离会话所有权 |
-| DeepSeek Chat Provider | 已实现（Provider 层） | 支持 OpenAI-compatible 流式 chat completions、超时、错误映射和空回答检测；真实 DeepSeek 账号尚未联调 |
-| LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；查询改写和检索使用 `expanded-lexical-v1`，无证据时走 `refuse` 分支且不调用生成模型 |
+| DeepSeek Chat Provider | 已实现（Provider 层） | 支持 OpenAI-compatible 流式与非流式 JSON chat completions、超时、错误映射和空回答检测；真实 `deepseek-chat` 流式与 JSON 烟测、真实 MySQL + SSE 基础联调均已通过 |
+| LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；查询改写和检索使用 `expanded-lexical-v1`，`assess` 用 LLM 结构化判定可答性，无证据或判定不可答时走 `refuse` 且不调用生成模型；判定异常 fail-open |
 | SSE 引用问答 | 已实现 | `meta -> retrieval -> delta* -> citation* -> done/error`；持久化最终消息和引用，无证据时不调用模型 |
 | RAG 评估体系 | 已实现（检索层） | v2 数据集 31 条可移植金标准样本，无答案样本分跨域、缺实体、缺属性三类；支持 Recall@k、MRR、Hit Rate、拒答 P/R/F1 和延迟；实测证明余弦门槛只能防跨域漂移，无法分离领域内负样本；生成层评估未实现 |
 | 云服务器部署 | 未实现 | 核心 RAG 闭环后再处理域名和 HTTPS |
@@ -312,8 +315,7 @@ Qwen Embedding 真实烟测：
 ```
 
 该脚本只输出模型、配置维度、实际维度和向量范数，不输出向量或 Key。需要可用的
-DashScope 网络环境；当前本机沙箱网络失败，外网审批连续遇到审核服务故障。
-若自动审批持续不可用，可由用户在本机终端手动执行该命令。
+DashScope 网络环境；真实烟测已通过。
 
 DeepSeek 流式烟测：
 
@@ -321,8 +323,17 @@ DeepSeek 流式烟测：
 .\.venv\Scripts\python.exe apps\api\scripts\smoke_deepseek_chat.py
 ```
 
-该脚本使用一个短提示词验证真实 Chat Provider 的流式链路，只输出模型 ID、增量片段数、
-字符数和耗时，不输出完整回答或 Key。
+`assess` 依赖非流式 JSON object 输出，可额外执行：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\smoke_deepseek_chat.py --json
+```
+
+该脚本使用短提示词验证真实 Chat Provider 的流式和 JSON 链路，只输出模型 ID、
+模式、增量片段数、字符数和耗时，不输出完整回答或 Key。2026-09-20 本轮真实烟测中，
+流式模式为 `delta_count=41`、`char_count=63`、`elapsed_ms=982.91`；JSON 模式为
+`delta_count=0`、`char_count=63`、`elapsed_ms=444.78`。这些结果只证明 Provider
+与真实服务已连通，不代表生成质量或端到端问答准确率。
 
 真实 chunk 索引：
 
@@ -352,13 +363,22 @@ pnpm --dir apps\web test
 pnpm --dir apps\web build
 ```
 
-真实联调前确认：
+真实联调确认：
 
 1. MySQL 监听 `3306`，Alembic 已升级到 head。
 2. Redis 监听 `6379`。
 3. FastAPI 运行在 `http://127.0.0.1:8000`。
 4. Vite 运行在 `http://127.0.0.1:5173`。
 5. `/api/v1/health/ready` 返回 `200`。
+
+2026-09-20 已完成基础在线验收：
+
+1. `请结合诗句说明《静夜思》里明月和思乡的关系。` 返回带 `[1]` 的回答，耗时
+   `2527.81 ms`，策略 `expanded-lexical-v1`，持久化 `completed` 消息和 `1` 条引用。
+2. `李白的出生地在哪里？` 返回固定拒答，耗时 `1074.54 ms`，无引用事件且持久化
+   `0` 条引用。
+3. PowerShell 会缓冲 SSE 响应，因此上述结果验证了真实事件、模型调用和持久化，
+   不等同于浏览器逐块渲染验收。
 
 ## 11. 术语表
 

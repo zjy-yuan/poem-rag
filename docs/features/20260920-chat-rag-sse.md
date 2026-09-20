@@ -188,17 +188,18 @@ rewrite -> retrieve -> assess -> generate|refuse -> validate
 
 1. 查询改写：`LexiconQueryRewriter`。
 2. 检索：`expanded-lexical-v1`，原查询加领域扩展词，多路召回后做 RRF。
-3. 证据评估：`assess` 判断检索结果是否足以支撑回答。当前在线策略命中即相关；语义
-   相关性门槛放在产生分数的检索分支（Dense 的 `min_score`），因为 RRF 归一化分数
-   在分支之间不可比较。
+3. 证据评估：`assess` 使用独立的非流式 JSON 调用，判断证据能否回答用户问题的
+   核心事实。语义相关性门槛放在产生分数的检索分支（Dense 的 `min_score`），因为
+   RRF 归一化分数在分支之间不可比较；门槛只负责防跨域漂移。
 4. 生成上下文：最多 5 条证据，单条最多 1200 字符，总上下文最多 6000 字符。
 5. 生成约束：只能依据检索证据回答，不能编造作品、作者、朝代、典故或出处；必须用
    `[1]`、`[2]` 标注实际使用的证据。
 6. 引用解析：只保存模型实际引用的证据；缺少引用标记报 `CHAT_CITATION_MISSING`，
    引用越界报 `CHAT_CITATION_INVALID`。
 7. 校验：空回答失败；有证据时最终回答必须有可追溯引用。
-8. 拒答：`assess` 判定证据不足时走 `refuse` 分支，返回“没有在当前诗词库中找到足够
-   依据，暂时无法回答这个问题。”，且不调用生成模型。
+8. 拒答：无证据或 `assess` 判定不可答时走 `refuse` 分支，返回“没有在当前诗词库中
+   找到足够依据，暂时无法回答这个问题。”，且不调用生成模型。判定超时、网络失败、
+   非法 JSON 或 Schema 失败时 fail-open 继续生成，引用校验仍作为兜底。
 
 四条检索路径在同一 27 条金标准集上的真实结果（Top-5，2026-09-20）：
 
@@ -224,6 +225,18 @@ rewrite -> retrieve -> assess -> generate|refuse -> validate
 当前没有把 DeepSeek 生成结果纳入固定评估集，因此只能确认链路和约束，不能声称生成
 准确率提升。
 
+2026-09-20 已完成基础真实联调：
+
+1. `请结合诗句说明《静夜思》里明月和思乡的关系。` 返回
+   `meta -> retrieval -> delta* -> citation -> done`，耗时 `2527.81 ms`，策略
+   `expanded-lexical-v1`，候选 `10` 条、入选 `5` 条；回答包含 `[1]`，助手消息
+   持久化为 `completed` 并保存 `1` 条引用。
+2. `李白的出生地在哪里？` 返回 `meta -> retrieval -> delta -> done`，耗时
+   `1074.54 ms`，返回固定拒答文案；没有 `citation` 事件，助手消息持久化为
+   `completed` 且保存 `0` 条引用。
+3. 该验收使用真实 HTTP/SSE、真实 DeepSeek 和 MySQL；PowerShell 会缓冲响应，
+   浏览器实时逐块渲染仍属于前端测试范围。
+
 ## 11. 测试计划
 
 | 层级 | 覆盖内容 |
@@ -232,7 +245,7 @@ rewrite -> retrieve -> assess -> generate|refuse -> validate
 | 集成测试 | 真实 TestClient + 数据库会话 + Fake Chat Provider 的完整流式回答 |
 | 契约测试 | SSE 事件顺序、消息持久化、引用快照、未配置模型错误 |
 | 前端测试 | SSE 分块、CRLF、多行 data 和最终事件刷新解析 |
-| 真实联调 | 真实 MySQL、真实 HTTP/SSE、注册和会话问答链路；DeepSeek 流式烟测脚本 |
+| 真实联调 | 已完成真实 MySQL、真实 HTTP/SSE、真实 DeepSeek 的有证据问答和无答案拒答基础验收；PowerShell 客户端不验证浏览器逐块渲染 |
 | 评估 | 当前只覆盖检索层，生成质量评估待补充 |
 
 ## 12. 风险与回滚
@@ -254,7 +267,7 @@ rewrite -> retrieve -> assess -> generate|refuse -> validate
 - [x] DeepSeek 流式烟测入口
 - [x] 引用忠实度约束：只保存模型实际引用的证据
 - [x] 证据充分性条件路由与 Dense 相关性门槛
-- [ ] 真实 DeepSeek 生成联调
+- [x] 真实 DeepSeek 生成联调（基础链路）
 - [ ] 生成质量评估：答案正确率、引用准确率、拒答 F1
 
 ## 14. 决策与变更记录
@@ -269,3 +282,5 @@ rewrite -> retrieve -> assess -> generate|refuse -> validate
 | 2026-09-20 | 只保存模型实际引用的证据，缺引用或越界引用直接失败 | 引用必须表示回答依据，不能等同于“检索入选” |
 | 2026-09-20 | 拒答判定放在 `assess` 节点，相似度门槛放在 Dense 检索层 | RRF 归一化分数在分支间不可比较，门槛必须靠近产生分数的分支 |
 | 2026-09-20 | 在线检索继续使用 `expanded-lexical-v1` | 加门槛的 Hybrid 同分但延迟高数十倍，当前语料规模不足以支持切换 |
+| 2026-09-20 | `assess` 使用 LLM 非流式 JSON 判定可答性，异常 fail-open | 词法/向量分数无法区分“话题命中、答案缺失”，结构化判定可表达核心事实是否被证据覆盖 |
+| 2026-09-20 | 完成真实 MySQL + SSE 基础联调 | 有证据问答和无答案拒答均已验证真实事件、模型调用和持久化，生成质量仍需独立评估集 |

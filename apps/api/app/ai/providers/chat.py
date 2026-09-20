@@ -7,6 +7,7 @@ from typing import Literal, Protocol
 from app.core.errors import ErrorCode
 
 ChatRole = Literal["system", "user", "assistant"]
+ChatResponseFormat = Literal["json_object"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,6 +32,15 @@ class ChatModelError(RuntimeError):
 class ChatModelPort(Protocol):
     @property
     def model(self) -> str: ...
+
+    async def generate(
+        self,
+        messages: Sequence[ChatMessage],
+        *,
+        max_output_tokens: int,
+        temperature: float = 0.0,
+        response_format: ChatResponseFormat | None = None,
+    ) -> str: ...
 
     def stream(
         self,

@@ -16,9 +16,10 @@
 10. 内部查询改写与多查询 RRF，支持月亮、思乡和已知作者实体的确定性扩展。
 11. 真实 Qdrant 适配器烟测，覆盖临时 Collection、维度校验、upsert、过滤检索和删除。
 12. 用户会话、消息、引用快照和会话所有权校验。
-13. DeepSeek Chat Provider 与最小 LangGraph 问答流：查询改写、证据检索、受证据约束生成和回答校验。
-14. POST SSE 流式问答、Vue 问答页、引用卡片、停止生成和无证据稳定拒答。
+13. DeepSeek Chat Provider 与最小 LangGraph 问答流：查询改写、证据检索、LLM 结构化可答性判定、受证据约束生成和回答校验。
+14. POST SSE 流式问答、Vue 问答页、引用卡片、停止生成，以及无证据或判定不可答时的稳定拒答。
 15. pytest、Ruff、Vitest 和前端生产构建基线。
+16. DeepSeek Chat Provider 已完成真实 `deepseek-chat` 流式与 JSON 模式烟测，并完成真实 MySQL + SSE 基础在线联调：有证据问题返回带引用回答，无答案问题稳定拒答且不产生引用。
 
 ## 文档入口
 
@@ -103,8 +104,32 @@ Qdrant 与 Qwen Provider 烟测：
 ```
 
 Qdrant 烟测始终使用随机临时 Collection 并在结束后清理；Qwen 烟测需要真实
-DashScope 网络和有效 Key；DeepSeek 烟测只报告模型、增量片段数、字符数和耗时，
-不输出完整回答。三个脚本都不会输出向量内容、上游响应正文或密钥。
+DashScope 网络和有效 Key；DeepSeek 烟测只报告模型、模式、增量片段数、字符数和
+耗时，不输出完整回答。三个脚本都不会输出向量内容、上游响应正文或密钥。
+
+验证 `assess` 依赖的非流式 JSON object 输出：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\smoke_deepseek_chat.py --json
+```
+
+2026-09-20 本轮真实烟测结果：流式模式 `model=deepseek-chat`、
+`delta_count=41`、`char_count=63`、`elapsed_ms=982.91`；JSON 模式
+`model=deepseek-chat`、`delta_count=0`、`char_count=63`、`elapsed_ms=444.78`。
+这些结果只证明 Provider 与真实服务已连通，不代表生成质量或端到端问答准确率。
+
+2026-09-20 基础在线联调结果：
+
+1. `请结合诗句说明《静夜思》里明月和思乡的关系。` 返回
+   `meta -> retrieval -> delta* -> citation -> done`，耗时 `2527.81 ms`，策略
+   `expanded-lexical-v1`，候选 `10` 条、入选 `5` 条，回答包含 `[1]`，消息状态为
+   `completed`，持久化引用 `1` 条。
+2. `李白的出生地在哪里？` 返回 `meta -> retrieval -> delta -> done`，耗时
+   `1074.54 ms`，返回固定拒答文案，引用事件 `0` 条，消息状态为 `completed`，
+   持久化引用 `0` 条。
+
+该验收覆盖真实 HTTP/SSE 事件、真实模型调用和 MySQL 持久化；PowerShell 客户端会
+缓冲 SSE 响应，浏览器实时逐块渲染仍由前端测试覆盖。
 
 Qwen 和 Qdrant 均可用后，可执行真实 chunk 索引：
 

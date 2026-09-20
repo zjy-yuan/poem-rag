@@ -2584,3 +2584,129 @@ Hybrid 在 `0.50` 下召回不掉，是因为词法分支独立召回了 4 条�
    事件结构不变。
 2. 建立生成层评估集，覆盖答案正确率、引用准确率、忠实度和拒答 F1。
 3. 用真实 DeepSeek 完成一次有证据、带引用的在线问答联调并记录延迟与成本。
+
+### [2026-09-20] `assess` 可答性判定与 fail-open
+
+#### 目标
+
+- 让 `assess` 判断“检索证据能否回答用户问题的核心事实”，而不是继续用相似度
+  阈值近似可答性。
+- 保持现有 SSE 事件结构、消息持久化语义和引用校验行为不变。
+- 在判定服务异常时不把系统故障伪装成用户不可答。
+
+#### 决策
+
+- 使用单一路径的 LLM 结构化判定，不实现双策略或两套在线流程。
+- `assess` 采用独立、非流式 `response_format=json_object` 调用，输出
+  `answerable`、`reason_code` 和 `missing`。
+- 无证据时直接 `refuse`，不调用 `assess`，也不调用生成模型。
+- `answerable=false` 时走 `refuse`，返回固定拒答文本；`refuse` 分支跳过引用要求，
+  但仍经过 `validate`。
+- 超时、网络错误、非法 JSON 或 Schema 校验失败时 fail-open，继续调用生成模型。
+  引用校验只能验证引用编号和存在性，不能验证事实蕴含，因此这仍是需要后续评估
+  覆盖的风险。
+- 新增 `CHAT_ASSESS_MAX_OUTPUT_TOKENS`，默认 `200`，上限 `1000`。
+
+#### 完成内容
+
+- `app/ai/providers/chat.py`：`ChatModelPort` 增加非流式 `generate()` 和
+  `ChatResponseFormat`。
+- `app/ai/providers/deepseek.py`：实现非流式 JSON chat completions、响应解析、
+  超时和空回答映射。
+- `app/ai/graphs/rag.py`：新增 `EvidenceAssessment`、可答性判定、`refuse` 路由、
+  fail-open 状态和证据上下文复用。
+- `apps/api/scripts/smoke_deepseek_chat.py`：新增 `--json` 烟测模式。
+- `apps/api/tests/test_chat.py`、`apps/api/tests/test_deepseek_chat.py`：覆盖拒答、
+  fail-open、非法 JSON、非法 reason code、HTTP 请求格式和错误映射。
+- `.env.example`、`README.md`、`PROJECT_GUIDE.md`、前后端契约和功能文档同步更新。
+
+#### 验证结果
+
+- 针对性测试：`15 passed`。
+- 后端全量测试：`103 passed, 3 warnings`。
+- Ruff：`All checks passed!`。
+- mypy：`rag.py`、`chat.py`、`deepseek.py` 和 `config.py` 通过。
+- 前端：`vue-tsc -b` 通过，Vitest `9 passed`，生产构建通过。
+- 真实 `deepseek-chat` 流式烟测：`delta_count=41`、`char_count=63`、
+  `elapsed_ms=982.91`。
+- 真实 `deepseek-chat` JSON 烟测：`delta_count=0`、`char_count=63`、
+  `elapsed_ms=444.78`。
+
+#### 问题与风险
+
+- `assess` 增加一次模型调用和端到端延迟；当前没有会话级成本审计和限流。
+- fail-open 时，话题相关但核心事实缺失的问题仍可能进入生成；引用校验只能保证
+  引用编号有效，不能保证回答被证据蕴含。
+- 现有领域内负样本只有 4 条，不能代表全部不可答类型，仍需生成层评估集验证
+  拒答精确率和召回率。
+- 真实 Provider 烟测只证明上游链路连通，不代表完整 MySQL + SSE 在线问答已经
+  完成端到端验收。
+
+#### 下一步
+
+1. 建立生成层评估集，覆盖答案正确率、引用准确率、忠实度和拒答 P/R/F1。
+2. 用真实 MySQL、真实 DeepSeek 和 SSE 完成一次有证据、带引用的在线问答联调，
+   记录延迟、Token 成本和失败路径。
+3. 根据评估结果决定是否引入 Rerank、低召回重写重试，以及是否需要切换更高维度
+   Embedding 或更高成本问答模型。
+
+### [2026-09-20] `assess` 真实 MySQL + SSE 端到端验收
+
+#### 本次目标
+
+- 验证 `assess -> generate|refuse` 条件路由在真实 HTTP/SSE、真实 DeepSeek 和
+  真实 MySQL 环境下可运行。
+- 同时覆盖有证据问答和无答案拒答，确认事件顺序和引用持久化语义。
+
+#### 环境
+
+- MySQL、Redis、Qdrant 和 FastAPI 均在本机运行。
+- 在线检索固定为 `expanded-lexical-v1`。
+- Embedding 为 `text-embedding-v4`，实际维度 `1024`。
+- Chat 模型为 `deepseek-chat`。
+- 真实模型调用需要网络权限，因此 API 在升级权限下启动；沙箱内网络失败不是代码问题。
+
+#### 验证结果
+
+有证据问题：
+
+```text
+请结合诗句说明《静夜思》里明月和思乡的关系。
+```
+
+- 事件顺序：`meta -> retrieval -> delta* -> citation -> done`。
+- 耗时：`2527.81 ms`。
+- 策略：`expanded-lexical-v1`；候选 `10` 条，入选 `5` 条。
+- 回答包含 `[1]`，正确围绕“明月触发思乡”生成。
+- 助手消息状态：`completed`；持久化引用：`1` 条。
+
+无答案问题：
+
+```text
+李白的出生地在哪里？
+```
+
+- 事件顺序：`meta -> retrieval -> delta -> done`。
+- 耗时：`1074.54 ms`。
+- 返回固定拒答文案：
+  `没有在当前诗词库中找到足够依据，暂时无法回答这个问题。`
+- `citation` 事件：`0` 条；助手消息状态：`completed`；持久化引用：`0` 条。
+
+#### 结论
+
+- `assess` 能识别“话题命中但核心属性缺失”的问题，并跳过生成模型。
+- 有证据路径的引用解析和 MySQL 快照持久化正常。
+- PowerShell 的 `Invoke-WebRequest` 会缓冲 SSE，因此本轮验证了真实 HTTP/SSE
+  事件、模型调用和持久化，不等于浏览器实时逐块渲染验收。
+
+#### 问题与风险
+
+- 样本只有一正一负两条，不能代表生成质量；需要独立生成层评估集。
+- 本地 JWT 密钥长度低于 HMAC 推荐值，部署前必须替换为至少 32 字节随机值。
+- 尚未记录 Token 成本和会话级限流数据。
+
+#### 下一步
+
+1. 建立生成层评估骨架，覆盖答案正确率、引用精确率/召回率和拒答 P/R/F1。
+2. 用固定评估集运行真实 DeepSeek，保存可复现报告和失败样本。
+3. 再评估忠实度判定、Rerank、低召回重写重试和模型成本策略。

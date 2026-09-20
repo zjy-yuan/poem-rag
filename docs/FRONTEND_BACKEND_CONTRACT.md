@@ -1435,7 +1435,8 @@ Service、测试和离线评估使用，不改变公开接口契约。
 `lexical-baseline-seed-v1` 文件保持冻结，历史报告仍可复现。该变更只影响离线评估
 脚本和内部指标，不改变本文件第 8 至 10 节的公开接口、错误码和 SSE 事件结构。
 `min_score` 的实测结论是只能防跨域漂移，不能承担可答性判定；公开 HTTP 检索策略
-仍为 `lexical-baseline-v1`，在线问答仍为 `expanded-lexical-v1`。
+仍为 `lexical-baseline-v1`，在线问答仍为 `expanded-lexical-v1`。在线问答已在
+`assess` 节点接入 LLM 结构化可答性判定；判定异常 fail-open，引用校验继续兜底。
 
 ---
 
@@ -1505,6 +1506,12 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
     消息保存为 `failed`，不写入引用。
 15. 回答引用了不存在的编号时，`error.code` 为 `CHAT_CITATION_INVALID`，助手消息保存
     为 `failed`，不写入引用。
+16. 检索结果非空时，`assess` 使用独立的非流式 JSON 调用判断证据能否回答用户问题的
+    核心事实；判定只依据检索证据，历史对话只用于消解代词。
+17. `answerable=false` 时走 `refuse` 分支，返回固定拒答文本，不调用生成模型，也
+    不创建引用记录；该分支仍经过 `validate`，但不要求引用。
+18. `assess` 的超时、网络错误、非法 JSON 或 Schema 校验失败采用 fail-open：继续
+    调用生成模型，并由引用校验兜底。该策略不改变 SSE 事件顺序。
 
 ---
 
@@ -1733,23 +1740,30 @@ Authorization: Bearer <DEEPSEEK_API_KEY>
 | `DEEPSEEK_API_KEY` | 未配置时聊天接口返回 `503 CHAT_MODEL_NOT_CONFIGURED` |
 | `DEEPSEEK_BASE_URL` | 默认 `https://api.deepseek.com` |
 | `DEEPSEEK_CHAT_MODEL` | 默认 `deepseek-chat`，精确模型 ID 需按账号可用模型确认 |
-| `DEEPSEEK_TIMEOUT_SECONDS` | 单次流式请求超时，默认 `60` 秒 |
+| `DEEPSEEK_TIMEOUT_SECONDS` | 单次模型请求超时，默认 `60` 秒 |
 | `DEEPSEEK_MAX_OUTPUT_TOKENS` | 单次回答最大输出 Token，默认 `1200`，上限 `8192` |
+| `CHAT_ASSESS_MAX_OUTPUT_TOKENS` | `assess` 可答性判定最大输出 Token，默认 `200`，上限 `1000` |
 | `CHAT_RETRIEVAL_LIMIT` | 在线问答注入的证据数，默认 `5`，上限 `20` |
 | `CHAT_HISTORY_LIMIT` | 注入的最近完成消息数，默认 `8`，上限 `50` |
 
 行为约束：
 
 1. Provider 只接受统一 `ChatMessage`，不向 Service 暴露供应商 SDK 类型。
-2. 流式响应只解析 OpenAI-compatible `choices[0].delta.content` 和 `[DONE]`。
+2. 流式响应只解析 OpenAI-compatible `choices[0].delta.content` 和 `[DONE]`；
+   非流式响应只解析 `choices[0].message.content`，支持 `response_format=json_object`。
 3. 超时映射为 `MODEL_TIMEOUT`；空回答映射为 `CHAT_EMPTY_RESPONSE`；其他供应商错误
    映射为 `MODEL_PROVIDER_ERROR`。
 4. 模型响应错误只保存受控错误码；流式错误事件中的消息不包含上游完整响应体或密钥。
-5. 在线问答先经过 `expanded-lexical-v1` 检索，再把证据构造为上下文，生成后必须有引用。
-6. 检索结果为空时使用固定拒答文案，不调用生成模型。
-7. DeepSeek Provider 已通过 Fake/HTTP 流测试，尚未使用真实账号完成端到端生成验证。
-8. “DeepSeek 4.1 Flash”目前只是目标方向；当前默认模型 ID 是 `deepseek-chat`，
-   在没有完成真实账号联调前，不能把两者描述为已经验证或已经接通。
+5. 在线问答先经过 `expanded-lexical-v1` 检索，再由 `assess` 使用非流式 JSON 判定
+   证据能否回答核心事实，最后把证据构造为上下文并生成带引用回答。
+6. 检索结果为空或 `assess` 判定不可答时使用固定拒答文案，不调用生成模型。
+7. `assess` 调用失败时 fail-open 继续生成，不能把判定失败误报成用户不可答；引用
+   缺失或越界仍由生成后的校验报错。
+8. DeepSeek Provider 已通过 Fake/HTTP 测试，并完成真实 `deepseek-chat` 流式与
+   JSON 模式烟测及真实 MySQL + SSE 基础在线联调。有证据问题会返回并持久化引用，
+   无答案问题返回固定拒答且持久化 `0` 条引用。
+9. “DeepSeek 4.1 Flash”目前只是目标方向；当前默认模型 ID 是 `deepseek-chat`，
+   在没有完成精确模型确认前，不能把两者描述为已经验证或已经接通。
 
 当前已实现 `EmbeddingProvider` 协议和 Qwen Embedding 的 OpenAI-compatible 适配器：
 
@@ -1762,8 +1776,8 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 
 | 环境变量 | 说明 |
 | --- | --- |
-| `QWEN_EMBEDDING_MODEL` | 模型 ID，默认 `text-embedding-v4`，真实可用性待账号验证 |
-| `QWEN_EMBEDDING_DIMENSION` | 可留空；写入索引前必须锁定真实维度 |
+| `QWEN_EMBEDDING_MODEL` | 模型 ID，默认 `text-embedding-v4`，真实烟测已通过 |
+| `QWEN_EMBEDDING_DIMENSION` | 可留空；当前真实返回维度为 `1024`，写入索引前应锁定 |
 | `QWEN_EMBEDDING_BATCH_SIZE` | 单次请求最大文本数，默认 `10` |
 | `QWEN_EMBEDDING_TIMEOUT_SECONDS` | 单次请求超时，默认 `30` |
 | `QWEN_EMBEDDING_MAX_RETRIES` | 可重试错误的最大额外请求次数，默认 `2` |
@@ -1777,7 +1791,8 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 4. API Key 不得写入日志、`poem_index_runs.config_snapshot` 或错误报告。
 5. 当前已实现 chunks -> Qwen Embedding -> Qdrant upsert 的最小索引闭环，并回写 `vector_id`、模型和维度。
 6. 当前已实现 `dense-baseline-v1` 内部检索 Service，支持 Qdrant 查询、元数据过滤和 MySQL 可见性回查；公开 HTTP 尚未切换。
-7. 当前仍未实现旧向量清理、active index 切换和跨库对账；Qdrant 已完成真实适配器烟测，DashScope 尚未联调。
+7. 当前仍未实现旧向量清理、active index 切换和跨库对账；Qdrant 与 DashScope
+   真实烟测均已通过。
 
 ### 15.2 数据待确认项
 
@@ -1828,3 +1843,4 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 | 2026-09-19 | 新增 `expanded-lexical-v1` 查询改写与多查询 RRF Service、版本化词典和离线评估策略 | 新增内部查询理解能力，不修改公开 HTTP 接口 | `85 passed`、Ruff 和 mypy 通过；真实 MySQL 种子集 `27/27`、Recall@5 `1.0`、MRR `0.978261` |
 | 2026-09-19 | 新增可重复执行的 Qdrant 与 Qwen 烟测脚本，并完成真实 Qdrant `1.19.1` 适配器联调 | 不修改 HTTP 接口；Qwen 真实网络调用仍受环境审批阻塞 | `85 passed`、Ruff 和相关模块 mypy 通过；Qdrant 临时 Collection 创建、维度拒绝、upsert、过滤检索和删除通过 |
 | 2026-09-20 | 新增会话、消息、引用快照、DeepSeek Chat Provider、四节点 LangGraph 问答和 SSE 流式接口 | 新增登录用户 API 和数据库表；消息反馈仍属目标设计 | `91 passed`、Ruff、前端 `9 passed`、类型检查和生产构建通过；真实 MySQL 迁移至 `0005`，真实 HTTP/SSE 无证据链路和消息持久化通过 |
+| 2026-09-20 | `assess` 改为非流式 JSON 结构化可答性判定，新增 `CHAT_ASSESS_MAX_OUTPUT_TOKENS` 与拒答路由 | SSE 事件结构不变；不可答问题不再调用生成模型，判定异常 fail-open | `103 passed`、Ruff 通过；真实 `deepseek-chat` 流式与 JSON 烟测通过；真实 MySQL + SSE 有证据问答和无答案拒答联调通过 |

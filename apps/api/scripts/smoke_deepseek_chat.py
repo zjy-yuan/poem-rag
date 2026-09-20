@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,6 +16,7 @@ if str(APP_ROOT) not in sys.path:
 @dataclass(frozen=True, slots=True)
 class ChatSmokeResult:
     model: str
+    mode: str
     delta_count: int
     char_count: int
     elapsed_ms: float
@@ -24,6 +26,7 @@ async def run_smoke(
     *,
     prompt: str,
     max_output_tokens: int,
+    json_mode: bool = False,
 ) -> ChatSmokeResult:
     from app.ai.providers.chat import ChatMessage
     from app.ai.providers.deepseek import create_deepseek_chat_provider
@@ -43,17 +46,31 @@ async def run_smoke(
     char_count = 0
     started_at = perf_counter()
     try:
-        async for delta in provider.stream(
-            [ChatMessage(role="user", content=prompt)],
-            max_output_tokens=max_output_tokens,
-        ):
-            delta_count += 1
-            char_count += len(delta)
+        messages = [ChatMessage(role="user", content=prompt)]
+        if json_mode:
+            content = await provider.generate(
+                messages,
+                max_output_tokens=max_output_tokens,
+                temperature=0.0,
+                response_format="json_object",
+            )
+            payload = json.loads(content)
+            if not isinstance(payload, dict):
+                raise ValueError("DeepSeek JSON 烟测返回的不是 JSON 对象")
+            char_count = len(content)
+        else:
+            async for delta in provider.stream(
+                messages,
+                max_output_tokens=max_output_tokens,
+            ):
+                delta_count += 1
+                char_count += len(delta)
     finally:
         await provider.aclose()
 
     return ChatSmokeResult(
         model=provider.model,
+        mode="json" if json_mode else "stream",
         delta_count=delta_count,
         char_count=char_count,
         elapsed_ms=(perf_counter() - started_at) * 1000,
@@ -66,8 +83,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--prompt",
-        default="请用一句话说明月亮在古诗中的常见意象。",
-        help="Prompt to send. Default: a short question about the moon image.",
+        default=None,
+        help="Prompt to send. Defaults depend on the selected mode.",
     )
     parser.add_argument(
         "--max-output-tokens",
@@ -75,15 +92,29 @@ def main() -> None:
         default=64,
         help="Maximum output tokens. Default: 64",
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Use non-streaming JSON object mode, matching the RAG assess call.",
+    )
     args = parser.parse_args()
     if args.max_output_tokens <= 0:
         parser.error("--max-output-tokens must be greater than 0")
+    prompt = args.prompt
+    if prompt is None:
+        prompt = (
+            '请只输出 JSON 对象：{"answerable": true, "reason_code": "supported", '
+            '"missing": []}。判断“月亮在古诗中常与思乡相关”这一说法是否有文本依据。'
+            if args.json
+            else "请用一句话说明月亮在古诗中的常见意象。"
+        )
 
     try:
         result = asyncio.run(
             run_smoke(
-                prompt=args.prompt,
+                prompt=prompt,
                 max_output_tokens=args.max_output_tokens,
+                json_mode=args.json,
             )
         )
     except (OSError, RuntimeError, ValueError) as exc:
@@ -91,7 +122,8 @@ def main() -> None:
 
     print(
         f"DeepSeek chat smoke passed: model={result.model} "
-        f"delta_count={result.delta_count} char_count={result.char_count} "
+        f"mode={result.mode} delta_count={result.delta_count} "
+        f"char_count={result.char_count} "
         f"elapsed_ms={result.elapsed_ms:.2f}"
     )
 

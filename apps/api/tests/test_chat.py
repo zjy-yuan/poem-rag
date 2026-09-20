@@ -5,7 +5,7 @@ from collections.abc import AsyncIterator, Sequence
 from typing import Any
 
 from app.ai.graphs.rag import NO_EVIDENCE_ANSWER
-from app.ai.providers.chat import ChatMessage, ChatModelError
+from app.ai.providers.chat import ChatMessage, ChatModelError, ChatResponseFormat
 from app.api.deps import get_chat_provider
 from app.core.errors import ErrorCode
 from fastapi.testclient import TestClient
@@ -19,15 +19,46 @@ class FakeChatProvider:
         deltas: Sequence[str] = (),
         *,
         error: Exception | None = None,
+        generate_error: Exception | None = None,
+        assessment: dict[str, Any] | str | None = None,
     ) -> None:
         self._deltas = list(deltas)
         self._error = error
+        self._generate_error = generate_error
+        self._assessment = (
+            json.dumps(
+                assessment
+                if assessment is not None
+                else {
+                    "answerable": True,
+                    "reason_code": "supported",
+                    "missing": [],
+                },
+                ensure_ascii=False,
+            )
+            if not isinstance(assessment, str)
+            else assessment
+        )
         self.calls: list[list[ChatMessage]] = []
+        self.generate_calls: list[list[ChatMessage]] = []
         self.closed = False
 
     @property
     def model(self) -> str:
         return "fake-chat-v1"
+
+    async def generate(
+        self,
+        messages: Sequence[ChatMessage],
+        *,
+        max_output_tokens: int,
+        temperature: float = 0.0,
+        response_format: ChatResponseFormat | None = None,
+    ) -> str:
+        self.generate_calls.append(list(messages))
+        if self._generate_error is not None:
+            raise self._generate_error
+        return self._assessment
 
     async def stream(
         self,
@@ -266,6 +297,7 @@ def test_no_evidence_returns_stable_refusal_without_model_call(
     ]
     delta = next(data for name, data in events if name == "delta")
     assert delta["text"] == NO_EVIDENCE_ANSWER
+    assert provider.generate_calls == []
     assert provider.calls == []
     assert provider.closed is True
 
@@ -276,6 +308,125 @@ def test_no_evidence_returns_stable_refusal_without_model_call(
     assert messages[1]["status"] == "completed"
     assert messages[1]["content"] == NO_EVIDENCE_ANSWER
     assert messages[1]["citations"] == []
+
+
+def test_assess_refusal_skips_generation(client: TestClient) -> None:
+    _seed_evidence(client)
+    user = _register(client, "assess-refusal@example.com")
+    conversation = _create_conversation(client, user)
+    provider = FakeChatProvider(
+        ["不应被调用"],
+        assessment={
+            "answerable": False,
+            "reason_code": "missing_fact",
+            "missing": ["出生地"],
+        },
+    )
+    _use_provider(client, provider)
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation['id']}/messages:stream",
+        headers=user,
+        json={"content": "李白的出生地在哪里？"},
+    )
+
+    assert response.status_code == 200
+    events = _parse_sse(response.text)
+    assert [name for name, _ in events] == [
+        "meta",
+        "retrieval",
+        "delta",
+        "done",
+    ]
+    delta = next(data for name, data in events if name == "delta")
+    assert delta["text"] == NO_EVIDENCE_ANSWER
+    assert len(provider.generate_calls) == 1
+    assert provider.calls == []
+
+    messages = client.get(
+        f"/api/v1/conversations/{conversation['id']}/messages",
+        headers=user,
+    ).json()["data"]
+    assert messages[1]["status"] == "completed"
+    assert messages[1]["content"] == NO_EVIDENCE_ANSWER
+    assert messages[1]["citations"] == []
+
+
+def test_assess_error_fails_open_and_generates(client: TestClient) -> None:
+    _seed_evidence(client)
+    user = _register(client, "assess-fail-open@example.com")
+    conversation = _create_conversation(client, user)
+    provider = FakeChatProvider(
+        ["月光常与思乡相连。[1]"],
+        generate_error=ChatModelError("assess unavailable"),
+    )
+    _use_provider(client, provider)
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation['id']}/messages:stream",
+        headers=user,
+        json={"content": "赏析静夜思里的月亮有什么含义？"},
+    )
+
+    assert response.status_code == 200
+    events = _parse_sse(response.text)
+    event_names = [name for name, _ in events]
+    assert "delta" in event_names
+    assert "citation" in event_names
+    assert event_names[-1] == "done"
+    assert "error" not in event_names
+    assert len(provider.generate_calls) == 1
+    assert len(provider.calls) == 1
+
+
+def test_assess_invalid_json_fails_open_and_generates(client: TestClient) -> None:
+    _seed_evidence(client)
+    user = _register(client, "assess-invalid-json@example.com")
+    conversation = _create_conversation(client, user)
+    provider = FakeChatProvider(
+        ["月光常与思乡相连。[1]"],
+        assessment="not-json",
+    )
+    _use_provider(client, provider)
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation['id']}/messages:stream",
+        headers=user,
+        json={"content": "赏析静夜思里的月亮有什么含义？"},
+    )
+
+    assert response.status_code == 200
+    events = _parse_sse(response.text)
+    assert events[-1][0] == "done"
+    assert len(provider.generate_calls) == 1
+    assert len(provider.calls) == 1
+
+
+def test_assess_invalid_reason_fails_open_and_generates(client: TestClient) -> None:
+    _seed_evidence(client)
+    user = _register(client, "assess-invalid-reason@example.com")
+    conversation = _create_conversation(client, user)
+    provider = FakeChatProvider(
+        ["月光常与思乡相连。[1]"],
+        assessment={
+            "answerable": True,
+            "reason_code": "unknown_reason",
+            "missing": [],
+        },
+    )
+    _use_provider(client, provider)
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation['id']}/messages:stream",
+        headers=user,
+        json={"content": "赏析静夜思里的月亮有什么含义？"},
+    )
+
+    assert response.status_code == 200
+    events = _parse_sse(response.text)
+    assert events[-1][0] == "done"
+    assert len(provider.generate_calls) == 1
+    assert len(provider.calls) == 1
 
 
 def test_model_failure_emits_error_after_retrieval_and_stops_deltas(
