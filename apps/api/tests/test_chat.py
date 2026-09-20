@@ -150,7 +150,7 @@ def test_stream_persists_messages_citations_and_events(client: TestClient) -> No
     _seed_evidence(client)
     user = _register(client, "stream@example.com")
     conversation = _create_conversation(client, user)
-    provider = FakeChatProvider(["月光常与", "思乡相连。"])
+    provider = FakeChatProvider(["月光常与", "思乡相连。[1]"])
     _use_provider(client, provider)
 
     response = client.post(
@@ -178,14 +178,68 @@ def test_stream_persists_messages_citations_and_events(client: TestClient) -> No
     ).json()["data"]
     assert [message["role"] for message in messages] == ["user", "assistant"]
     assert messages[0]["content"] == "赏析静夜思里的月亮有什么含义？"
-    assert messages[1]["content"] == "月光常与思乡相连。"
+    assert messages[1]["content"] == "月光常与思乡相连。[1]"
     assert messages[1]["status"] == "completed"
     assert messages[1]["model"] == "fake-chat-v1"
     assert messages[1]["citations"]
+    assert len(messages[1]["citations"]) == 1
     citation = messages[1]["citations"][0]
     assert citation["title"] == "静夜思"
     assert citation["chunk_id"] is not None
     assert citation["text"]
+
+
+def test_stream_rejects_answer_without_citation_marker(client: TestClient) -> None:
+    _seed_evidence(client)
+    user = _register(client, "missing-citation@example.com")
+    conversation = _create_conversation(client, user)
+    _use_provider(client, FakeChatProvider(["月光常与思乡相连。"]))
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation['id']}/messages:stream",
+        headers=user,
+        json={"content": "赏析静夜思里的月亮有什么含义？"},
+    )
+
+    assert response.status_code == 200
+    events = _parse_sse(response.text)
+    assert events[-1][0] == "error"
+    assert events[-1][1]["code"] == ErrorCode.CHAT_CITATION_MISSING.value
+    assert "citation" not in [name for name, _ in events]
+
+    messages = client.get(
+        f"/api/v1/conversations/{conversation['id']}/messages",
+        headers=user,
+    ).json()["data"]
+    assert messages[1]["status"] == "failed"
+    assert messages[1]["error_code"] == ErrorCode.CHAT_CITATION_MISSING.value
+    assert messages[1]["citations"] == []
+
+
+def test_stream_rejects_invalid_citation_marker(client: TestClient) -> None:
+    _seed_evidence(client)
+    user = _register(client, "invalid-citation@example.com")
+    conversation = _create_conversation(client, user)
+    _use_provider(client, FakeChatProvider(["月光常与思乡相连。[99]"]))
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation['id']}/messages:stream",
+        headers=user,
+        json={"content": "赏析静夜思里的月亮有什么含义？"},
+    )
+
+    assert response.status_code == 200
+    events = _parse_sse(response.text)
+    assert events[-1][0] == "error"
+    assert events[-1][1]["code"] == ErrorCode.CHAT_CITATION_INVALID.value
+
+    messages = client.get(
+        f"/api/v1/conversations/{conversation['id']}/messages",
+        headers=user,
+    ).json()["data"]
+    assert messages[1]["status"] == "failed"
+    assert messages[1]["error_code"] == ErrorCode.CHAT_CITATION_INVALID.value
+    assert messages[1]["citations"] == []
 
 
 def test_no_evidence_returns_stable_refusal_without_model_call(

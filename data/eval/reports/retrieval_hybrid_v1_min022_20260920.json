@@ -1,0 +1,2543 @@
+{
+  "dataset_version": "lexical-baseline-seed-v1",
+  "strategy": "hybrid-rrf-v1",
+  "top_k": 5,
+  "generated_at": "2026-09-20T06:47:11.613546Z",
+  "summary": {
+    "total_cases": 27,
+    "answerable_cases": 23,
+    "unanswerable_cases": 4,
+    "passed_cases": 27,
+    "pass_rate": 1.0,
+    "recall_at_k": 1.0,
+    "mrr": 0.956522,
+    "hit_rate_at_k": 1.0,
+    "answerable_no_result_rate": 0.0,
+    "unanswerable_accuracy": 1.0,
+    "average_latency_ms": 196.101,
+    "p95_latency_ms": 297.467
+  },
+  "categories": {
+    "exact_quote": {
+      "total_cases": 7,
+      "answerable_cases": 7,
+      "unanswerable_cases": 0,
+      "passed_cases": 7,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "average_latency_ms": 187.519,
+      "p95_latency_ms": 297.467
+    },
+    "phrase": {
+      "total_cases": 5,
+      "answerable_cases": 5,
+      "unanswerable_cases": 0,
+      "passed_cases": 5,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "average_latency_ms": 233.478,
+      "p95_latency_ms": 421.542
+    },
+    "title": {
+      "total_cases": 3,
+      "answerable_cases": 3,
+      "unanswerable_cases": 0,
+      "passed_cases": 3,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "average_latency_ms": 183.831,
+      "p95_latency_ms": 230.974
+    },
+    "author": {
+      "total_cases": 2,
+      "answerable_cases": 2,
+      "unanswerable_cases": 0,
+      "passed_cases": 2,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "average_latency_ms": 196.546,
+      "p95_latency_ms": 225.293
+    },
+    "dynasty": {
+      "total_cases": 2,
+      "answerable_cases": 2,
+      "unanswerable_cases": 0,
+      "passed_cases": 2,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 0.75,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "average_latency_ms": 178.139,
+      "p95_latency_ms": 179.456
+    },
+    "multi_evidence": {
+      "total_cases": 1,
+      "answerable_cases": 1,
+      "unanswerable_cases": 0,
+      "passed_cases": 1,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "average_latency_ms": 244.918,
+      "p95_latency_ms": 244.918
+    },
+    "natural_language": {
+      "total_cases": 3,
+      "answerable_cases": 3,
+      "unanswerable_cases": 0,
+      "passed_cases": 3,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 0.833333,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "average_latency_ms": 167.072,
+      "p95_latency_ms": 218.187
+    },
+    "no_answer": {
+      "total_cases": 4,
+      "answerable_cases": 0,
+      "unanswerable_cases": 4,
+      "passed_cases": 4,
+      "pass_rate": 1.0,
+      "recall_at_k": null,
+      "mrr": null,
+      "hit_rate_at_k": 0.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 1.0,
+      "average_latency_ms": 191.926,
+      "p95_latency_ms": 256.224
+    }
+  },
+  "failure_case_ids": [],
+  "results": [
+    {
+      "case_id": "exact-jingyesi-01",
+      "category": "exact_quote",
+      "question": "床前明月光，疑是地上霜。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 297.467,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 65,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "床前明月光，疑是地上霜。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 64,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 67,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "春眠不觉晓，处处闻啼鸟。\n夜来风雨声，花落知多少。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-jingyesi-02",
+      "category": "exact_quote",
+      "question": "举头望明月，低头思故乡。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 201.86,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 64,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 65,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "床前明月光，疑是地上霜。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 69,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夜来风雨声，花落知多少。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-chunxiao-01",
+      "category": "exact_quote",
+      "question": "春眠不觉晓，处处闻啼鸟。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 132.042,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 68,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "春眠不觉晓，处处闻啼鸟。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 67,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "春眠不觉晓，处处闻啼鸟。\n夜来风雨声，花落知多少。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 81,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 79,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "常记溪亭日暮，沉醉不知归路。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 65,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "床前明月光，疑是地上霜。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-denggueque-01",
+      "category": "exact_quote",
+      "question": "白日依山尽，黄河入海流。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 165.792,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 71,
+          "poem_id": 3,
+          "poem_version_id": 3,
+          "title": "登鹳雀楼",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "白日依山尽，黄河入海流。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 70,
+          "poem_id": 3,
+          "poem_version_id": 3,
+          "title": "登鹳雀楼",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "白日依山尽，黄河入海流。\n欲穷千里目，更上一层楼。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 72,
+          "poem_id": 3,
+          "poem_version_id": 3,
+          "title": "登鹳雀楼",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "欲穷千里目，更上一层楼。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 84,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夕阳西下，断肠人在天涯。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-shuidiaogetou-01",
+      "category": "exact_quote",
+      "question": "明月几时有？把酒问青天。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 171.28,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 73,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "明月几时有？把酒问青天。\n不知天上宫阙，今夕是何年。\n我欲乘风归去，又恐琼楼玉宇，高处不胜寒。\n起舞弄清影，何似在人间。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 76,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "我欲乘风归去，又恐琼楼玉宇，高处不胜寒。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 75,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "不知天上宫阙，今夕是何年。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-tianjingsha-01",
+      "category": "exact_quote",
+      "question": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 180.862,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 83,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 82,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。\n夕阳西下，断肠人在天涯。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 84,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夕阳西下，断肠人在天涯。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 79,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "常记溪亭日暮，沉醉不知归路。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 81,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-rumengling-01",
+      "category": "exact_quote",
+      "question": "争渡，争渡，惊起一滩鸥鹭。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 163.327,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 81,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "争渡，争渡，惊起一滩鸥鹭。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 78,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 3,
+          "text": "常记溪亭日暮，沉醉不知归路。\n兴尽晚回舟，误入藕花深处。\n争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 80,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "兴尽晚回舟，误入藕花深处。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 79,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "常记溪亭日暮，沉醉不知归路。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 83,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-jingyesi-01",
+      "category": "phrase",
+      "question": "举头望明月",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 168.505,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 64,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 65,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "床前明月光，疑是地上霜。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 75,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "不知天上宫阙，今夕是何年。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-denggueque-01",
+      "category": "phrase",
+      "question": "更上一层楼",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 178.162,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 72,
+          "poem_id": 3,
+          "poem_version_id": 3,
+          "title": "登鹳雀楼",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "欲穷千里目，更上一层楼。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 70,
+          "poem_id": 3,
+          "poem_version_id": 3,
+          "title": "登鹳雀楼",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "白日依山尽，黄河入海流。\n欲穷千里目，更上一层楼。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 69,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夜来风雨声，花落知多少。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 76,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "我欲乘风归去，又恐琼楼玉宇，高处不胜寒。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-shuidiaogetou-01",
+      "category": "phrase",
+      "question": "高处不胜寒",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 421.542,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 76,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "我欲乘风归去，又恐琼楼玉宇，高处不胜寒。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 73,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "明月几时有？把酒问青天。\n不知天上宫阙，今夕是何年。\n我欲乘风归去，又恐琼楼玉宇，高处不胜寒。\n起舞弄清影，何似在人间。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 72,
+          "poem_id": 3,
+          "poem_version_id": 3,
+          "title": "登鹳雀楼",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "欲穷千里目，更上一层楼。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 84,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夕阳西下，断肠人在天涯。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 69,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夜来风雨声，花落知多少。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-rumengling-01",
+      "category": "phrase",
+      "question": "藕花深处",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 229.235,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 80,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "兴尽晚回舟，误入藕花深处。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 78,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 3,
+          "text": "常记溪亭日暮，沉醉不知归路。\n兴尽晚回舟，误入藕花深处。\n争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 81,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 79,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "常记溪亭日暮，沉醉不知归路。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 77,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "起舞弄清影，何似在人间。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-tianjingsha-01",
+      "category": "phrase",
+      "question": "断肠人在天涯",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 169.945,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 84,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夕阳西下，断肠人在天涯。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 82,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。\n夕阳西下，断肠人在天涯。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 83,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 69,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夜来风雨声，花落知多少。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "title-jingyesi-01",
+      "category": "title",
+      "question": "静夜思",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 159.536,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 65,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "床前明月光，疑是地上霜。",
+          "score": 0.991935,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 0.991935,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 64,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+          "score": 0.968254,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 69,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夜来风雨声，花落知多少。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 67,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "春眠不觉晓，处处闻啼鸟。\n夜来风雨声，花落知多少。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "title-shuidiaogetou-01",
+      "category": "title",
+      "question": "水调歌头",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 230.974,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 76,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "我欲乘风归去，又恐琼楼玉宇，高处不胜寒。",
+          "score": 0.984127,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 75,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "不知天上宫阙，今夕是何年。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.976563,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 73,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "明月几时有？把酒问青天。\n不知天上宫阙，今夕是何年。\n我欲乘风归去，又恐琼楼玉宇，高处不胜寒。\n起舞弄清影，何似在人间。",
+          "score": 0.953358,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 77,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "起舞弄清影，何似在人间。",
+          "score": 0.938684,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "title-rumengling-01",
+      "category": "title",
+      "question": "如梦令",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 160.984,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 79,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "常记溪亭日暮，沉醉不知归路。",
+          "score": 0.991935,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 81,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.984127,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 80,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "兴尽晚回舟，误入藕花深处。",
+          "score": 0.976062,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 78,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 3,
+          "text": "常记溪亭日暮，沉醉不知归路。\n兴尽晚回舟，误入藕花深处。\n争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.953125,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 75,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "不知天上宫阙，今夕是何年。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "author-liqingzhao-01",
+      "category": "author",
+      "question": "李清照",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 167.798,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 79,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "常记溪亭日暮，沉醉不知归路。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 80,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "兴尽晚回舟，误入藕花深处。",
+          "score": 0.976062,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 81,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.939351,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 78,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 3,
+          "text": "常记溪亭日暮，沉醉不知归路。\n兴尽晚回舟，误入藕花深处。\n争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.900174,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 75,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "不知天上宫阙，今夕是何年。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "author-mazhiyuan-01",
+      "category": "author",
+      "question": "马致远",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 225.293,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 83,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。",
+          "score": 0.991935,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 82,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。\n夕阳西下，断肠人在天涯。",
+          "score": 0.984127,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 84,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夕阳西下，断肠人在天涯。",
+          "score": 0.976062,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 79,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "常记溪亭日暮，沉醉不知归路。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 81,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "dynasty-song-01",
+      "category": "dynasty",
+      "question": "宋",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 176.822,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.991935,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 75,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "不知天上宫阙，今夕是何年。",
+          "score": 0.991935,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 76,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "我欲乘风归去，又恐琼楼玉宇，高处不胜寒。",
+          "score": 0.968254,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 77,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "起舞弄清影，何似在人间。",
+          "score": 0.953125,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 81,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "争渡，争渡，惊起一滩鸥鹭。",
+          "score": 0.924455,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "dynasty-tang-01",
+      "category": "dynasty",
+      "question": "唐",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 179.456,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 71,
+          "poem_id": 3,
+          "poem_version_id": 3,
+          "title": "登鹳雀楼",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "白日依山尽，黄河入海流。",
+          "score": 0.961166,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 0.954057,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 65,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "床前明月光，疑是地上霜。",
+          "score": 0.935714,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 69,
+          "poem_id": 2,
+          "poem_version_id": 2,
+          "title": "春晓",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夜来风雨声，花落知多少。",
+          "score": 0.931786,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 72,
+          "poem_id": 3,
+          "poem_version_id": 3,
+          "title": "登鹳雀楼",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "欲穷千里目，更上一层楼。",
+          "score": 0.931352,
+          "match_types": [
+            "lexical_match",
+            "dynasty_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "multi-moon-01",
+      "category": "multi_evidence",
+      "question": "明月",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1,
+        2
+      ],
+      "missing_gold": [],
+      "latency_ms": 244.918,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.984127,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 65,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "床前明月光，疑是地上霜。",
+          "score": 0.976563,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 75,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "不知天上宫阙，今夕是何年。",
+          "score": 0.946248,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 73,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "明月几时有？把酒问青天。\n不知天上宫阙，今夕是何年。\n我欲乘风归去，又恐琼楼玉宇，高处不胜寒。\n起舞弄清影，何似在人间。",
+          "score": 0.938462,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "natural-li-bai-moon-01",
+      "category": "natural_language",
+      "question": "李白写月亮的诗句",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 134.17,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 65,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "床前明月光，疑是地上霜。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 73,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "明月几时有？把酒问青天。\n不知天上宫阙，今夕是何年。\n我欲乘风归去，又恐琼楼玉宇，高处不胜寒。\n起舞弄清影，何似在人间。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 64,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "natural-su-shi-midautumn-01",
+      "category": "natural_language",
+      "question": "苏轼关于中秋的词",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 148.86,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 73,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "明月几时有？把酒问青天。\n不知天上宫阙，今夕是何年。\n我欲乘风归去，又恐琼楼玉宇，高处不胜寒。\n起舞弄清影，何似在人间。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 76,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "我欲乘风归去，又恐琼楼玉宇，高处不胜寒。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 74,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "明月几时有？把酒问青天。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 75,
+          "poem_id": 4,
+          "poem_version_id": 4,
+          "title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "不知天上宫阙，今夕是何年。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 80,
+          "poem_id": 5,
+          "poem_version_id": 5,
+          "title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "兴尽晚回舟，误入藕花深处。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "natural-homesickness-01",
+      "category": "natural_language",
+      "question": "表达思乡情绪的诗句",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 218.187,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 66,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "举头望明月，低头思故乡。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 84,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "夕阳西下，断肠人在天涯。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 64,
+          "poem_id": 1,
+          "poem_version_id": 1,
+          "title": "静夜思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 82,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。\n夕阳西下，断肠人在天涯。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 83,
+          "poem_id": 6,
+          "poem_version_id": 6,
+          "title": "天净沙·秋思",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "no-answer-quantum-01",
+      "category": "no_answer",
+      "question": "量子纠缠的物理实验",
+      "expected": "no_evidence",
+      "passed": true,
+      "retrieved_count": 0,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 164.27,
+      "retrieved_evidence": []
+    },
+    {
+      "case_id": "no-answer-mars-01",
+      "category": "no_answer",
+      "question": "火星探测器的着陆过程",
+      "expected": "no_evidence",
+      "passed": true,
+      "retrieved_count": 0,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 184.199,
+      "retrieved_evidence": []
+    },
+    {
+      "case_id": "no-answer-tax-01",
+      "category": "no_answer",
+      "question": "唐朝的赋税制度",
+      "expected": "no_evidence",
+      "passed": true,
+      "retrieved_count": 0,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 256.224,
+      "retrieved_evidence": []
+    },
+    {
+      "case_id": "no-answer-ai-01",
+      "category": "no_answer",
+      "question": "人工智能训练数据",
+      "expected": "no_evidence",
+      "passed": true,
+      "retrieved_count": 0,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 163.011,
+      "retrieved_evidence": []
+    }
+  ]
+}

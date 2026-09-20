@@ -2406,3 +2406,111 @@ validate_input
 1. 审批恢复后依次执行 Qwen 和 DeepSeek 烟测并记录模型与耗时。
 2. 完成 21 个 chunks 的真实索引和 dense/hybrid 同集评估。
 3. 使用真实模型完成一次有证据、带引用的在线 SSE 问答。
+
+### [2026-09-20] 真实索引与四条检索策略同集评估
+
+#### 本次目标
+
+- 用真实 Qwen Embedding 和真实 Qdrant 完成 21 个 chunks 的索引。
+- 在同一个 27 条金标准集上对比词法、查询改写、Dense 和 Hybrid，替代此前的推断。
+
+#### 上下文
+
+- MySQL 中 6 个版本共 21 个 chunks 处于 `pending`，没有 `vector_id` 和索引运行记录。
+- Qdrant 1.19.1 已在 `127.0.0.1:6335` 运行，Collection 为 `poem_chunks_v1`。
+- 此前只能证明 Provider 和 Store 单点可用，无法回答“在线检索该用哪条路径”。
+
+#### 做出的决定
+
+- 在线问答继续使用 `expanded-lexical-v1`，不因为“已经有向量库”就切换策略。
+- 评估结论以同一数据集、同一 Top-K 的可复现报告为准，不记录主观印象。
+- 真实账号联调结果（模型 ID、维度、延迟）写入文档，不写入任何密钥或响应正文。
+
+#### 完成内容
+
+- 执行 `index_chunks.py --all-pending`，21 个 chunks 全部完成 Embedding、Qdrant upsert
+  和 MySQL 回写，实际维度 `1024`。
+- 新增两份真实评估报告：
+  `data/eval/reports/retrieval_dense_v1_20260920.json`、
+  `data/eval/reports/retrieval_hybrid_v1_20260920.json`。
+- 更新功能文档中的检索对比表。
+
+#### 验证结果
+
+| 策略 | 通过 | Recall@5 | MRR | 无答案准确率 | 平均延迟 | P95 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `lexical-baseline-v1` | 24/27 | 0.869565 | 0.869565 | 1.000000 | 3.098 ms | 2.764 ms |
+| `expanded-lexical-v1` | 27/27 | 1.000000 | 0.978261 | 1.000000 | 3.445 ms | 8.824 ms |
+| `dense-baseline-v1` | 22/27 | 0.956522 | 0.934783 | 0.000000 | 233.622 ms | 485.307 ms |
+| `hybrid-rrf-v1` | 23/27 | 1.000000 | 0.956522 | 0.000000 | 184.868 ms | 282.572 ms |
+
+#### 问题与风险
+
+- Dense 和 Hybrid 对 4 条跨域无答案样本全部误召回，直接上线会产生“有出处的错误回答”。
+- Dense 的 `dynasty-tang-01` 仍然失败：金标准证据没有进入 Top-5，说明短查询的语义区分
+  能力有限。
+- 评估集只有 6 首种子诗词，指标不能外推到开放语料。
+
+#### 下一步
+
+1. 为检索层增加相关性门槛，修复无答案误召回。
+2. 把拒答判定升级为 LangGraph 显式条件分支。
+3. 生成层评估：答案正确率、引用准确率、拒答 F1。
+
+### [2026-09-20] 引用忠实度约束与证据充分性条件路由
+
+#### 本次目标
+
+- 让 `message_citations` 只保留模型回答中真正使用的证据。
+- 把“证据是否足够”从生成函数的早返回升级为可测试的 LangGraph 条件路由。
+- 用真实评估确定检索相关性门槛，并证明它不牺牲召回。
+
+#### 上下文
+
+- 此前实现把所有入选证据都写入 `message_citations`，引用数等于检索数，无法回答
+  “这条结论依据哪一句”。
+- `dense-baseline-v1` 和 `hybrid-rrf-v1` 的无答案准确率为 `0`。
+- 观察到一个关键事实：RRF 归一化后，自然语言可回答样本和跨域无答案样本的融合分数
+  同为 `0.5`，融合分数不能作为拒答信号。
+
+#### 做出的决定
+
+- 生成提示要求用 `[1]`、`[2]` 标注实际使用的证据，系统只保存被引用的证据。
+- 有证据但没有引用标记报 `CHAT_CITATION_MISSING`，引用越界报 `CHAT_CITATION_INVALID`，
+  助手消息标记 `failed`。
+- 相关性门槛放在 `DenseRetrievalService`，不放在融合结果上；Hybrid 通过注入 Dense
+  分支自动继承门槛。
+- `assess` 节点只判断“证据是否可用”，语义阈值由检索分支负责。
+- 在线检索仍为 `expanded-lexical-v1`。
+
+#### 完成内容
+
+- `app/ai/graphs/rag.py`：新增 `assess`、`refuse` 节点和条件边，新增引用标记解析。
+- `app/core/errors.py`：新增 `CHAT_CITATION_MISSING`、`CHAT_CITATION_INVALID`。
+- `app/services/dense_retrieval.py`：新增 `min_score` 余弦相似度下限。
+- `apps/api/scripts/evaluate_retrieval.py`：新增 `--min-score`。
+- 更新契约文档、项目说明、问答功能文档，新增
+  `docs/features/20260920-evidence-relevance-floor.md`。
+
+#### 验证结果
+
+- 后端：`93 passed`（新增 2 条引用校验用例和 1 条门槛用例后仍全绿）。
+- Ruff：`apps/api` 全部通过。
+- 前端：`vue-tsc` 通过，Vitest `9 passed`。
+- 真实评估：Dense 加 `min_score=0.22` 后无答案准确率 `0 → 1`、通过数 `22 → 26`、
+  Recall@5 保持 `0.956522`；Hybrid 加同一门槛后通过数 `23 → 27`、无答案准确率
+  `0 → 1`。`0.30` 会让 `dynasty-song-01` 无结果，Recall@5 降到 `0.913043`。
+
+#### 问题与风险
+
+- 引用校验只能证明编号有效，不能证明每个事实都被对应证据支持；忠实度仍需
+  entailment 或人工评估。
+- 无效引用发生在流式输出之后，用户可能已经收到部分文本再收到 `error`。
+- 门槛只由 4 条跨域样本标定，缺少“领域内但语料无答案”的样本。
+- 当前解析不支持 `[1-3]` 区间和全角括号写法。
+
+#### 下一步
+
+1. 补充领域内无答案样本，重新标定门槛并验证拒答 F1。
+2. 在 `assess` 上扩展低召回重写重试和 Rerank 分支。
+3. 建立生成层评估集，覆盖答案正确率、引用准确率和拒答表现。

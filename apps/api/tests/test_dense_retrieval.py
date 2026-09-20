@@ -168,6 +168,52 @@ def test_dense_retrieval_returns_mysql_evidence_in_qdrant_order(
     assert store.requests[0].chunk_strategy == "structural-v1"
 
 
+def test_dense_retrieval_drops_candidates_below_min_score(
+    client: TestClient,
+) -> None:
+    headers, _ = _admin_client(client)
+    poem = _create_poem(
+        client,
+        headers=headers,
+        title="Scored",
+        content="Moonlight line.\nAnother line.",
+    )
+    chunks, vector_ids = _prepare_indexed_chunks(client, poem["id"])
+    store = FakeVectorStore(
+        [
+            VectorSearchHit(id=vector_ids[1], score=0.91),
+            VectorSearchHit(id=vector_ids[0], score=0.21),
+        ]
+    )
+    portal = client.portal
+    assert portal is not None
+    session_factory = client.app.state.session_factory
+
+    async def search(min_score: float) -> Any:
+        async with session_factory() as session:
+            return await DenseRetrievalService(
+                session,
+                embedding_provider=FakeEmbeddingProvider(),
+                vector_store=store,
+                min_score=min_score,
+            ).search_evidence(query="moon", limit=5)
+
+    kept = portal.call(search, 0.5)
+    assert [item.chunk_id for item in kept.items] == [chunks[1].id]
+    assert kept.candidate_count == 1
+
+    empty = portal.call(search, 0.95)
+    assert empty.items == []
+    assert empty.candidate_count == 0
+
+    unfiltered = portal.call(search, 0.0)
+    assert [item.chunk_id for item in unfiltered.items] == [
+        chunks[1].id,
+        chunks[0].id,
+    ]
+    assert unfiltered.candidate_count == 2
+
+
 def test_dense_retrieval_drops_stale_and_invisible_qdrant_hits(
     client: TestClient,
 ) -> None:

@@ -27,7 +27,12 @@ class _RankedCandidate:
 
 
 class DenseRetrievalService:
-    """Retrieve Qdrant candidates and validate them against MySQL facts."""
+    """Retrieve Qdrant candidates and validate them against MySQL facts.
+
+    ``min_score`` is a cosine-similarity floor: weaker candidates are dropped at
+    the retrieval layer so callers can refuse instead of handing low-relevance
+    text to the generation model.
+    """
 
     def __init__(
         self,
@@ -36,11 +41,13 @@ class DenseRetrievalService:
         embedding_provider: EmbeddingProvider,
         vector_store: VectorStorePort,
         chunk_strategy: str = CHUNK_STRATEGY,
+        min_score: float = 0.0,
     ) -> None:
         self.session = session
         self.embedding_provider = embedding_provider
         self.vector_store = vector_store
         self.chunk_strategy = chunk_strategy
+        self.min_score = min(max(min_score, 0.0), 1.0)
         self.chunks = ChunkRepository(session)
 
     async def search_evidence(
@@ -114,14 +121,15 @@ class DenseRetrievalService:
                 )
             )
 
+        relevant = [item for item in ranked if item.score >= self.min_score]
         return RetrievalSearchResult(
             items=[
                 _serialize(item.candidate, item.score)
-                for item in ranked[:limit]
+                for item in relevant[:limit]
             ],
             strategy=DENSE_RETRIEVAL_STRATEGY,
             normalized_query=normalized_query,
-            candidate_count=len(ranked),
+            candidate_count=len(relevant),
         )
 
 

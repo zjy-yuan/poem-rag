@@ -22,6 +22,7 @@ async def run_evaluation(
     top_k: int,
     *,
     strategy: str,
+    min_score: float = 0.0,
 ) -> RetrievalEvaluationReport:
     from app.ai.providers.qdrant import create_qdrant_vector_store
     from app.ai.providers.qwen_embedding import create_qwen_embedding_provider
@@ -58,6 +59,7 @@ async def run_evaluation(
                     session,
                     embedding_provider=embedding_provider,
                     vector_store=vector_store,
+                    min_score=min_score,
                 )
             elif strategy == "expanded":
                 retrieval = ExpandedRetrievalService(
@@ -73,6 +75,7 @@ async def run_evaluation(
                         session,
                         embedding_provider=embedding_provider,
                         vector_store=vector_store,
+                        min_score=min_score,
                     ),
                 )
             evaluator = RetrievalEvaluator(retrieval)
@@ -110,6 +113,15 @@ def main() -> None:
         help="Retrieval strategy to evaluate. Default: lexical",
     )
     parser.add_argument(
+        "--min-score",
+        type=float,
+        default=0.0,
+        help=(
+            "Dense 余弦相似度下限，低于该值的候选在检索层丢弃。"
+            "只对 dense 和 hybrid 生效，默认 0 表示不过滤"
+        ),
+    )
+    parser.add_argument(
         "--json-output",
         type=Path,
         default=None,
@@ -118,9 +130,19 @@ def main() -> None:
     args = parser.parse_args()
     if args.top_k < 1:
         parser.error("--top-k must be at least 1")
-    report = asyncio.run(run_evaluation(args.dataset, args.top_k, strategy=args.strategy))
+    if not 0.0 <= args.min_score <= 1.0:
+        parser.error("--min-score must be between 0 and 1")
+    report = asyncio.run(
+        run_evaluation(
+            args.dataset,
+            args.top_k,
+            strategy=args.strategy,
+            min_score=args.min_score,
+        )
+    )
     from app.evaluation.retrieval import format_evaluation_report
 
+    print(f"min_score={args.min_score:g}")
     print(format_evaluation_report(report))
     if args.json_output is not None:
         args.json_output.parent.mkdir(parents=True, exist_ok=True)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import AsyncIterator, Sequence
 from dataclasses import dataclass
 from typing import Any, TypedDict, cast
@@ -17,6 +18,7 @@ from app.services.query_expansion import ExpandedRetrievalService, QueryRewriter
 NO_EVIDENCE_ANSWER = "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。"
 _MAX_CONTEXT_CHUNK_LENGTH = 1200
 _MAX_CONTEXT_LENGTH = 6000
+_CITATION_GROUP_PATTERN = re.compile(r"\[(\d+(?:\s*[,，]\s*\d+)*)\]")
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,13 +65,14 @@ class RagChatState(TypedDict, total=False):
     matched_entities: list[str]
     evidence: list[RetrievalEvidence]
     candidate_count: int
+    evidence_sufficient: bool
     answer: str
     citations: list[CitationDraft]
     finish_reason: str
 
 
 class RagChatGraph:
-    """Four-node poetry RAG flow with custom streaming events."""
+    """Poetry RAG flow: rewrite -> retrieve -> assess -> generate|refuse -> validate."""
 
     def __init__(
         self,
@@ -89,12 +92,20 @@ class RagChatGraph:
         graph = StateGraph(RagChatState)
         graph.add_node("rewrite", self._rewrite)
         graph.add_node("retrieve", self._retrieve)
+        graph.add_node("assess", self._assess)
         graph.add_node("generate", self._generate)
+        graph.add_node("refuse", self._refuse)
         graph.add_node("validate", self._validate)
         graph.add_edge(START, "rewrite")
         graph.add_edge("rewrite", "retrieve")
-        graph.add_edge("retrieve", "generate")
+        graph.add_edge("retrieve", "assess")
+        graph.add_conditional_edges(
+            "assess",
+            _route_after_assessment,
+            {"generate": "generate", "refuse": "refuse"},
+        )
         graph.add_edge("generate", "validate")
+        graph.add_edge("refuse", "validate")
         graph.add_edge("validate", END)
         return graph.compile()
 
@@ -144,17 +155,18 @@ class RagChatGraph:
             "candidate_count": result.candidate_count,
         }
 
+    async def _assess(self, state: RagChatState) -> RagChatState:
+        """Decide whether the retrieved evidence can support an answer.
+
+        The current online strategy only returns evidence on a lexical hit, so
+        "非空即可用" is the whole policy here. Semantic relevance floors belong to
+        the retrieval branch, where they can be measured per strategy.
+        """
+        return {"evidence_sufficient": bool(state.get("evidence"))}
+
     async def _generate(self, state: RagChatState) -> RagChatState:
         evidence = state.get("evidence") or []
         writer = get_stream_writer()
-        if not evidence:
-            writer({"kind": "delta", "text": NO_EVIDENCE_ANSWER})
-            return {
-                "answer": NO_EVIDENCE_ANSWER,
-                "citations": [],
-                "finish_reason": "no_evidence",
-            }
-
         if self.provider is None:
             raise ChatModelError(
                 "问答模型尚未配置",
@@ -177,16 +189,21 @@ class RagChatGraph:
             writer({"kind": "delta", "text": delta})
 
         answer = "".join(parts).strip()
-        citations = [
-            CitationDraft.from_evidence(item, rank=index)
-            for index, item in enumerate(evidence, start=1)
-        ]
+        citations = _resolve_citations(answer, evidence)
         for citation in citations:
             writer({"kind": "citation", "citation": citation})
         return {
             "answer": answer,
             "citations": citations,
             "finish_reason": "stop",
+        }
+
+    async def _refuse(self, state: RagChatState) -> RagChatState:
+        get_stream_writer()({"kind": "delta", "text": NO_EVIDENCE_ANSWER})
+        return {
+            "answer": NO_EVIDENCE_ANSWER,
+            "citations": [],
+            "finish_reason": "no_evidence",
         }
 
     async def _validate(self, state: RagChatState) -> RagChatState:
@@ -198,7 +215,10 @@ class RagChatGraph:
             )
         citations = state.get("citations") or []
         if state.get("evidence") and not citations:
-            raise ChatModelError("回答缺少可追溯引用")
+            raise ChatModelError(
+                "回答缺少可追溯引用",
+                code=ErrorCode.CHAT_CITATION_MISSING,
+            )
         get_stream_writer()(
             {
                 "kind": "final",
@@ -208,6 +228,10 @@ class RagChatGraph:
             }
         )
         return {"answer": answer, "citations": citations}
+
+
+def _route_after_assessment(state: RagChatState) -> str:
+    return "generate" if state.get("evidence_sufficient") else "refuse"
 
 
 def _build_messages(
@@ -237,6 +261,8 @@ def _build_messages(
         "你是中国古典诗词知识助手。只能依据提供的检索证据回答，"
         "不得编造作品、作者、朝代、典故或出处。证据不足时明确说明。"
         "回答应准确、简洁，并结合诗句说明；不要提及检索系统或内部流程。"
+        "必须在回答中使用 [1]、[2] 形式标注实际使用的证据，"
+        "每个事实性结论至少对应一个引用；不要引用未使用的证据。"
     )
     context = "\n\n".join(context_parts)
     messages = [ChatMessage(role="system", content=system_prompt)]
@@ -248,3 +274,28 @@ def _build_messages(
         )
     )
     return messages
+
+
+def _resolve_citations(
+    answer: str,
+    evidence: Sequence[RetrievalEvidence],
+) -> list[CitationDraft]:
+    """Resolve only the evidence indexes that the model actually cited."""
+    cited_indexes: list[int] = []
+    seen: set[int] = set()
+    for group in _CITATION_GROUP_PATTERN.finditer(answer):
+        for raw_index in re.split(r"[,，]", group.group(1)):
+            index = int(raw_index.strip())
+            if index < 1 or index > len(evidence):
+                raise ChatModelError(
+                    f"模型返回了无效引用标记 [{index}]",
+                    code=ErrorCode.CHAT_CITATION_INVALID,
+                )
+            if index not in seen:
+                seen.add(index)
+                cited_indexes.append(index)
+
+    return [
+        CitationDraft.from_evidence(evidence[index - 1], rank=index)
+        for index in cited_indexes
+    ]

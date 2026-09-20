@@ -33,6 +33,7 @@ docs/features/20260925-hybrid-retrieval-baseline.md
 10. `20260919-hybrid-rrf-retrieval.md`
 11. `20260919-query-expansion-retrieval.md`
 12. `20260920-chat-rag-sse.md`
+13. `20260920-evidence-relevance-floor.md`
 
 ## 2. 模板
 

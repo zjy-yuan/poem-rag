@@ -893,6 +893,8 @@ updated_at
    后续 chunk 重建或作品编辑而失去可读依据。
 3. `chunk_id` 可回溯当前向量或文本 chunk，但历史展示不能只依赖当前 chunk 是否存在。
 4. `rank` 从 1 开始，和一个助手消息内的引用顺序一致。
+5. 只写入模型回答中实际引用的证据。候选证据中未被引用的部分不落库，也不发送
+   `citation` 事件。
 
 ### 6.4 爬取相关表
 
@@ -1490,6 +1492,12 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
 11. 当前在线检索固定使用 `expanded-lexical-v1`，不读取公开 Dense、Hybrid 或 Rerank
     参数。
 12. 检索结果为空时直接流式返回稳定拒答，不调用生成模型，也不创建引用记录。
+13. 生成提示要求模型用 `[1]`、`[2]` 形式标注实际使用的证据；系统解析这些标记，只把
+    被引用的证据写入 `citation` 事件和 `message_citations`。
+14. 有证据但回答不含任何引用标记时，`error.code` 为 `CHAT_CITATION_MISSING`，助手
+    消息保存为 `failed`，不写入引用。
+15. 回答引用了不存在的编号时，`error.code` 为 `CHAT_CITATION_INVALID`，助手消息保存
+    为 `failed`，不写入引用。
 
 ---
 
@@ -1526,6 +1534,8 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
 | `CHAT_CONTEXT_TOO_LONG` | 422 | 上下文超过限制 |
 | `CHAT_MODEL_NOT_CONFIGURED` | 503 | Chat Provider 未配置，错误发生在 SSE 建立前 |
 | `CHAT_EMPTY_RESPONSE` | SSE `error` | 模型返回空回答 |
+| `CHAT_CITATION_MISSING` | SSE `error` | 有检索证据但回答没有任何 `[n]` 引用标记 |
+| `CHAT_CITATION_INVALID` | SSE `error` | 回答引用了检索证据之外的编号 |
 | `MODEL_TIMEOUT` | 503 | 模型超时 |
 | `MODEL_PROVIDER_ERROR` | SSE `error` | 其他模型供应商错误 |
 | `RATE_LIMITED` | 429 | 请求过于频繁 |

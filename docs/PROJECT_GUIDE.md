@@ -13,7 +13,9 @@ Poem RAG 是一个面向诗词领域的全栈知识库与智能问答项目。�
 
 **诗词管理与浏览平台 + RAG 开发底座。**
 
-当前问答已经接入最小四节点 LangGraph，并固定使用 `expanded-lexical-v1` 检索；Dense、Hybrid 和 Rerank 尚未切换为在线问答策略，生成模型也还没有完成真实账号联调。后续设计和实现不能把评估中能力或规划能力写成生产已实现成果。
+当前问答已经接入带条件路由的 LangGraph，流程为
+`rewrite -> retrieve -> assess -> generate|refuse -> validate`，并固定使用
+`expanded-lexical-v1` 检索；Dense、Hybrid 和 Rerank 尚未切换为在线问答策略，生成模型也还没有完成真实账号联调。后续设计和实现不能把评估中能力或规划能力写成生产已实现成果。
 
 ## 2. 用户与核心流程
 
@@ -47,8 +49,9 @@ flowchart LR
     R --> M[(MySQL 8)]
     A --> C[(Redis 7)]
     A --> Q[(Qdrant)]
-    A --> G[LangGraph 四节点问答]
+    A --> G[LangGraph 条件路由问答]
     G -->|expanded-lexical-v1| M
+    G -->|证据不足| X[稳定拒答]
     G -. 调用生成模型 .-> P[DeepSeek Chat]
     A -. 内部 Dense/Hybrid 评估 .-> Q
     A -. 内部向量化 .-> E[Qwen Embedding]
@@ -59,7 +62,7 @@ flowchart LR
 1. 采用模块化单体，暂不拆微服务。
 2. MySQL 是用户、权限和诗词业务数据的唯一事实来源。
 3. Redis 用于健康检查，后续承担缓存、限流、短期状态和任务基础设施。
-4. Qwen Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid/查询改写检索和 DeepSeek Chat Provider 已实现；在线问答固定使用已评估的 `expanded-lexical-v1`，Dense/Hybrid 仍仅供内部 Service 与离线评估使用。
+4. Qwen Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid/查询改写检索和 DeepSeek Chat Provider 已实现；在线问答固定使用已评估的 `expanded-lexical-v1`，Dense/Hybrid 仍仅供内部 Service 与离线评估使用。真实 Qwen 索引和四条策略的同集评估已完成；Dense 检索支持 `min_score` 相关性下限，低于门槛的候选不再交给生成模型。
 5. FastAPI Router 只处理 HTTP 映射，业务状态变化放在 Service，数据访问放在 Repository。
 6. MySQL 保存会话、消息和引用快照；SSE 只负责传输过程状态，不成为长期数据源。
 
@@ -183,7 +186,7 @@ erDiagram
 2. `messages`：用户/助手消息、流式状态、模型、延迟和错误码。
 3. `message_citations`：回答引用的作品、版本、注释、chunk、文本和排名快照。
 
-尚未实现但已进入目标的模型包括意象和评估数据。结构化切块、MySQL 词法检索、Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid 检索已经实现；在线问答固定使用 `expanded-lexical-v1`，不能把向量数据塞入现有 `poems.content`。
+尚未实现但已进入目标的模型包括意象和评估数据。结构化切块、MySQL 词法检索、Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid 检索已经实现，21 个 chunks 已完成真实向量化；在线问答固定使用 `expanded-lexical-v1`，不能把向量数据塞入现有 `poems.content`。
 
 ## 7. 前端页面地图
 
@@ -225,16 +228,16 @@ erDiagram
 | 爬虫与任务化导入 | 未实现 | 结构化文件导入已实现；网站爬虫、上传接口、导入任务和 Worker 尚未实现 |
 | Qwen Embedding Provider | 已实现（Provider 层） | 支持批量、维度、超时、有限重试和响应校验；已接入索引 Service，真实 DashScope 烟测已发起但被本地网络审批阻塞 |
 | Qdrant 向量索引 | 已实现（最小闭环） | chunks -> Qwen Embedding -> Collection -> upsert -> chunk 映射；真实 Qdrant 1.19.1 已完成临时 Collection 烟测 |
-| Dense 检索 | 已实现（内部 Service） | `dense-baseline-v1` 使用 Qdrant 召回，并回查 MySQL 校验当前版本、发布状态和注释可见性；Qdrant 已完成真实烟测，Qwen 索引和同集对比仍待完成 |
+| Dense 检索 | 已实现（内部 Service） | `dense-baseline-v1` 使用 Qdrant 召回，并回查 MySQL 校验当前版本、发布状态和注释可见性；支持 `min_score` 余弦相似度下限，低于门槛的候选在检索层丢弃，供上层拒答 |
 | 旧向量清理与 Qdrant 对账 | 未实现 | 尚未实现旧版本点清理、active index 切换和跨库全量对账 |
-| Hybrid RRF 检索 | 已实现（内部 Service） | `hybrid-rrf-v1` 融合词法与 Dense 候选，按排名去重融合；尚未暴露 HTTP，Qdrant 烟测已通过，Qwen 和同集指标仍待完成 |
-| 查询改写与多查询 RRF | 已实现（内部 Service） | `expanded-lexical-v1` 用可审查词典扩展月亮、思乡和已知作者实体，保留原查询并用 RRF 融合多路召回；真实 MySQL 种子集 Top-5 为 `27/27`，公开 HTTP 未切换 |
+| Hybrid RRF 检索 | 已实现（内部 Service） | `hybrid-rrf-v1` 融合词法与 Dense 候选，按排名去重融合；尚未暴露 HTTP，Dense 分支带 `min_score` 后同集 Top-5 为 `27/27`，平均延迟约 180 至 200 ms |
+| 查询改写与多查询 RRF | 已实现（内部 Service） | `expanded-lexical-v1` 用可审查词典扩展月亮、思乡和已知作者实体，保留原查询并用 RRF 融合多路召回；真实 MySQL 种子集 Top-5 为 `27/27`，平均延迟约 3.4 ms，公开 HTTP 未切换 |
 | 重排 | 未实现 | 已有 `lexical-baseline-v1`、`dense-baseline-v1`、`hybrid-rrf-v1` 和 `expanded-lexical-v1` 四条可比较路径 |
 | 会话与消息持久化 | 已实现 | 会话、消息和引用快照写入 MySQL；按用户隔离会话所有权 |
 | DeepSeek Chat Provider | 已实现（Provider 层） | 支持 OpenAI-compatible 流式 chat completions、超时、错误映射和空回答检测；真实 DeepSeek 账号尚未联调 |
-| LangGraph 问答 | 已实现（最小闭环） | 四节点 `rewrite -> retrieve -> generate -> validate`；查询改写和检索使用 `expanded-lexical-v1` |
+| LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；查询改写和检索使用 `expanded-lexical-v1`，无证据时走 `refuse` 分支且不调用生成模型 |
 | SSE 引用问答 | 已实现 | `meta -> retrieval -> delta* -> citation* -> done/error`；持久化最终消息和引用，无证据时不调用模型 |
-| RAG 评估体系 | 已实现（检索层） | 27 条可移植金标准样本；支持 Recall@k、MRR、Hit Rate、拒答和延迟；词法基线的 3 条自然语言查询失败已由 `expanded-lexical-v1` 在 6 首种子语料上修复 |
+| RAG 评估体系 | 已实现（检索层） | 27 条可移植金标准样本；支持 Recall@k、MRR、Hit Rate、拒答和延迟；四条策略已完成真实同集对比，`expanded-lexical-v1` 与加门槛的 `hybrid-rrf-v1` 均为 `27/27`；生成层评估未实现 |
 | 云服务器部署 | 未实现 | 核心 RAG 闭环后再处理域名和 HTTPS |
 
 ## 9. 如何追踪一个功能
@@ -262,7 +265,7 @@ erDiagram
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --top-k 5
 ```
 
-真实 Qdrant 已就绪，Qwen 配置确认后，可额外执行内部 Dense 评估：
+真实 Qdrant 和 Qwen 已就绪，可执行内部 Dense 评估：
 
 ```powershell
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --strategy dense --top-k 5
@@ -273,6 +276,15 @@ erDiagram
 ```powershell
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --strategy hybrid --top-k 5
 ```
+
+Dense 和 Hybrid 可额外传入余弦相似度下限，低于门槛的候选会被丢弃，用于验证拒答行为：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --strategy hybrid --min-score 0.22 --json-output data\eval\reports\retrieval_hybrid_v1_min022_20260920.json
+```
+
+评估报告保存在 `data/eval/reports/`；文件名中的 `min022` 表示该次运行使用了
+`min_score=0.22`。
 
 Qdrant 适配器真实烟测：
 
