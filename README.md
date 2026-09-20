@@ -20,6 +20,8 @@
 14. POST SSE 流式问答、Vue 问答页、引用卡片、停止生成，以及无证据或判定不可答时的稳定拒答。
 15. pytest、Ruff、Vitest 和前端生产构建基线。
 16. DeepSeek Chat Provider 已完成真实 `deepseek-chat` 流式与 JSON 模式烟测，并完成真实 MySQL + SSE 基础在线联调：有证据问题返回带引用回答，无答案问题稳定拒答且不产生引用。
+17. 生成层评估：固定 12 条数据集直接运行在线 `RagChatGraph`，支持答案事实、引用精确率/召回率、拒答 P/R/F1 和延迟报告；真实 `deepseek-chat` 基线 `12/12`。
+18. 在线检索为命中的作品追加诗词级父级上下文 chunk（`parent_context`），让行级命中也能读到完整篇章。
 
 ## 文档入口
 
@@ -85,6 +87,7 @@ cd apps\api
 .\.venv\Scripts\python.exe -m ruff check apps\api
 .\.venv\Scripts\python.exe apps\api\scripts\import_corpus.py --input data\import\example_corpus_v1.json --dry-run
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --top-k 5
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py --help
 pnpm --dir apps\web typecheck
 pnpm --dir apps\web test
 pnpm --dir apps\web build
@@ -130,6 +133,18 @@ DashScope 网络和有效 Key；DeepSeek 烟测只报告模型、模式、增量
 
 该验收覆盖真实 HTTP/SSE 事件、真实模型调用和 MySQL 持久化；PowerShell 客户端会
 缓冲 SSE 响应，浏览器实时逐块渲染仍由前端测试覆盖。
+
+生成层评估骨架：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
+  --json-output data\eval\reports\generation_rag_v1_20260920.json
+```
+
+该命令直接运行在线 `RagChatGraph`，需要真实 MySQL、Qdrant、Qwen Embedding 和
+DeepSeek 配置。固定数据集为 `data/eval/generation_rag_v1.json`，首版共 12 条样本，
+输出答案正确率、引用精确率/召回率、拒答 P/R/F1、平均延迟和 P95；不包含
+LLM-as-judge 或人工忠实度评分。
 
 Qwen 和 Qdrant 均可用后，可执行真实 chunk 索引：
 

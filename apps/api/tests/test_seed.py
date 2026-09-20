@@ -5,12 +5,15 @@ from collections.abc import AsyncIterator
 import pytest
 from app.core.config import Settings
 from app.core.security import verify_password
+from app.core.text import normalize_content
 from app.db.base import Base
-from app.db.seed import seed_admin
+from app.db.seed import POEMS, seed_admin, seed_catalog
 from app.db.session import create_database_engine, create_session_factory
+from app.models.poem import Poem
 from app.models.user import UserRole
 from app.repositories.users import UserRepository
 from pydantic import SecretStr
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -35,6 +38,48 @@ def _admin_settings(api_settings: Settings, **overrides: object) -> Settings:
     }
     values.update(overrides)
     return api_settings.model_copy(update=values)
+
+
+def _canonical_poem(title: str) -> dict[str, object]:
+    return next(item for item in POEMS if item["title"] == title)
+
+
+async def test_seed_catalog_is_idempotent(seed_session: AsyncSession) -> None:
+    first = await seed_catalog(seed_session)
+    second = await seed_catalog(seed_session)
+
+    assert first["poems"] == len(POEMS)
+    assert first["repaired_poems"] == 0
+    assert second["poems"] == 0
+    assert second["repaired_poems"] == 0
+
+    stored = await seed_session.scalar(select(func.count(Poem.id)))
+    assert stored == len(POEMS)
+
+
+async def test_seed_catalog_repairs_drifted_poem(seed_session: AsyncSession) -> None:
+    await seed_catalog(seed_session)
+    title = "水调歌头·明月几时有"
+    poem = await seed_session.scalar(select(Poem).where(Poem.title == title))
+    assert poem is not None
+    version_no = poem.version_no
+
+    poem.content = "明月几时有？把酒问青天。"
+    poem.normalized_content = normalize_content(poem.content)
+    await seed_session.commit()
+
+    repaired = await seed_catalog(seed_session)
+
+    assert repaired["poems"] == 0
+    assert repaired["repaired_poems"] == 1
+    refreshed = await seed_session.scalar(select(Poem).where(Poem.title == title))
+    assert refreshed is not None
+    assert refreshed.content == _canonical_poem(title)["content"]
+    assert refreshed.version_no == version_no + 1
+    stored = await seed_session.scalar(
+        select(func.count(Poem.id)).where(Poem.title == title)
+    )
+    assert stored == 1
 
 
 async def test_seed_admin_skips_without_configuration(

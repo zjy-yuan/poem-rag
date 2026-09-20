@@ -15,7 +15,8 @@ from app.core.config import Settings
 from app.core.errors import ErrorCode
 from app.models.chunk import ChunkGranularity
 from app.schemas.retrieval import RetrievalEvidence
-from app.services.query_expansion import ExpandedRetrievalService, QueryRewriter
+from app.services.query_expansion import QueryRewriter
+from app.services.retrieval import EvidenceRetriever
 
 NO_EVIDENCE_ANSWER = "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。"
 _MAX_CONTEXT_CHUNK_LENGTH = 1200
@@ -95,7 +96,7 @@ class RagChatGraph:
     def __init__(
         self,
         *,
-        retrieval: ExpandedRetrievalService,
+        retrieval: EvidenceRetriever,
         rewriter: QueryRewriter,
         provider: ChatModelPort | None,
         settings: Settings,
@@ -176,17 +177,17 @@ class RagChatGraph:
     async def _assess(self, state: RagChatState) -> RagChatState:
         evidence = state.get("evidence") or []
         if not evidence:
-            return {
-                "evidence_sufficient": False,
-                "assessment_status": "skipped",
-                "assessment_reason_code": "no_evidence",
-            }
+            return _assessment_state(
+                answerable=False,
+                status="skipped",
+                reason_code="no_evidence",
+            )
         if self.provider is None:
-            return {
-                "evidence_sufficient": True,
-                "assessment_status": "failed_open",
-                "assessment_reason_code": "provider_not_configured",
-            }
+            return _assessment_state(
+                answerable=True,
+                status="failed_open",
+                reason_code="provider_not_configured",
+            )
 
         try:
             raw_assessment = await self.provider.generate(
@@ -206,17 +207,17 @@ class RagChatGraph:
                 type(exc).__name__,
                 exc_info=True,
             )
-            return {
-                "evidence_sufficient": True,
-                "assessment_status": "failed_open",
-                "assessment_reason_code": "assessment_error",
-            }
+            return _assessment_state(
+                answerable=True,
+                status="failed_open",
+                reason_code="assessment_error",
+            )
 
-        return {
-            "evidence_sufficient": assessment.answerable,
-            "assessment_status": "passed" if assessment.answerable else "refused",
-            "assessment_reason_code": assessment.reason_code,
-        }
+        return _assessment_state(
+            answerable=assessment.answerable,
+            status="passed" if assessment.answerable else "refused",
+            reason_code=assessment.reason_code,
+        )
 
     async def _generate(self, state: RagChatState) -> RagChatState:
         evidence = state.get("evidence") or []
@@ -288,6 +289,32 @@ class RagChatGraph:
 
 def _route_after_assessment(state: RagChatState) -> str:
     return "generate" if state.get("evidence_sufficient") else "refuse"
+
+
+def _assessment_state(
+    *,
+    answerable: bool,
+    status: str,
+    reason_code: str,
+) -> RagChatState:
+    """Record the assessment verdict for graph routing and diagnostics.
+
+    The ``assessment`` event is internal: the public chat stream only forwards
+    the retrieval, delta, citation and final events.
+    """
+
+    get_stream_writer()(
+        {
+            "kind": "assessment",
+            "status": status,
+            "reason_code": reason_code,
+        }
+    )
+    return {
+        "evidence_sufficient": answerable,
+        "assessment_status": status,
+        "assessment_reason_code": reason_code,
+    }
 
 
 def _build_messages(

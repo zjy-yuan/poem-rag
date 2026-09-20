@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,6 +32,20 @@ class RetrievalSearchResult:
     strategy: str
     normalized_query: str
     candidate_count: int
+
+
+class EvidenceRetriever(Protocol):
+    """Any retrieval stage that returns ranked evidence for one query."""
+
+    async def search_evidence(
+        self,
+        *,
+        query: str,
+        limit: int,
+        granularities: list[ChunkGranularity] | None = None,
+        author_id: int | None = None,
+        dynasty_id: int | None = None,
+    ) -> RetrievalSearchResult: ...
 
 
 class RetrievalService:
@@ -83,7 +98,11 @@ class RetrievalService:
 
         return RetrievalSearchResult(
             items=[
-                self._serialize(candidate, score, match_types)
+                to_retrieval_evidence(
+                    candidate,
+                    score=score,
+                    match_types=match_types,
+                )
                 for candidate, score, match_types in selected
             ],
             strategy=RETRIEVAL_STRATEGY,
@@ -130,31 +149,35 @@ class RetrievalService:
 
         return round(min(score, 1.0), 6), match_types
 
-    @staticmethod
-    def _serialize(
-        candidate: ChunkSearchCandidate,
-        score: float,
-        match_types: list[str],
-    ) -> RetrievalEvidence:
-        return RetrievalEvidence(
-            chunk_id=candidate.chunk_id,
-            poem_id=candidate.poem_id,
-            poem_version_id=candidate.poem_version_id,
-            annotation_id=candidate.annotation_id,
-            annotation_type=candidate.annotation_type,
-            title=candidate.title,
-            author_id=candidate.author_id,
-            author_name=candidate.author_name,
-            dynasty_id=candidate.dynasty_id,
-            dynasty_name=candidate.dynasty_name,
-            granularity=ChunkGranularity(candidate.granularity),
-            chunk_index=candidate.chunk_index,
-            text=candidate.text,
-            line_start=candidate.line_start,
-            line_end=candidate.line_end,
-            chunk_strategy=candidate.chunk_strategy,
-            status=candidate.status,
-            score=score,
-            match_types=match_types,
-            published_at=candidate.published_at,
-        )
+
+
+def to_retrieval_evidence(
+    candidate: ChunkSearchCandidate,
+    *,
+    score: float,
+    match_types: list[str],
+) -> RetrievalEvidence:
+    """Map a stored chunk onto the public evidence shape."""
+
+    return RetrievalEvidence(
+        chunk_id=candidate.chunk_id,
+        poem_id=candidate.poem_id,
+        poem_version_id=candidate.poem_version_id,
+        annotation_id=candidate.annotation_id,
+        annotation_type=candidate.annotation_type,
+        title=candidate.title,
+        author_id=candidate.author_id,
+        author_name=candidate.author_name,
+        dynasty_id=candidate.dynasty_id,
+        dynasty_name=candidate.dynasty_name,
+        granularity=ChunkGranularity(candidate.granularity),
+        chunk_index=candidate.chunk_index,
+        text=candidate.text,
+        line_start=candidate.line_start,
+        line_end=candidate.line_end,
+        chunk_strategy=candidate.chunk_strategy,
+        status=candidate.status,
+        score=score,
+        match_types=match_types,
+        published_at=candidate.published_at,
+    )

@@ -35,6 +35,8 @@ docs/features/20260925-hybrid-retrieval-baseline.md
 12. `20260920-chat-rag-sse.md`
 13. `20260920-evidence-relevance-floor.md`
 14. `20260920-answerability-evaluation-v2.md`
+15. `20260920-generation-evaluation.md`
+16. `20260920-poem-context-evidence.md`
 
 ## 2. 模板
 

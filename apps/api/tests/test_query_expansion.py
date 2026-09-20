@@ -166,6 +166,19 @@ async def test_lexicon_rewriter_deduplicates_variants_and_leaves_unknown_query()
 
 
 @pytest.mark.asyncio
+async def test_lexicon_rewriter_extracts_titles_and_quoted_lines() -> None:
+    rewriter = LexiconQueryRewriter()
+
+    title = await rewriter.rewrite("《春晓》描绘了春天清晨怎样的景象？")
+    quote = await rewriter.rewrite(
+        "“举头望明月，低头思故乡”表达了什么情感？"
+    )
+
+    assert title.variants == ("春晓",)
+    assert quote.variants == ("举头望明月，低头思故乡",)
+
+
+@pytest.mark.asyncio
 async def test_expanded_retrieval_fuses_rewritten_queries_with_rrf() -> None:
     retrieval = FakeRetrieval(
         results_by_query={
@@ -229,6 +242,27 @@ async def test_expanded_retrieval_forwards_filters_and_keeps_single_query_result
             "dynasty_id": 8,
         }
     ]
+
+
+@pytest.mark.asyncio
+async def test_expanded_retrieval_applies_the_limit_to_a_single_variant() -> None:
+    retrieval = FakeRetrieval(
+        results_by_query={
+            "床前明月光": [
+                _evidence(chunk_id=1),
+                _evidence(chunk_id=2),
+                _evidence(chunk_id=3),
+            ],
+        }
+    )
+
+    result = await ExpandedRetrievalService(
+        retrieval,
+        LexiconQueryRewriter(),
+    ).search_evidence(query="床前明月光", limit=2)
+
+    assert [item.chunk_id for item in result.items] == [1, 2]
+    assert result.candidate_count == 3
 
 
 @pytest.mark.asyncio

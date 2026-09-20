@@ -2710,3 +2710,185 @@ Hybrid 在 `0.50` 下召回不掉，是因为词法分支独立召回了 4 条�
 1. 建立生成层评估骨架，覆盖答案正确率、引用精确率/召回率和拒答 P/R/F1。
 2. 用固定评估集运行真实 DeepSeek，保存可复现报告和失败样本。
 3. 再评估忠实度判定、Rerank、低召回重写重试和模型成本策略。
+
+### [2026-09-20] 生成层评估骨架与确定性指标
+
+#### 本次目标
+
+- 让生成质量从“人工看看回答”变成固定数据集上的可重复回归。
+- 直接运行在线 `RagChatGraph`，避免评估复制一套 Prompt 或检索逻辑。
+- 同时覆盖答案事实、引用精确率/召回率、拒答 P/R/F1 和延迟。
+
+#### 决策
+
+- 首版只做确定性指标，不引入 LLM-as-judge，避免模型自评掩盖事实错误。
+- `required_facts` 和 `forbidden_facts` 使用带 `any_of` 候选词的事实对象，降低同义
+  表达造成的假失败。
+- 引用金标准复用 `EvidenceSelector`；生成层不支持行号选择器，因为当前
+  `CitationDraft` 不保存行号。
+- `passed` 是严格判定，要求事实、拒答决策和引用召回同时满足；
+  `answer_accuracy` 单独表示回答事实是否正确。
+- 每个样本使用独立数据库 Session，复用同一个真实 Chat Provider；单样本异常只记录
+  受控错误码，不中断整份报告。
+
+#### 完成内容
+
+- `data/eval/generation_rag_v1.json`：12 条样本，8 条有答案、4 条拒答。
+- `app/schemas/generation_evaluation.py`：数据集、事实要求、引用快照和报告 Schema。
+- `app/evaluation/generation.py`：在线图运行、事件收集、事实/引用匹配和指标汇总。
+- `apps/api/scripts/evaluate_generation.py`：真实 Provider CLI、逐样本 Session 工厂和
+  可选 JSON 报告。
+- `apps/api/tests/test_generation_evaluation.py`：指标算术、引用召回、拒答 P/R/F1、
+  单样本错误隔离、数据集覆盖和 Schema 约束。
+- 新增 `docs/features/20260920-generation-evaluation.md`，同步功能索引、README、
+  项目说明和契约变更记录。
+
+#### 验证结果
+
+- 针对性测试：`4 passed`。
+- Ruff：新增模块全部通过。
+- mypy：新增 4 个文件 `Success: no issues found`。
+- CLI `--help`：数据集默认路径和 `--json-output` 参数正常。
+- 首版仍未运行真实 DeepSeek 基线，因此不能给出任何生成质量结论。
+
+#### 问题与风险
+
+- 12 条样本只覆盖当前 6 首种子诗词，不能代表开放语料。
+- 关键词事实匹配只能验证回答是否提到关键信息，不能证明事实被证据蕴含。
+- 评估会消耗真实 Token；当前没有 Token 成本和费用字段。
+- 供应商侧即使温度为 `0`，仍可能存在响应差异。
+
+#### 下一步
+
+1. 运行真实 DeepSeek 生成基线并保存 JSON 报告。
+2. 根据失败样本决定是否调整 Prompt、引用规则、检索策略或模型。
+3. 再评估 LLM-as-judge、人工忠实度评分、Rerank 和低召回重写重试。
+
+### [2026-09-20] 生成层真实基线、字面量改写与语料漂移修复
+
+#### 本次目标
+
+- 用真实 `deepseek-chat` 跑通 12 条生成评估集，拿到第一份可复现的生成质量基线。
+- 把失败样本区分成“检索没给对证据”“语料本身不完整”“评估口径不合理”三类，
+  避免用调 Prompt 掩盖结构问题。
+
+#### 上下文
+
+- 生成评估骨架已实现，但从未跑过真实模型，没有任何生成质量结论。
+- 首轮报告 `data/eval/reports/generation_rag_v1_20260920.json`：`5/12`，7 条失败，
+  `answer_accuracy=0.125`、`citation_recall=0.125`。
+- 失败样本集中在带《标题》或“诗句”引号的查询上：整句提问被直接当作检索 query，
+  精确匹配和短语匹配都命中不了。
+
+#### 做出的决定
+
+- 查询改写增加字面量抽取：`《...》`、`“...”`、`‘...’`、`"..."` 中的内容作为额外
+  检索变体，不再只拿整句提问去检索。
+- 种子数据改为声明式：标题和作者命中已有作品但正文漂移时，走正常的版本化更新修复，
+  而不是新建一条重复作品。
+- 评估事实口径按“回答里可验证的最小事实”修正，不放宽匹配器来凑通过率。
+
+#### 完成内容
+
+- `app/services/query_expansion.py`：新增 `_LITERAL_PATTERNS` 和 `_extract_literals`。
+- `app/services/query_expansion.py`：修复单变体分支未按 `limit` 截断的缺陷，该分支此前
+  会把分支检索的全部候选（最多 `limit * 5`）返回给调用方。
+- `app/db/seed.py`：《水调歌头·明月几时有》补全下阕正文和 summary，新增
+  `repaired_poems` 计数与漂移修复路径。
+- `data/eval/generation_rag_v1.json`：修正“登鹳雀楼”样本的 `required_facts` 口径。
+- `apps/api/tests/test_seed.py`、`test_query_expansion.py`：新增幂等、漂移修复、
+  字面量抽取和单变体截断用例。
+
+#### 验证结果
+
+| 报告 | 通过 | 关键变化 |
+| --- | ---: | --- |
+| `generation_rag_v1_20260920.json` | 5/12 | 真实模型首跑，7 条失败 |
+| `generation_rag_v1_after_literal_20260920.json` | 10/12 | 加入字面量改写 |
+| `generation_rag_v1_after_corpus_repair_20260920.json` | 11/12 | 修语料和事实口径后只剩《水调歌头》 |
+
+`gen-denggueque-reason` 在 `after_literal` 报告里仍显示失败，是因为该报告早于数据集
+口径修正和语料修复，属于过期结论；`after_corpus_repair` 报告里该样本已经通过。
+历史报告保留原样，不回写、不覆盖。
+
+#### 问题与风险
+
+- 12 条样本只覆盖 6 首种子作品，不能代表开放语料分布。
+- 关键词事实匹配只能验证回答是否提到关键信息，不能证明事实被证据蕴含。
+- 语料修复走版本化更新，线上库必须重新执行 seed 才生效；`repaired_poems` 是对账
+  入口，不是自动巡检机制。
+
+#### 下一步
+
+1. 定位最后一条失败样本 `gen-shuidiaogetou-moon`：判定为检索证据组装问题还是
+   可答性判定问题。
+2. 根据根因选择修复位置，不用调 Prompt 掩盖证据缺失。
+
+### [2026-09-20] 诗词级父级上下文补全
+
+#### 本次目标
+
+- 修复 `gen-shuidiaogetou-moon`：`assess` 判定“缺少事实”并拒答，但语料里确实有依据。
+- 让行级命中也能把整篇作品交给 `assess` 和生成节点，而不是只给前 5 行。
+
+#### 上下文
+
+- 真实库 dump：《水调歌头》版本 7 有 1 条诗词级 chunk（`85`）和 8 条行级 chunk
+  （`86`-`93`）。
+- 行级 chunk 的标题短语权重和 RRF 融合分全部高于诗词级 chunk，`chat_retrieval_limit=5`
+  时只有上阕 5 行入选，下阕（“不应有恨”“但愿人长久”）从未进入上下文。
+- `assess` 因此正确判定“证据无法回答借明月表达什么情感”，拒答是证据组装的缺陷，
+  不是判定逻辑的缺陷。
+
+#### 做出的决定
+
+- 不改 `assess` 的判定 Prompt：判定行为正确，改判定只会掩盖证据缺失。
+- 在检索服务外层加装饰器：命中的作品如果没有任何诗词级 chunk 入选，就追加该作品
+  当前版本的诗词级 chunk，最多 3 条。
+- 追加项排在原有排序结果之后，`score` 沿用该作品入选证据的最高分，`match_types`
+  标记为 `parent_context`，保证引用 `rank` 连续、`[1]` 到 `[n]` 语义不变。
+- 抽取 `EvidenceRetriever` 协议和 `to_retrieval_evidence` 函数，让装饰器和具体检索
+  实现解耦，在线问答与评估脚本共用同一条组装链。
+
+#### 完成内容
+
+- `app/services/evidence_context.py`：新增 `PoemContextRetrievalService`，含上下文预算
+  `DEFAULT_MAX_CONTEXT_CHUNKS=3`、负预算校验和策略/候选数透传。
+- `app/repositories/chunks.py`：新增 `list_poem_chunks_by_version_ids`，并抽出
+  `_candidate_statement`、`_candidate_from_row` 消除三处重复 SELECT。
+- `app/services/chat.py`：新增 `build_chat_retrieval(session)`，在线问答和生成评估
+  脚本共用同一条检索组装链。
+- `app/ai/graphs/rag.py`：`RagChatGraph` 依赖从具体 Service 改为 `EvidenceRetriever`。
+- `apps/api/tests/test_evidence_context.py` 等：新增 5 条上下文补全用例、单变体截断
+  用例和 7 行作品流式问答用例。
+
+#### 验证结果
+
+- 后端全量测试：`117 passed, 3 warnings`。
+- Ruff：`apps/api` 全部通过。
+- mypy：本次改动的 7 个文件通过；全量 mypy 仍有 105 条历史错误（`poems` 仓储、
+  seed 和测试 `client.portal` 等），不在本次范围内。
+- 检索层评估（`expanded-lexical-v1`，31 条）：`29/31`、`Recall@5=1.0`、
+  `MRR=0.945652`、平均延迟 `3.800 ms`。评估脚本未接入上下文装饰器，因此该结果只
+  验证单变体截断修复，不体现父级上下文效果。
+- 生成层评估：`12/12`，`answer_accuracy=1.0`、引用精确率和召回率均为 `1.0`、
+  拒答 F1 `1.0`、平均延迟 `1510.694 ms`、P95 `3230.334 ms`。
+- 报告 `data/eval/reports/generation_rag_v1_after_parent_context_20260920.json` 中，
+  《水调歌头》样本的引用从 5 条行级证据扩展为 6 条，诗词级 chunk `85` 以
+  `parent_context` 排在第 6 位，候选 `9` 条、入选 `6` 条。
+
+#### 问题与风险
+
+- 父级上下文会占用生成 Prompt 的 token 预算；长诗、词和组诗在开放语料下需要按
+  长度重新设定预算或截断规则，当前只覆盖种子语料。
+- 追加项排在末尾，排序本身没有改善；如果未来引入 Rerank，父级上下文需要显式
+  参与排序决策，而不是继续追加。
+- `evaluate_retrieval.py` 没有接入上下文装饰器，检索层指标无法体现该改动，需要
+  后续补一条针对组装链的评估入口。
+- 12/12 只能说明当前 12 条固定样本通过，不能代表开放语料上的生成质量。
+
+#### 下一步
+
+1. 让检索评估覆盖“检索 + 上下文组装”的完整链路，避免评估口径与在线链路不一致。
+2. 根据下一阶段目标决定是先扩语料（爬取 + 清洗 + 赏析 chunk），还是先补 Rerank、
+   低召回重写重试和忠实度评估。

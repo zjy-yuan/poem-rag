@@ -20,6 +20,7 @@ from app.models.message import (
     MessageRole,
     MessageStatus,
 )
+from app.repositories.chunks import ChunkRepository
 from app.repositories.conversations import ConversationRepository
 from app.repositories.messages import MessageRepository
 from app.schemas.chat import (
@@ -30,10 +31,23 @@ from app.schemas.chat import (
     MessageCitationRead,
     MessageRead,
 )
+from app.services.evidence_context import PoemContextRetrievalService
 from app.services.query_expansion import ExpandedRetrievalService, LexiconQueryRewriter
 from app.services.retrieval import RetrievalService
 
 logger = logging.getLogger(__name__)
+
+
+def build_chat_retrieval(session: AsyncSession) -> PoemContextRetrievalService:
+    """Compose the online retrieval stack used by the chat graph."""
+
+    return PoemContextRetrievalService(
+        ExpandedRetrievalService(
+            RetrievalService(session),
+            LexiconQueryRewriter(),
+        ),
+        ChunkRepository(session),
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -192,10 +206,7 @@ class ChatService:
                 },
             )
             graph = RagChatGraph(
-                retrieval=ExpandedRetrievalService(
-                    RetrievalService(self.session),
-                    LexiconQueryRewriter(),
-                ),
+                retrieval=build_chat_retrieval(self.session),
                 rewriter=LexiconQueryRewriter(),
                 provider=provider,
                 settings=self.settings,

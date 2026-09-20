@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -26,6 +27,12 @@ _CANDIDATE_MULTIPLIER = 5
 _MAX_CANDIDATE_LIMIT = 200
 _QUERY_EXPANSION_MATCH = "query_expansion"
 _RRF_MATCH = "rrf_fusion"
+_LITERAL_PATTERNS = (
+    re.compile(r"《([^《》]{1,100})》"),
+    re.compile(r"“([^“”]{1,100})”"),
+    re.compile(r"‘([^‘’]{1,100})’"),
+    re.compile(r'"([^"]{1,100})"'),
+)
 
 
 class RetrievalBranch(Protocol):
@@ -83,6 +90,8 @@ class LexiconQueryRewriter:
         variants: list[str] = []
         matched_concepts: list[str] = []
         matched_entities: list[str] = []
+
+        variants.extend(_extract_literals(query))
 
         for author in self.lexicon.known_authors:
             if normalize_lookup(author) in normalized_query:
@@ -172,7 +181,7 @@ class ExpandedRetrievalService:
         if len(results) == 1:
             result = results[0]
             return RetrievalSearchResult(
-                items=result.items,
+                items=result.items[:limit],
                 strategy=self.strategy_name,
                 normalized_query=result.normalized_query,
                 candidate_count=result.candidate_count,
@@ -208,6 +217,15 @@ class ExpandedRetrievalService:
 
 def _contains_any(normalized_query: str, terms: Sequence[str]) -> bool:
     return any(normalize_lookup(term) in normalized_query for term in terms)
+
+
+def _extract_literals(query: str) -> list[str]:
+    literals = [
+        match.group(1).strip()
+        for pattern in _LITERAL_PATTERNS
+        for match in pattern.finditer(query)
+    ]
+    return list(_deduplicate_variants(literals))
 
 
 def _deduplicate_variants(variants: list[str]) -> tuple[str, ...]:

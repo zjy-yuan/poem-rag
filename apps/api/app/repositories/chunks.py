@@ -3,8 +3,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import and_, case, func, or_, select, update
+from sqlalchemy import Row, Select, and_, case, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
@@ -65,6 +66,66 @@ class ChunkSearchCandidate:
     published_at: datetime | None
 
 
+def _candidate_statement() -> Select[Any]:
+    """Select the public chunk columns shared by every candidate query."""
+
+    return (
+        select(
+            PoemChunk.id,
+            PoemChunk.vector_id,
+            PoemChunk.poem_id,
+            PoemChunk.poem_version_id,
+            PoemChunk.annotation_id,
+            PoemAnnotation.annotation_type,
+            PoemChunk.granularity,
+            PoemChunk.chunk_index,
+            PoemChunk.text,
+            PoemChunk.normalized_text,
+            PoemChunk.line_start,
+            PoemChunk.line_end,
+            PoemChunk.chunk_strategy,
+            PoemChunk.status,
+            Poem.title,
+            Poem.author_id,
+            Author.name,
+            Poem.dynasty_id,
+            Dynasty.name,
+            Poem.published_at,
+        )
+        .select_from(PoemChunk)
+        .join(Poem, Poem.id == PoemChunk.poem_id)
+        .join(PoemVersion, PoemVersion.id == PoemChunk.poem_version_id)
+        .outerjoin(Author, Author.id == Poem.author_id)
+        .outerjoin(Dynasty, Dynasty.id == Poem.dynasty_id)
+        .outerjoin(PoemAnnotation, PoemAnnotation.id == PoemChunk.annotation_id)
+    )
+
+
+def _candidate_from_row(row: Row[Any]) -> ChunkSearchCandidate:
+    return ChunkSearchCandidate(
+        chunk_id=row[0],
+        vector_id=row[1],
+        poem_id=row[2],
+        poem_version_id=row[3],
+        annotation_id=row[4],
+        annotation_type=row[5],
+        granularity=row[6],
+        chunk_index=row[7],
+        text=row[8],
+        normalized_text=row[9],
+        line_start=row[10],
+        line_end=row[11],
+        chunk_strategy=row[12],
+        status=row[13],
+        title=row[14],
+        author_id=row[15],
+        author_name=row[16],
+        dynasty_id=row[17],
+        dynasty_name=row[18],
+        published_at=row[19],
+    )
+
+
 class ChunkRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
@@ -122,64 +183,13 @@ class ChunkRepository:
             filters.append(or_(*lexical_filters))
 
         statement = (
-            select(
-                PoemChunk.id,
-                PoemChunk.vector_id,
-                PoemChunk.poem_id,
-                PoemChunk.poem_version_id,
-                PoemChunk.annotation_id,
-                PoemAnnotation.annotation_type,
-                PoemChunk.granularity,
-                PoemChunk.chunk_index,
-                PoemChunk.text,
-                PoemChunk.normalized_text,
-                PoemChunk.line_start,
-                PoemChunk.line_end,
-                PoemChunk.chunk_strategy,
-                PoemChunk.status,
-                Poem.title,
-                Poem.author_id,
-                Author.name,
-                Poem.dynasty_id,
-                Dynasty.name,
-                Poem.published_at,
-            )
-            .select_from(PoemChunk)
-            .join(Poem, Poem.id == PoemChunk.poem_id)
-            .join(PoemVersion, PoemVersion.id == PoemChunk.poem_version_id)
-            .outerjoin(Author, Author.id == Poem.author_id)
-            .outerjoin(Dynasty, Dynasty.id == Poem.dynasty_id)
-            .outerjoin(PoemAnnotation, PoemAnnotation.id == PoemChunk.annotation_id)
+            _candidate_statement()
             .where(*filters)
             .order_by(PoemChunk.id)
             .limit(limit)
         )
         rows = (await self.session.execute(statement)).all()
-        return [
-            ChunkSearchCandidate(
-                chunk_id=row[0],
-                vector_id=row[1],
-                poem_id=row[2],
-                poem_version_id=row[3],
-                annotation_id=row[4],
-                annotation_type=row[5],
-                granularity=row[6],
-                chunk_index=row[7],
-                text=row[8],
-                normalized_text=row[9],
-                line_start=row[10],
-                line_end=row[11],
-                chunk_strategy=row[12],
-                status=row[13],
-                title=row[14],
-                author_id=row[15],
-                author_name=row[16],
-                dynasty_id=row[17],
-                dynasty_name=row[18],
-                published_at=row[19],
-            )
-            for row in rows
-        ]
+        return [_candidate_from_row(row) for row in rows]
 
     async def list_public_by_vector_ids(
         self,
@@ -216,63 +226,40 @@ class ChunkRepository:
         if chunk_strategy is not None:
             filters.append(PoemChunk.chunk_strategy == chunk_strategy)
 
+        statement = _candidate_statement().where(*filters)
+        rows = (await self.session.execute(statement)).all()
+        return [_candidate_from_row(row) for row in rows]
+
+    async def list_poem_chunks_by_version_ids(
+        self,
+        *,
+        version_ids: Sequence[int],
+    ) -> list[ChunkSearchCandidate]:
+        """Load the poem-level chunks of the given versions, in reading order."""
+
+        if not version_ids:
+            return []
+
         statement = (
-            select(
-                PoemChunk.id,
-                PoemChunk.vector_id,
-                PoemChunk.poem_id,
-                PoemChunk.poem_version_id,
-                PoemChunk.annotation_id,
-                PoemAnnotation.annotation_type,
-                PoemChunk.granularity,
-                PoemChunk.chunk_index,
-                PoemChunk.text,
-                PoemChunk.normalized_text,
-                PoemChunk.line_start,
-                PoemChunk.line_end,
-                PoemChunk.chunk_strategy,
-                PoemChunk.status,
-                Poem.title,
-                Poem.author_id,
-                Author.name,
-                Poem.dynasty_id,
-                Dynasty.name,
-                Poem.published_at,
+            _candidate_statement()
+            .where(
+                PoemChunk.poem_version_id.in_(version_ids),
+                PoemChunk.granularity == ChunkGranularity.POEM.value,
+                PoemChunk.status.in_(
+                    [ChunkStatus.PENDING.value, ChunkStatus.READY.value]
+                ),
+                Poem.status == PoemStatus.PUBLISHED.value,
+                Poem.deleted_at.is_(None),
+                PoemVersion.version_no == Poem.version_no,
             )
-            .select_from(PoemChunk)
-            .join(Poem, Poem.id == PoemChunk.poem_id)
-            .join(PoemVersion, PoemVersion.id == PoemChunk.poem_version_id)
-            .outerjoin(Author, Author.id == Poem.author_id)
-            .outerjoin(Dynasty, Dynasty.id == Poem.dynasty_id)
-            .outerjoin(PoemAnnotation, PoemAnnotation.id == PoemChunk.annotation_id)
-            .where(*filters)
+            .order_by(
+                PoemChunk.poem_version_id,
+                PoemChunk.chunk_index,
+                PoemChunk.id,
+            )
         )
         rows = (await self.session.execute(statement)).all()
-        return [
-            ChunkSearchCandidate(
-                chunk_id=row[0],
-                vector_id=row[1],
-                poem_id=row[2],
-                poem_version_id=row[3],
-                annotation_id=row[4],
-                annotation_type=row[5],
-                granularity=row[6],
-                chunk_index=row[7],
-                text=row[8],
-                normalized_text=row[9],
-                line_start=row[10],
-                line_end=row[11],
-                chunk_strategy=row[12],
-                status=row[13],
-                title=row[14],
-                author_id=row[15],
-                author_name=row[16],
-                dynasty_id=row[17],
-                dynasty_name=row[18],
-                published_at=row[19],
-            )
-            for row in rows
-        ]
+        return [_candidate_from_row(row) for row in rows]
 
     async def list_indexable_by_version(
         self,

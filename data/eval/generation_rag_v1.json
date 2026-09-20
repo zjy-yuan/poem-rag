@@ -1,0 +1,244 @@
+{
+  "version": "generation-rag-seed-v1",
+  "description": "基于当前 6 首种子诗词的生成层评估骨架。样本用 required_facts、forbidden_facts 和 expected_citations 做确定性判定，覆盖有证据回答、引用完整性和四类拒答；不包含 LLM-as-judge 或人工忠实度评分。",
+  "cases": [
+    {
+      "id": "gen-jingyesi-moon-homesickness",
+      "category": "moon_homesickness",
+      "question": "请结合诗句说明《静夜思》里明月和思乡的关系。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "moon",
+          "any_of": ["明月"]
+        },
+        {
+          "id": "homesickness",
+          "any_of": ["思乡", "故乡"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["杜甫"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "静夜思"
+        }
+      ]
+    },
+    {
+      "id": "gen-jingyesi-quote-emotion",
+      "category": "emotion",
+      "question": "“举头望明月，低头思故乡”表达了什么情感？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "homesickness",
+          "any_of": ["思乡", "故乡", "怀念家乡"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["杜甫"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "静夜思"
+        }
+      ]
+    },
+    {
+      "id": "gen-chunxiao-scene",
+      "category": "scene",
+      "question": "《春晓》描绘了春天清晨怎样的景象？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "spring",
+          "any_of": ["春"]
+        },
+        {
+          "id": "birds",
+          "any_of": ["鸟", "啼鸟"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "春晓"
+        }
+      ]
+    },
+    {
+      "id": "gen-denggueque-reason",
+      "category": "philosophy",
+      "question": "“欲穷千里目，更上一层楼”说明了什么道理？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "climb",
+          "any_of": ["更上一层楼"]
+        },
+        {
+          "id": "vision",
+          "any_of": ["登高", "望远", "站得高", "看得远", "看得更远"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "登鹳雀楼"
+        }
+      ]
+    },
+    {
+      "id": "gen-shuidiaogetou-moon",
+      "category": "imagery",
+      "question": "《水调歌头·明月几时有》借明月表达了什么情感？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "moon",
+          "any_of": ["明月"]
+        },
+        {
+          "id": "longing",
+          "any_of": ["思念", "怀念", "想念", "思乡"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["李白"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "gen-tianjingsha-autumn",
+      "category": "theme",
+      "question": "《天净沙·秋思》描写了怎样的秋景和情感？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "autumn",
+          "any_of": ["秋"]
+        },
+        {
+          "id": "wandering",
+          "any_of": ["断肠", "天涯", "羁旅", "漂泊"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["李白"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "天净沙·秋思"
+        }
+      ]
+    },
+    {
+      "id": "gen-rumengling-scene",
+      "category": "scene",
+      "question": "《如梦令·常记溪亭日暮》描写了什么游玩场景？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "place",
+          "any_of": ["溪亭", "藕花"]
+        },
+        {
+          "id": "boat-or-bird",
+          "any_of": ["争渡", "鸥鹭", "舟", "船"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["苏轼"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "如梦令·常记溪亭日暮"
+        }
+      ]
+    },
+    {
+      "id": "gen-denggueque-landscape",
+      "category": "imagery",
+      "question": "《登鹳雀楼》怎样描写白日、山和黄河入海的景象？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "sun-mountain",
+          "any_of": ["白日", "依山"]
+        },
+        {
+          "id": "river-sea",
+          "any_of": ["黄河", "入海"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["杜甫"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "登鹳雀楼"
+        }
+      ]
+    },
+    {
+      "id": "gen-refusal-libai-birthplace",
+      "category": "refusal_missing_attribute",
+      "question": "李白的出生地在哪里？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-refusal-jingyesi-year",
+      "category": "refusal_missing_attribute",
+      "question": "《静夜思》写于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-refusal-dufu-chunwang",
+      "category": "refusal_missing_entity",
+      "question": "杜甫《春望》的创作背景是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-refusal-quantum",
+      "category": "refusal_cross_domain",
+      "question": "量子纠缠的物理实验是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    }
+  ]
+}

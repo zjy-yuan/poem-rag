@@ -22,6 +22,7 @@ from app.schemas.catalog import (
     CategoryType,
     DynastyCreate,
     PoemCreate,
+    PoemUpdate,
 )
 from app.services.catalog import CatalogService
 
@@ -86,9 +87,14 @@ POEMS = [
             "明月几时有？把酒问青天。\n"
             "不知天上宫阙，今夕是何年。\n"
             "我欲乘风归去，又恐琼楼玉宇，高处不胜寒。\n"
-            "起舞弄清影，何似在人间。"
+            "起舞弄清影，何似在人间。\n"
+            "\n"
+            "转朱阁，低绮户，照无眠。\n"
+            "不应有恨，何事长向别时圆？\n"
+            "人有悲欢离合，月有阴晴圆缺，此事古难全。\n"
+            "但愿人长久，千里共婵娟。"
         ),
-        "summary": "借一轮明月写离合，也写旷达的人间选择。",
+        "summary": "借一轮明月写兄弟离别与人间离合，最终落在旷达的祝愿上。",
         "categories": ["词", "豪放"],
         "tags": ["明月", "中秋"],
     },
@@ -121,7 +127,13 @@ async def seed_catalog(session: AsyncSession) -> dict[str, int]:
     dynasty_by_name: dict[str, Dynasty] = {}
     author_by_name: dict[str, Author] = {}
     category_by_name: dict[str, Category] = {}
-    created = {"dynasties": 0, "authors": 0, "categories": 0, "poems": 0}
+    created = {
+        "dynasties": 0,
+        "authors": 0,
+        "categories": 0,
+        "poems": 0,
+        "repaired_poems": 0,
+    }
 
     service = CatalogService(session)
     for item in DYNASTIES:
@@ -184,6 +196,28 @@ async def seed_catalog(session: AsyncSession) -> dict[str, int]:
         )
         if existing is not None:
             continue
+
+        drifted = await session.scalar(
+            select(Poem).where(
+                Poem.author_id == author.id,
+                Poem.title == item["title"],
+                Poem.deleted_at.is_(None),
+            )
+        )
+        if drifted is not None:
+            # The seed is declarative: when a known poem drifted from the
+            # canonical text, repair it through the normal versioned update.
+            await service.update_poem(
+                drifted.id,
+                PoemUpdate(
+                    content=item["content"],
+                    summary=item["summary"],
+                    version_no=drifted.version_no,
+                ),
+            )
+            created["repaired_poems"] += 1
+            continue
+
         poem = await service.create_poem(
             PoemCreate(
                 title=item["title"],

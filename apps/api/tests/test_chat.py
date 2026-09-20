@@ -483,3 +483,45 @@ def test_unconfigured_model_returns_503_without_persisting_messages(
         headers=user,
     ).json()["data"]
     assert messages == []
+
+
+def test_stream_expands_line_matches_with_poem_context(client: TestClient) -> None:
+    headers, dynasty, author = _create_catalog(client)
+    content = "\n".join(f"第{index}句测试诗句。" for index in range(1, 8))
+    poem = _create_poem(
+        client,
+        headers,
+        title="长诗测试",
+        content=content,
+        author_id=author["id"],
+        dynasty_id=dynasty["id"],
+    )
+    _publish(client, headers, poem["id"])
+    portal = client.portal
+    assert portal is not None
+    versions = portal.call(
+        _load_versions,
+        client.app.state.session_factory,
+        poem["id"],
+    )
+    _rebuild_chunks(client, versions[0].id)
+
+    user = _register(client, "poem-context@example.com")
+    conversation = _create_conversation(client, user)
+    provider = FakeChatProvider(["这首诗共七句。[1]"])
+    _use_provider(client, provider)
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation['id']}/messages:stream",
+        headers=user,
+        json={"content": "长诗测试"},
+    )
+
+    assert response.status_code == 200
+    events = _parse_sse(response.text)
+    retrieval = next(data for name, data in events if name == "retrieval")
+    assert retrieval["candidate_count"] == 8
+    assert retrieval["selected_count"] == 6
+    prompt = provider.calls[0][-1].content
+    assert "第1句测试诗句。\n第2句测试诗句。" in prompt
+    assert "第7句测试诗句。" in prompt

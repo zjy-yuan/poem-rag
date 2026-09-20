@@ -1488,7 +1488,9 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
    Envelope，常见为 `404 CONVERSATION_NOT_FOUND` 或
    `503 CHAT_MODEL_NOT_CONFIGURED`。
 2. `meta` 在 SSE 建立后最先发送，返回已创建的助手消息 ID。
-3. `retrieval` 在检索完成后发送，包含候选数、选中数和实际策略。
+3. `retrieval` 在检索完成后发送，包含候选数、选中数和实际策略。`selected_count`
+   可以大于公开检索接口的 `limit`：在线检索会为命中的作品追加诗词级上下文 chunk，
+   让 `assess` 和生成节点读到完整篇章。
 4. `delta` 只包含新增文本，不重复发送完整内容。
 5. `citation` 可以多次发送；每条携带引用快照和从 1 开始的 `rank`。
 6. `done` 必须最后发送，表示消息和引用已经提交 MySQL。
@@ -1512,6 +1514,13 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
     不创建引用记录；该分支仍经过 `validate`，但不要求引用。
 18. `assess` 的超时、网络错误、非法 JSON 或 Schema 校验失败采用 fail-open：继续
     调用生成模型，并由引用校验兜底。该策略不改变 SSE 事件顺序。
+
+在线检索在 `expanded-lexical-v1` 外再包一层父级上下文补全：命中的作品如果没有任何
+诗词级 chunk 入选，则追加该作品当前版本的诗词级 chunk（最多 3 条），`match_types`
+标记为 `parent_context`，`score` 沿用该作品入选证据的最高分。追加项排在原有排序
+结果之后，因此引用 `rank` 仍然连续，`[1]` 到 `[n]` 的语义不变。该行为只影响
+`retrieval` 事件的 `selected_count` 和模型可见上下文，不改变请求参数、事件顺序、
+引用编号规则和 `citation` 事件结构。
 
 ---
 
@@ -1844,3 +1853,6 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 | 2026-09-19 | 新增可重复执行的 Qdrant 与 Qwen 烟测脚本，并完成真实 Qdrant `1.19.1` 适配器联调 | 不修改 HTTP 接口；Qwen 真实网络调用仍受环境审批阻塞 | `85 passed`、Ruff 和相关模块 mypy 通过；Qdrant 临时 Collection 创建、维度拒绝、upsert、过滤检索和删除通过 |
 | 2026-09-20 | 新增会话、消息、引用快照、DeepSeek Chat Provider、四节点 LangGraph 问答和 SSE 流式接口 | 新增登录用户 API 和数据库表；消息反馈仍属目标设计 | `91 passed`、Ruff、前端 `9 passed`、类型检查和生产构建通过；真实 MySQL 迁移至 `0005`，真实 HTTP/SSE 无证据链路和消息持久化通过 |
 | 2026-09-20 | `assess` 改为非流式 JSON 结构化可答性判定，新增 `CHAT_ASSESS_MAX_OUTPUT_TOKENS` 与拒答路由 | SSE 事件结构不变；不可答问题不再调用生成模型，判定异常 fail-open | `103 passed`、Ruff 通过；真实 `deepseek-chat` 流式与 JSON 烟测通过；真实 MySQL + SSE 有证据问答和无答案拒答联调通过 |
+| 2026-09-20 | 新增生成层离线评估 CLI、固定数据集和报告 Schema | 不修改 HTTP API、SSE 事件或数据库表结构 | 新增 4 条单元测试通过；Ruff 和 mypy 通过；真实 DeepSeek 基线待执行 |
+| 2026-09-20 | 运行真实生成层基线，修复种子语料漂移、评估数据集事实口径和单变体改写未截断的问题 | 不修改 HTTP API、SSE 事件或数据库表结构 | `117 passed`、Ruff 通过；真实 `deepseek-chat` 生成评估从 `5/12` 提升到 `11/12` |
+| 2026-09-20 | 在线检索追加诗词级父级上下文 chunk（`parent_context`） | SSE 事件结构不变；`retrieval.selected_count` 可大于公开检索 `limit` | `117 passed`、Ruff 和相关模块 mypy 通过；真实生成评估 `12/12` |

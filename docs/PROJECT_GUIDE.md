@@ -238,9 +238,9 @@ erDiagram
 | 重排 | 未实现 | 已有 `lexical-baseline-v1`、`dense-baseline-v1`、`hybrid-rrf-v1` 和 `expanded-lexical-v1` 四条可比较路径 |
 | 会话与消息持久化 | 已实现 | 会话、消息和引用快照写入 MySQL；按用户隔离会话所有权 |
 | DeepSeek Chat Provider | 已实现（Provider 层） | 支持 OpenAI-compatible 流式与非流式 JSON chat completions、超时、错误映射和空回答检测；真实 `deepseek-chat` 流式与 JSON 烟测、真实 MySQL + SSE 基础联调均已通过 |
-| LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；查询改写和检索使用 `expanded-lexical-v1`，`assess` 用 LLM 结构化判定可答性，无证据或判定不可答时走 `refuse` 且不调用生成模型；判定异常 fail-open |
+| LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；查询改写和检索使用 `expanded-lexical-v1`，命中作品追加诗词级父级上下文，`assess` 用 LLM 结构化判定可答性，无证据或判定不可答时走 `refuse` 且不调用生成模型；判定异常 fail-open |
 | SSE 引用问答 | 已实现 | `meta -> retrieval -> delta* -> citation* -> done/error`；持久化最终消息和引用，无证据时不调用模型 |
-| RAG 评估体系 | 已实现（检索层） | v2 数据集 31 条可移植金标准样本，无答案样本分跨域、缺实体、缺属性三类；支持 Recall@k、MRR、Hit Rate、拒答 P/R/F1 和延迟；实测证明余弦门槛只能防跨域漂移，无法分离领域内负样本；生成层评估未实现 |
+| RAG 评估体系 | 已实现（检索层 + 生成层） | 检索层 v2 数据集 31 条，支持 Recall@k、MRR、Hit Rate、拒答 P/R/F1 和延迟；生成层 v1 数据集 12 条，直接运行在线 `RagChatGraph`，真实 `deepseek-chat` 基线 `12/12`，支持答案事实、引用精确率/召回率、拒答 P/R/F1 和延迟；忠实度和 LLM-as-judge 尚未实现 |
 | 云服务器部署 | 未实现 | 核心 RAG 闭环后再处理域名和 HTTPS |
 
 ## 9. 如何追踪一个功能
@@ -279,6 +279,17 @@ erDiagram
 ```powershell
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --strategy hybrid --top-k 5
 ```
+
+生成层评估需要真实 Chat Provider，直接运行在线图：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
+  --json-output data\eval\reports\generation_rag_v1_20260920.json
+```
+
+首版数据集 `data/eval/generation_rag_v1.json` 共 12 条，指标包括答案正确率、引用
+精确率/召回率、拒答 P/R/F1、平均延迟和 P95。每个样本使用独立 Session，单样本
+异常不会中断整份报告；评估结果仍不能替代人工忠实度复核。
 
 Dense 和 Hybrid 可额外传入余弦相似度下限，低于门槛的候选会被丢弃，用于验证拒答行为：
 
