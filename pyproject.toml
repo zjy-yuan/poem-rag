@@ -1,0 +1,21 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["apps/api"]
+testpaths = ["apps/api/tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
+strict = true
+warn_unused_ignores = true
+

@@ -1,0 +1,43 @@
+{
+  "version": "example-corpus-v1",
+  "source": {
+    "source_key": "example-import-format",
+    "source_type": "file",
+    "source_name": "Poem RAG 导入格式示例",
+    "source_url": "https://example.com/poem-import-format",
+    "license_note": "诗作文本为公版；本文件仅用于验证结构化导入格式，不用于生产语料。"
+  },
+  "defaults": {
+    "publish": false
+  },
+  "records": [
+    {
+      "external_id": "jing-ye-si-example-001",
+      "title": "静夜思",
+      "content": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+      "author_name": "李白",
+      "dynasty_name": "唐",
+      "summary": "该摘要仅用于演示导入字段，不构成正式文学赏析。",
+      "source_url": null,
+      "publish": null,
+      "categories": [
+        {
+          "name": "诗",
+          "type": "work_type"
+        },
+        {
+          "name": "五言绝句",
+          "type": "form"
+        }
+      ],
+      "tags": [
+        "明月",
+        "思乡"
+      ],
+      "annotations": [],
+      "raw_payload": {
+        "example_only": true
+      }
+    }
+  ]
+}
