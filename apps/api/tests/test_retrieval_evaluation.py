@@ -20,7 +20,7 @@ DATASET_PATH = (
     Path(__file__).resolve().parents[3]
     / "data"
     / "eval"
-    / "retrieval_lexical_v1.json"
+    / "retrieval_lexical_v2.json"
 )
 
 
@@ -58,6 +58,9 @@ def _evidence(
 
 
 class FakeRetrieval:
+    def __init__(self, *, suppressed_phrases: tuple[str, ...] = ()) -> None:
+        self.suppressed_phrases = suppressed_phrases
+
     async def search_evidence(
         self,
         *,
@@ -65,7 +68,9 @@ class FakeRetrieval:
         limit: int,
     ) -> RetrievalSearchResult:
         del limit
-        if "床前明月光" in query:
+        if any(phrase in query for phrase in self.suppressed_phrases):
+            items = []
+        elif "床前明月光" in query:
             items = [
                 _evidence(
                     chunk_id=1,
@@ -122,7 +127,7 @@ def test_selector_matches_portable_evidence_fields() -> None:
 @pytest.mark.asyncio
 async def test_evaluator_reports_recall_mrr_and_no_evidence_accuracy() -> None:
     full_dataset = load_evaluation_dataset(DATASET_PATH)
-    assert 20 <= len(full_dataset.cases) <= 30
+    assert 31 <= len(full_dataset.cases) <= 40
     no_answer_case = next(
         case for case in full_dataset.cases if case.expected == "no_evidence"
     )
@@ -143,6 +148,45 @@ async def test_evaluator_reports_recall_mrr_and_no_evidence_accuracy() -> None:
     assert report.summary.recall_at_k == 1.0
     assert report.summary.mrr == 0.75
     assert report.summary.unanswerable_accuracy == 1.0
+    assert report.summary.refusal_precision == 1.0
+    assert report.summary.refusal_recall == 1.0
+    assert report.summary.refusal_f1 == 1.0
     assert report.results[0].matched_gold == [1]
     assert report.results[1].matched_gold == [1]
     assert report.results[1].reciprocal_rank == 0.5
+
+
+@pytest.mark.asyncio
+async def test_evaluator_penalizes_refusing_an_answerable_question() -> None:
+    full_dataset = load_evaluation_dataset(DATASET_PATH)
+    no_answer_case = next(
+        case for case in full_dataset.cases if case.expected == "no_evidence"
+    )
+    dataset = RetrievalEvaluationDataset(
+        version="test-subset-v1",
+        description="Two answerable cases and one unanswerable case.",
+        cases=[full_dataset.cases[0], full_dataset.cases[1], no_answer_case],
+    )
+
+    evaluator = RetrievalEvaluator(
+        FakeRetrieval(suppressed_phrases=("举头望明月",))
+    )
+    report = await evaluator.evaluate(dataset, top_k=5)
+
+    assert report.summary.passed_cases == 2
+    assert report.summary.answerable_no_result_rate == 0.5
+    assert report.summary.unanswerable_accuracy == 1.0
+    assert report.summary.refusal_precision == 0.5
+    assert report.summary.refusal_recall == 1.0
+    assert report.summary.refusal_f1 == 0.666667
+
+
+def test_v2_dataset_separates_answerability_categories() -> None:
+    dataset = load_evaluation_dataset(DATASET_PATH)
+    assert dataset.version == "lexical-baseline-seed-v2"
+    categories = {case.category for case in dataset.cases}
+    assert {
+        "no_answer_cross_domain",
+        "no_answer_in_domain_missing_entity",
+        "no_answer_in_domain_missing_attribute",
+    } <= categories

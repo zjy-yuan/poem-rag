@@ -137,6 +137,11 @@ def format_evaluation_report(report: RetrievalEvaluationReport) -> str:
             f"{_format_optional(summary.unanswerable_accuracy)}"
         ),
         (
+            f"refusal_precision={_format_optional(summary.refusal_precision)} "
+            f"refusal_recall={_format_optional(summary.refusal_recall)} "
+            f"refusal_f1={_format_optional(summary.refusal_f1)}"
+        ),
+        (
             f"average_latency_ms={summary.average_latency_ms:.3f} "
             f"p95_latency_ms={summary.p95_latency_ms:.3f}"
         ),
@@ -229,6 +234,18 @@ def _summarize(
     answerable = [result for result in results if result.expected == "evidence"]
     unanswerable = [result for result in results if result.expected == "no_evidence"]
     latencies = [result.latency_ms for result in results]
+    correct_refusals = sum(result.passed for result in unanswerable)
+    wrong_refusals = sum(result.retrieved_count == 0 for result in answerable)
+    missed_refusals = len(unanswerable) - correct_refusals
+    refusal_precision = _rounded_ratio(
+        correct_refusals,
+        correct_refusals + wrong_refusals,
+    )
+    refusal_recall = _rounded_ratio(
+        correct_refusals,
+        correct_refusals + missed_refusals,
+    )
+    refusal_f1 = _rounded_f1(refusal_precision, refusal_recall)
 
     return RetrievalEvaluationSummary(
         total_cases=len(results),
@@ -261,13 +278,16 @@ def _summarize(
             len(answerable),
         ),
         answerable_no_result_rate=_rounded_ratio(
-            sum(result.retrieved_count == 0 for result in answerable),
+            wrong_refusals,
             len(answerable),
         ),
         unanswerable_accuracy=_rounded_ratio(
-            sum(result.passed for result in unanswerable),
+            correct_refusals,
             len(unanswerable),
         ),
+        refusal_precision=refusal_precision,
+        refusal_recall=refusal_recall,
+        refusal_f1=refusal_f1,
         average_latency_ms=round(statistics.fmean(latencies), 3) if latencies else 0.0,
         p95_latency_ms=_p95(latencies),
     )
@@ -275,6 +295,12 @@ def _summarize(
 
 def _rounded_ratio(numerator: int, denominator: int) -> float:
     return round(numerator / denominator, 6) if denominator else 0.0
+
+
+def _rounded_f1(precision: float, recall: float) -> float:
+    if precision + recall == 0:
+        return 0.0
+    return round(2 * precision * recall / (precision + recall), 6)
 
 
 def _rounded_mean(values: list[float]) -> float | None:

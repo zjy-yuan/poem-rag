@@ -62,7 +62,7 @@ flowchart LR
 1. 采用模块化单体，暂不拆微服务。
 2. MySQL 是用户、权限和诗词业务数据的唯一事实来源。
 3. Redis 用于健康检查，后续承担缓存、限流、短期状态和任务基础设施。
-4. Qwen Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid/查询改写检索和 DeepSeek Chat Provider 已实现；在线问答固定使用已评估的 `expanded-lexical-v1`，Dense/Hybrid 仍仅供内部 Service 与离线评估使用。真实 Qwen 索引和四条策略的同集评估已完成；Dense 检索支持 `min_score` 相关性下限，低于门槛的候选不再交给生成模型。
+4. Qwen Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid/查询改写检索和 DeepSeek Chat Provider 已实现；在线问答固定使用已评估的 `expanded-lexical-v1`，Dense/Hybrid 仍仅供内部 Service 与离线评估使用。真实 Qwen 索引和四条策略的同集评估已完成；Dense 检索支持 `min_score` 相关性下限，低于门槛的候选不再交给生成模型。v2 评估实测证明该门槛只能防跨域漂移，领域内“话题命中、答案缺失”的样本仍需 `assess` 节点判定。
 5. FastAPI Router 只处理 HTTP 映射，业务状态变化放在 Service，数据访问放在 Repository。
 6. MySQL 保存会话、消息和引用快照；SSE 只负责传输过程状态，不成为长期数据源。
 
@@ -237,7 +237,7 @@ erDiagram
 | DeepSeek Chat Provider | 已实现（Provider 层） | 支持 OpenAI-compatible 流式 chat completions、超时、错误映射和空回答检测；真实 DeepSeek 账号尚未联调 |
 | LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；查询改写和检索使用 `expanded-lexical-v1`，无证据时走 `refuse` 分支且不调用生成模型 |
 | SSE 引用问答 | 已实现 | `meta -> retrieval -> delta* -> citation* -> done/error`；持久化最终消息和引用，无证据时不调用模型 |
-| RAG 评估体系 | 已实现（检索层） | 27 条可移植金标准样本；支持 Recall@k、MRR、Hit Rate、拒答和延迟；四条策略已完成真实同集对比，`expanded-lexical-v1` 与加门槛的 `hybrid-rrf-v1` 均为 `27/27`；生成层评估未实现 |
+| RAG 评估体系 | 已实现（检索层） | v2 数据集 31 条可移植金标准样本，无答案样本分跨域、缺实体、缺属性三类；支持 Recall@k、MRR、Hit Rate、拒答 P/R/F1 和延迟；实测证明余弦门槛只能防跨域漂移，无法分离领域内负样本；生成层评估未实现 |
 | 云服务器部署 | 未实现 | 核心 RAG 闭环后再处理域名和 HTTPS |
 
 ## 9. 如何追踪一个功能
@@ -284,7 +284,17 @@ Dense 和 Hybrid 可额外传入余弦相似度下限，低于门槛的候选会
 ```
 
 评估报告保存在 `data/eval/reports/`；文件名中的 `min022` 表示该次运行使用了
-`min_score=0.22`。
+`min_score=0.22`，`v2` 表示使用的是 `data/eval/retrieval_lexical_v2.json`。
+现行默认数据集是 v2（31 条）；复现历史 v1 报告时显式传入 `--dataset`：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py `
+  --dataset data\eval\retrieval_lexical_v1.json --top-k 5
+```
+
+`min_score` 的实测结论：`0.22` 能拒绝全部跨域负样本且不损失召回，但领域内负样本
+（最高相似度 `0.3652`）与最弱可回答样本（`0.2647`）分数交错，因此阈值不能承担
+可答性判定。详见 `docs/features/20260920-answerability-evaluation-v2.md`。
 
 Qdrant 适配器真实烟测：
 

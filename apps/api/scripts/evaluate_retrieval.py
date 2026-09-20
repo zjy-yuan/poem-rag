@@ -11,7 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(APP_ROOT) not in sys.path:
     sys.path.insert(0, str(APP_ROOT))
 
-DEFAULT_DATASET = PROJECT_ROOT / "data" / "eval" / "retrieval_lexical_v1.json"
+DEFAULT_DATASET = PROJECT_ROOT / "data" / "eval" / "retrieval_lexical_v2.json"
 
 if TYPE_CHECKING:
     from app.schemas.evaluation import RetrievalEvaluationReport

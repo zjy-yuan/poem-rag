@@ -125,6 +125,9 @@ class RetrievalEvaluationSummary(BaseModel):
     hit_rate_at_k: float | None
     answerable_no_result_rate: float | None
     unanswerable_accuracy: float | None
+    refusal_precision: float | None
+    refusal_recall: float | None
+    refusal_f1: float | None
     average_latency_ms: float
     p95_latency_ms: float
 

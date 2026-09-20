@@ -1,0 +1,342 @@
+{
+  "version": "lexical-baseline-seed-v2",
+  "description": "基于当前 6 首种子诗词的可移植检索回归集。v2 在 v1 的 27 条样本上把无答案样本拆分为跨域、领域内缺实体和领域内缺属性三类，用于区分“检索该不该返回证据”和“生成层该不该拒答”。选择器不依赖自增 ID；不代表最终语料规模。",
+  "cases": [
+    {
+      "id": "exact-jingyesi-01",
+      "category": "exact_quote",
+      "question": "床前明月光，疑是地上霜。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思",
+          "granularity": "line",
+          "text_contains": "床前明月光，疑是地上霜。"
+        }
+      ]
+    },
+    {
+      "id": "exact-jingyesi-02",
+      "category": "exact_quote",
+      "question": "举头望明月，低头思故乡。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思",
+          "granularity": "line",
+          "text_contains": "举头望明月，低头思故乡。"
+        }
+      ]
+    },
+    {
+      "id": "exact-chunxiao-01",
+      "category": "exact_quote",
+      "question": "春眠不觉晓，处处闻啼鸟。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春晓",
+          "granularity": "line",
+          "text_contains": "春眠不觉晓，处处闻啼鸟。"
+        }
+      ]
+    },
+    {
+      "id": "exact-denggueque-01",
+      "category": "exact_quote",
+      "question": "白日依山尽，黄河入海流。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "登鹳雀楼",
+          "granularity": "line",
+          "text_contains": "白日依山尽，黄河入海流。"
+        }
+      ]
+    },
+    {
+      "id": "exact-shuidiaogetou-01",
+      "category": "exact_quote",
+      "question": "明月几时有？把酒问青天。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "text_contains": "明月几时有？把酒问青天。"
+        }
+      ]
+    },
+    {
+      "id": "exact-tianjingsha-01",
+      "category": "exact_quote",
+      "question": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "天净沙·秋思",
+          "granularity": "line",
+          "text_contains": "枯藤老树昏鸦，小桥流水人家，古道西风瘦马。"
+        }
+      ]
+    },
+    {
+      "id": "exact-rumengling-01",
+      "category": "exact_quote",
+      "question": "争渡，争渡，惊起一滩鸥鹭。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "text_contains": "争渡，争渡，惊起一滩鸥鹭。"
+        }
+      ]
+    },
+    {
+      "id": "phrase-jingyesi-01",
+      "category": "phrase",
+      "question": "举头望明月",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思",
+          "granularity": "line",
+          "text_contains": "举头望明月"
+        }
+      ]
+    },
+    {
+      "id": "phrase-denggueque-01",
+      "category": "phrase",
+      "question": "更上一层楼",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "登鹳雀楼",
+          "granularity": "line",
+          "text_contains": "更上一层楼"
+        }
+      ]
+    },
+    {
+      "id": "phrase-shuidiaogetou-01",
+      "category": "phrase",
+      "question": "高处不胜寒",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "text_contains": "高处不胜寒"
+        }
+      ]
+    },
+    {
+      "id": "phrase-rumengling-01",
+      "category": "phrase",
+      "question": "藕花深处",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "如梦令·常记溪亭日暮",
+          "granularity": "line",
+          "text_contains": "藕花深处"
+        }
+      ]
+    },
+    {
+      "id": "phrase-tianjingsha-01",
+      "category": "phrase",
+      "question": "断肠人在天涯",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "天净沙·秋思",
+          "granularity": "line",
+          "text_contains": "断肠人在天涯"
+        }
+      ]
+    },
+    {
+      "id": "title-jingyesi-01",
+      "category": "title",
+      "question": "静夜思",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思"
+        }
+      ]
+    },
+    {
+      "id": "title-shuidiaogetou-01",
+      "category": "title",
+      "question": "水调歌头",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "title-rumengling-01",
+      "category": "title",
+      "question": "如梦令",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "如梦令·常记溪亭日暮"
+        }
+      ]
+    },
+    {
+      "id": "author-liqingzhao-01",
+      "category": "author",
+      "question": "李清照",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "如梦令·常记溪亭日暮"
+        }
+      ]
+    },
+    {
+      "id": "author-mazhiyuan-01",
+      "category": "author",
+      "question": "马致远",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "天净沙·秋思"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-song-01",
+      "category": "dynasty",
+      "question": "宋",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-tang-01",
+      "category": "dynasty",
+      "question": "唐",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思"
+        }
+      ]
+    },
+    {
+      "id": "multi-moon-01",
+      "category": "multi_evidence",
+      "question": "明月",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思"
+        },
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "natural-li-bai-moon-01",
+      "category": "natural_language",
+      "question": "李白写月亮的诗句",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思"
+        }
+      ]
+    },
+    {
+      "id": "natural-su-shi-midautumn-01",
+      "category": "natural_language",
+      "question": "苏轼关于中秋的词",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "natural-homesickness-01",
+      "category": "natural_language",
+      "question": "表达思乡情绪的诗句",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思"
+        }
+      ]
+    },
+    {
+      "id": "no-answer-quantum-01",
+      "category": "no_answer_cross_domain",
+      "question": "量子纠缠的物理实验",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-mars-01",
+      "category": "no_answer_cross_domain",
+      "question": "火星探测器的着陆过程",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-tax-01",
+      "category": "no_answer_cross_domain",
+      "question": "唐朝的赋税制度",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-ai-01",
+      "category": "no_answer_cross_domain",
+      "question": "人工智能训练数据",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-in-domain-chunwang-01",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "杜甫《春望》的创作背景",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-in-domain-libai-birthplace-01",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "李白的出生地在哪里",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-in-domain-jingyesi-year-01",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "静夜思写于哪一年",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-in-domain-sushi-exile-01",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "苏轼被贬黄州的经历",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    }
+  ]
+}
