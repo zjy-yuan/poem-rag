@@ -62,10 +62,20 @@ def get_chat_provider(
 
 
 def get_chat_service(
+    request: Request,
     session: Annotated[AsyncSession, Depends(get_db_session)],
     settings: Annotated[Settings, Depends(get_app_settings)],
 ) -> ChatService:
-    return ChatService(session, settings)
+    resources = getattr(
+        request.app.state,
+        "chat_retrieval_resources",
+        None,
+    )
+    return ChatService(
+        session,
+        settings,
+        retrieval_resources=resources,
+    )
 
 
 async def get_current_user(

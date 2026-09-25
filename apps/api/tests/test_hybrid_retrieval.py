@@ -8,7 +8,7 @@ from app.core.errors import AppError, ErrorCode
 from app.models.chunk import ChunkGranularity
 from app.schemas.retrieval import RetrievalEvidence
 from app.services.hybrid_retrieval import HybridRetrievalService
-from app.services.retrieval import RetrievalSearchResult
+from app.services.retrieval import RetrievalRequest, RetrievalSearchResult
 
 
 @dataclass
@@ -16,6 +16,7 @@ class FakeBranch:
     items: list[RetrievalEvidence]
     strategy: str = "fake-branch"
     error: Exception | None = None
+    hard_filtered: bool = False
     calls: list[dict[str, Any]] = field(default_factory=list)
 
     async def search_evidence(
@@ -43,7 +44,29 @@ class FakeBranch:
             strategy=self.strategy,
             normalized_query=query.strip(),
             candidate_count=len(self.items),
+            hard_filtered=self.hard_filtered,
         )
+
+
+@dataclass
+class FakeBatchBranch(FakeBranch):
+    batch_calls: list[list[RetrievalRequest]] = field(default_factory=list)
+
+    async def search_evidence_batch(
+        self,
+        requests: list[RetrievalRequest],
+    ) -> list[RetrievalSearchResult]:
+        self.batch_calls.append(list(requests))
+        return [
+            await self.search_evidence(
+                query=request.query,
+                limit=request.limit,
+                granularities=list(request.granularities) or None,
+                author_id=request.author_id,
+                dynasty_id=request.dynasty_id,
+            )
+            for request in requests
+        ]
 
 
 def _evidence(
@@ -117,6 +140,36 @@ async def test_hybrid_merges_sources_with_rrf_and_preserves_match_types() -> Non
 
 
 @pytest.mark.asyncio
+async def test_hybrid_batches_independent_dense_branches() -> None:
+    lexical = FakeBranch(
+        items=[_evidence(chunk_id=1, score=0.9, match_types=["chunk_exact"])]
+    )
+    dense = FakeBatchBranch(
+        items=[_evidence(chunk_id=2, score=0.95, match_types=["dense_similarity"])]
+    )
+
+    results = await HybridRetrievalService(
+        lexical,
+        dense,
+    ).search_evidence_batch(
+        [
+            RetrievalRequest(query="明月", limit=2),
+            RetrievalRequest(query="故乡", limit=3),
+        ]
+    )
+
+    assert len(results) == 2
+    assert len(lexical.calls) == 2
+    assert len(dense.batch_calls) == 1
+    assert [request.query for request in dense.batch_calls[0]] == [
+        "明月",
+        "故乡",
+    ]
+    assert [request.limit for request in dense.batch_calls[0]] == [10, 15]
+    assert [call["limit"] for call in dense.calls] == [10, 15]
+
+
+@pytest.mark.asyncio
 async def test_hybrid_returns_single_source_hits_and_forwards_filters() -> None:
     lexical = FakeBranch(
         items=[_evidence(chunk_id=4, score=0.8, match_types=["chunk_phrase"])]
@@ -161,6 +214,24 @@ async def test_hybrid_uses_chunk_id_as_stable_tie_breaker() -> None:
 
 
 @pytest.mark.asyncio
+async def test_hybrid_stops_when_the_lexical_branch_hard_filters() -> None:
+    lexical = FakeBranch(items=[], hard_filtered=True)
+    dense = FakeBranch(
+        items=[_evidence(chunk_id=5, score=0.9, match_types=["dense_similarity"])]
+    )
+
+    result = await HybridRetrievalService(lexical, dense).search_evidence(
+        query="《竹里馆》写于哪一年",
+        limit=5,
+    )
+
+    assert result.items == []
+    assert result.hard_filtered is True
+    assert len(lexical.calls) == 1
+    assert dense.calls == []
+
+
+@pytest.mark.asyncio
 async def test_hybrid_rejects_blank_query_without_calling_branches() -> None:
     lexical = FakeBranch(items=[])
     dense = FakeBranch(items=[])
@@ -195,5 +266,34 @@ async def test_hybrid_fails_closed_when_either_branch_fails() -> None:
         )
 
     assert error.value.code == ErrorCode.VECTOR_STORE_ERROR
+    assert len(lexical.calls) == 1
+    assert len(dense.calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_hybrid_can_fall_back_to_lexical_on_dense_infrastructure_error() -> None:
+    lexical = FakeBranch(
+        items=[_evidence(chunk_id=1, score=0.9, match_types=["chunk_exact"])]
+    )
+    dense = FakeBranch(
+        items=[],
+        error=AppError(
+            status_code=503,
+            code=ErrorCode.EMBEDDING_PROVIDER_ERROR,
+            message="embedding unavailable",
+        ),
+    )
+
+    result = await HybridRetrievalService(
+        lexical,
+        dense,
+        fallback_on_dense_error=True,
+    ).search_evidence(
+        query="明月",
+        limit=5,
+    )
+
+    assert result.items == lexical.items
+    assert result.strategy == "fake-branch"
     assert len(lexical.calls) == 1
     assert len(dense.calls) == 1

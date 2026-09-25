@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import logging
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Protocol
 
 from app.core.errors import AppError, ErrorCode
 from app.models.chunk import ChunkGranularity
 from app.schemas.retrieval import RetrievalEvidence
-from app.services.retrieval import RetrievalSearchResult
+from app.services.retrieval import (
+    BatchEvidenceRetriever,
+    RetrievalRequest,
+    RetrievalSearchResult,
+)
 
 HYBRID_RETRIEVAL_STRATEGY = "hybrid-rrf-v1"
 RRF_RANK_CONSTANT = 60
@@ -18,6 +24,14 @@ _MAX_RRF_SCORE = _BRANCH_COUNT / (RRF_RANK_CONSTANT + 1)
 _LEXICAL_MATCH = "lexical_match"
 _DENSE_MATCH = "dense_similarity"
 _RRF_MATCH = "rrf_fusion"
+_FALLBACK_ERROR_CODES = frozenset(
+    {
+        ErrorCode.EMBEDDING_PROVIDER_ERROR,
+        ErrorCode.VECTOR_STORE_ERROR,
+    }
+)
+
+logger = logging.getLogger(__name__)
 
 
 class RetrievalBranch(Protocol):
@@ -52,9 +66,12 @@ class HybridRetrievalService:
         self,
         lexical: RetrievalBranch,
         dense: RetrievalBranch,
+        *,
+        fallback_on_dense_error: bool = False,
     ) -> None:
         self.lexical = lexical
         self.dense = dense
+        self.fallback_on_dense_error = fallback_on_dense_error
 
     async def search_evidence(
         self,
@@ -65,54 +82,157 @@ class HybridRetrievalService:
         author_id: int | None = None,
         dynasty_id: int | None = None,
     ) -> RetrievalSearchResult:
-        normalized_query = query.strip()
-        if not normalized_query:
-            raise AppError(
-                status_code=422,
-                code=ErrorCode.VALIDATION_ERROR,
-                message="查询内容不能为空",
+        results = await self.search_evidence_batch(
+            [
+                RetrievalRequest(
+                    query=query,
+                    limit=limit,
+                    granularities=tuple(granularities or ()),
+                    author_id=author_id,
+                    dynasty_id=dynasty_id,
+                )
+            ]
+        )
+        return results[0]
+
+    async def search_evidence_batch(
+        self,
+        requests: Sequence[RetrievalRequest],
+    ) -> list[RetrievalSearchResult]:
+        if not requests:
+            return []
+
+        branch_requests: list[RetrievalRequest] = []
+        for request in requests:
+            if not request.query.strip():
+                raise AppError(
+                    status_code=422,
+                    code=ErrorCode.VALIDATION_ERROR,
+                    message="查询内容不能为空",
+                )
+            branch_requests.append(
+                RetrievalRequest(
+                    query=request.query,
+                    limit=_candidate_limit(request.limit),
+                    granularities=request.granularities,
+                    author_id=request.author_id,
+                    dynasty_id=request.dynasty_id,
+                )
             )
 
-        branch_limit = _candidate_limit(limit)
-        lexical_result = await self.lexical.search_evidence(
-            query=query,
-            limit=branch_limit,
-            granularities=granularities,
-            author_id=author_id,
-            dynasty_id=dynasty_id,
-        )
-        dense_result = await self.dense.search_evidence(
-            query=query,
-            limit=branch_limit,
-            granularities=granularities,
-            author_id=author_id,
-            dynasty_id=dynasty_id,
-        )
+        lexical_results: list[RetrievalSearchResult] = []
+        for request in branch_requests:
+            lexical_results.append(
+                await self.lexical.search_evidence(
+                    query=request.query,
+                    limit=request.limit,
+                    granularities=list(request.granularities) or None,
+                    author_id=request.author_id,
+                    dynasty_id=request.dynasty_id,
+                )
+            )
 
-        fused: dict[int, _FusedCandidate] = {}
-        _add_branch(fused, lexical_result.items, source="lexical")
-        _add_branch(fused, dense_result.items, source="dense")
-        ranked = sorted(
-            fused.values(),
-            key=lambda item: (
-                -item.rrf_score,
-                _best_source_rank(item),
-                item.evidence.chunk_id,
-            ),
-        )
+        dense_indexes = [
+            index
+            for index, lexical_result in enumerate(lexical_results)
+            if not lexical_result.hard_filtered
+        ]
+        dense_results: dict[int, RetrievalSearchResult] = {}
+        if dense_indexes:
+            dense_requests = [branch_requests[index] for index in dense_indexes]
+            try:
+                if isinstance(self.dense, BatchEvidenceRetriever):
+                    fetched_results = await self.dense.search_evidence_batch(
+                        dense_requests
+                    )
+                    if len(fetched_results) != len(dense_requests):
+                        raise RuntimeError(
+                            "dense batch retrieval returned an invalid result count"
+                        )
+                else:
+                    fetched_results = []
+                    for request in dense_requests:
+                        fetched_results.append(
+                            await self.dense.search_evidence(
+                                query=request.query,
+                                limit=request.limit,
+                                granularities=list(request.granularities) or None,
+                                author_id=request.author_id,
+                                dynasty_id=request.dynasty_id,
+                            )
+                        )
+            except AppError as exc:
+                if (
+                    not self.fallback_on_dense_error
+                    or exc.code not in _FALLBACK_ERROR_CODES
+                ):
+                    raise
+                logger.warning(
+                    "Dense retrieval failed; falling back to lexical result (%s)",
+                    exc.code,
+                )
+            else:
+                dense_results = dict(
+                    zip(dense_indexes, fetched_results, strict=True)
+                )
 
-        return RetrievalSearchResult(
-            items=[_serialize(item) for item in ranked[:limit]],
-            strategy=HYBRID_RETRIEVAL_STRATEGY,
-            normalized_query=(
-                lexical_result.normalized_query or dense_result.normalized_query
-            ),
-            candidate_count=len(ranked),
-        )
+        results: list[RetrievalSearchResult] = []
+        for index, lexical_result in enumerate(lexical_results):
+            if lexical_result.hard_filtered:
+                results.append(
+                    RetrievalSearchResult(
+                        items=[],
+                        strategy=HYBRID_RETRIEVAL_STRATEGY,
+                        normalized_query=lexical_result.normalized_query,
+                        candidate_count=0,
+                        hard_filtered=True,
+                    )
+                )
+                continue
+            dense_result = dense_results.get(index)
+            if dense_result is None:
+                results.append(lexical_result)
+                continue
+            results.append(
+                _fuse_results(
+                    lexical_result,
+                    dense_result,
+                    limit=requests[index].limit,
+                )
+            )
+        return results
 
 
 def _candidate_limit(limit: int) -> int:
     return min(max(limit * _CANDIDATE_MULTIPLIER, limit), _MAX_CANDIDATE_LIMIT)
+
+
+def _fuse_results(
+    lexical_result: RetrievalSearchResult,
+    dense_result: RetrievalSearchResult,
+    *,
+    limit: int,
+) -> RetrievalSearchResult:
+    fused: dict[int, _FusedCandidate] = {}
+    _add_branch(fused, lexical_result.items, source="lexical")
+    _add_branch(fused, dense_result.items, source="dense")
+    ranked = sorted(
+        fused.values(),
+        key=lambda item: (
+            -item.rrf_score,
+            _best_source_rank(item),
+            item.evidence.chunk_id,
+        ),
+    )
+    return RetrievalSearchResult(
+        items=[_serialize(item) for item in ranked[:limit]],
+        strategy=HYBRID_RETRIEVAL_STRATEGY,
+        normalized_query=(
+            lexical_result.normalized_query or dense_result.normalized_query
+        ),
+        candidate_count=len(ranked),
+        hard_filtered=dense_result.hard_filtered,
+    )
 
 
 def _add_branch(

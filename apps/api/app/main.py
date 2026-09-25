@@ -12,6 +12,10 @@ from app.core.errors import install_exception_handlers
 from app.core.request_context import RequestIdMiddleware
 from app.db.base import Base
 from app.db.session import create_database_engine, create_session_factory
+from app.services.chat import (
+    ChatRetrievalResources,
+    create_chat_retrieval_resources,
+)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -21,15 +25,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        if app_settings.auto_create_tables:
-            # Import models before creating metadata for local and test environments.
-            import app.models  # noqa: F401
+        retrieval_resources: ChatRetrievalResources | None = None
+        try:
+            if app_settings.auto_create_tables:
+                # Import models before creating metadata for local and test environments.
+                import app.models  # noqa: F401
 
-            async with engine.begin() as connection:
-                await connection.run_sync(Base.metadata.create_all)
+                async with engine.begin() as connection:
+                    await connection.run_sync(Base.metadata.create_all)
 
-        yield
-        await engine.dispose()
+            retrieval_resources = await create_chat_retrieval_resources(
+                app_settings
+            )
+            application.state.chat_retrieval_resources = retrieval_resources
+            yield
+        finally:
+            if retrieval_resources is not None:
+                await retrieval_resources.aclose()
+            await engine.dispose()
 
     application = FastAPI(
         title=app_settings.app_name,
@@ -40,6 +53,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.state.settings = app_settings
     application.state.db_engine = engine
     application.state.session_factory = session_factory
+    application.state.chat_retrieval_resources = None
 
     application.add_middleware(RequestIdMiddleware)
     application.add_middleware(

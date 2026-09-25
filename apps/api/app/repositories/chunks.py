@@ -185,7 +185,13 @@ class ChunkRepository:
         statement = (
             _candidate_statement()
             .where(*filters)
-            .order_by(PoemChunk.id)
+            .order_by(
+                _lexical_priority(
+                    normalized_content_query=normalized_content_query,
+                    normalized_lookup_query=normalized_lookup_query,
+                ),
+                PoemChunk.id,
+            )
             .limit(limit)
         )
         rows = (await self.session.execute(statement)).all()
@@ -379,3 +385,73 @@ class ChunkRepository:
 def _like_pattern(value: str) -> str:
     escaped = value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     return f"%{escaped}%"
+
+
+def _lexical_priority(
+    *,
+    normalized_content_query: str,
+    normalized_lookup_query: str,
+) -> ColumnElement[int]:
+    """Order broad LIKE candidates before applying the SQL limit.
+
+    A short query such as "登高" can appear in thousands of poem bodies. The
+    previous query ordered by chunk id, so metadata matches could be truncated
+    before the service-level scorer saw them. These priorities keep exact
+    content and metadata hits in the candidate pool without hard-coding any
+    poem title or author.
+    """
+
+    whens: list[tuple[ColumnElement[bool], int]] = []
+    if normalized_content_query:
+        whens.extend(
+            [
+                (
+                    func.lower(PoemChunk.normalized_text)
+                    == normalized_content_query,
+                    0,
+                ),
+            ]
+        )
+    if normalized_lookup_query:
+        metadata_pattern = _like_pattern(normalized_lookup_query)
+        whens.extend(
+            [
+                (func.lower(Poem.title) == normalized_lookup_query, 1),
+                (func.lower(Author.name) == normalized_lookup_query, 2),
+                (func.lower(Dynasty.name) == normalized_lookup_query, 3),
+                (
+                    func.lower(Poem.title).like(
+                        metadata_pattern,
+                        escape="\\",
+                    ),
+                    4,
+                ),
+                (
+                    func.lower(Author.name).like(
+                        metadata_pattern,
+                        escape="\\",
+                    ),
+                    5,
+                ),
+                (
+                    func.lower(Dynasty.name).like(
+                        metadata_pattern,
+                        escape="\\",
+                    ),
+                    6,
+                ),
+            ]
+        )
+    if normalized_content_query:
+        whens.append(
+            (
+                func.lower(PoemChunk.normalized_text).like(
+                    _like_pattern(normalized_content_query),
+                    escape="\\",
+                ),
+                7,
+            )
+        )
+    if not whens:
+        return case(else_=99)
+    return case(*whens, else_=99)
