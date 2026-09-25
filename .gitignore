@@ -3,6 +3,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.verify-tmp/
 .ruff_cache/
 .mypy_cache/
 .coverage
@@ -18,3 +19,14 @@ coverage/
 .vscode/
 *.log
 
+data/raw/
+data/import/generated/
+data/import/reports/
+data/eval/reports/*_after_100_corpus_*.json
+data/eval/reports/*open_corpus*.json
+
+# Local diagnostics are reproducible and are not release baseline artifacts.
+apps/api/scripts/_probe_*.py
+data/eval/_probe_*.json
+data/eval/reports/_probe_*.json
+data/eval/reports/profile_*.json
