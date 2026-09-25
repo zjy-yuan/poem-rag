@@ -56,6 +56,10 @@
 正式 `retrieval_holdout_1000_v1/v2/v3.json`、`generation_holdout_1000_v1/v2/v3.json`
 和对应最终报告继续版本化。
 
+四个 holdout 金标准与转换后语料的对照测试需要本机生成
+`data/import/generated/chinese-gushiwen-1000-v2.json`。该文件包含第三方正文且被 Git
+忽略，因此全新 checkout 或 CI 中这些对照测试会明确跳过；本地存在语料时仍执行完整校验。
+
 ## 8. 后端与前端设计
 
 质量门禁只调用现有测试和构建命令，不新增应用代码或运行时依赖。本地 pytest 临时文件
@@ -77,6 +81,7 @@
 ## 11. 风险与回滚
 
 - CI 只覆盖静态和自动化测试，不能证明真实模型质量。
+- 未生成第三方语料时，四项“金标准仍在转换后语料中”校验会跳过，CI 不能替代本地扩库回归。
 - 首次新增 GitHub Actions 时，仓库远程配置和 CI 运行权限可能需要单独确认。
 - 回滚只需删除 `scripts/verify.ps1`、CI workflow 和 `.gitignore` 新增规则，不影响业务代码。
 

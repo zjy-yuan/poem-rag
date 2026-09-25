@@ -4294,3 +4294,34 @@ CSV 当前包含三条待人工评分样本：
 - `data/eval/reports/generation_holdout_1000_v3_calibration.json`
 - `data/eval/reports/generation_holdout_1000_v3_calibration_summary.md`
 - 校准命令执行成功；文档更新后运行 `git diff --check`。
+
+### [2026-09-25] 修复 CI 对本地生成语料的隐式依赖
+
+#### 本次目标
+
+- 解释 GitHub Actions 后端 job 在全新 checkout 中失败的原因，并让本地与 CI 门禁语义一致。
+- 保持第三方语料不进入 Git，同时不把缺失生成产物伪装成业务测试失败。
+
+#### 根因
+
+四个 retrieval/generation holdout 对照测试直接读取被 `.gitignore` 排除的
+`data/import/generated/chinese-gushiwen-1000-v2.json`。本地已生成该文件，所以完整
+测试通过；CI checkout 不包含第三方正文，因此以 `FileNotFoundError` 失败。
+
+#### 修复
+
+- `apps/api/tests/conftest.py`：新增统一 `converted_corpus_records` fixture，文件不存在时
+  以可读原因跳过，并校验存在时 JSON 必须包含 `records` 列表。
+- `apps/api/tests/test_retrieval_evaluation.py`、`test_generation_evaluation.py`：四个
+  对照测试改用该 fixture，删除对本地路径和 `json` 模块的重复依赖。
+- `README.md` 与质量门禁说明：记录 CI 跳过条件和本地完整校验边界。
+
+#### 验证
+
+- 本地包含生成语料：后端质量门禁通过，pytest `203 passed`。
+- Python 3.12 容器且不含生成语料：预期变为 `199 passed, 4 skipped`，不再出现文件缺失失败。
+
+#### 风险与后续
+
+- CI 不再替代本地扩库后的 holdout 对照校验；发布前仍需在本机保留或重新生成第三方语料并
+  执行完整门禁。

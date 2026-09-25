@@ -127,6 +127,8 @@ cd apps\api
 ```
 
 CI 在 push 和 pull request 时执行等价的后端与前端任务，不调用真实模型或外部数据服务。
+需要 `data/import/generated/` 第三方语料的四项 holdout 对照测试在 CI 中会明确跳过；
+本地已生成该语料时会执行完整校验。
 
 分项命令如下：
 

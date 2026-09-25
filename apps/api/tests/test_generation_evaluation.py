@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib.util
-import json
 from collections.abc import AsyncIterator, Sequence
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from pathlib import Path
@@ -52,13 +51,6 @@ HOLDOUT_1000_V3_DATASET_PATH = (
     / "data"
     / "eval"
     / "generation_holdout_1000_v3.json"
-)
-CORPUS_1000_PATH = (
-    Path(__file__).resolve().parents[3]
-    / "data"
-    / "import"
-    / "generated"
-    / "chinese-gushiwen-1000-v2.json"
 )
 EVALUATE_GENERATION_SCRIPT_PATH = (
     Path(__file__).resolve().parents[1] / "scripts" / "evaluate_generation.py"
@@ -406,10 +398,11 @@ def test_holdout_1000_v2_generation_dataset_has_expected_coverage() -> None:
     )
 
 
-def test_holdout_1000_v2_citations_exist_in_converted_corpus() -> None:
+def test_holdout_1000_v2_citations_exist_in_converted_corpus(
+    converted_corpus_records: list[dict[str, object]],
+) -> None:
     dataset = load_generation_evaluation_dataset(HOLDOUT_1000_V2_DATASET_PATH)
-    corpus = json.loads(CORPUS_1000_PATH.read_text(encoding="utf-8"))
-    records = corpus["records"]
+    records = converted_corpus_records
 
     for case in dataset.cases:
         for selector in case.expected_citations:
@@ -458,10 +451,11 @@ def test_holdout_1000_v3_generation_dataset_has_expected_coverage() -> None:
     )
 
 
-def test_holdout_1000_v3_citations_exist_in_converted_corpus() -> None:
+def test_holdout_1000_v3_citations_exist_in_converted_corpus(
+    converted_corpus_records: list[dict[str, object]],
+) -> None:
     dataset = load_generation_evaluation_dataset(HOLDOUT_1000_V3_DATASET_PATH)
-    corpus = json.loads(CORPUS_1000_PATH.read_text(encoding="utf-8"))
-    records = corpus["records"]
+    records = converted_corpus_records
 
     for case in dataset.cases:
         for selector in case.expected_citations:
