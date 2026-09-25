@@ -3,7 +3,7 @@
 > 项目代号：Poem RAG  
 > 文档状态：持续开发日志 v1.0  
 > 创建日期：2026-09-19  
-> 最后更新：2026-09-20  
+> 最后更新：2026-09-25
 > 技术方向：Vue 3 全栈 + Python/FastAPI + LangChain/LangGraph + RAG  
 > 默认领域：中国诗词知识库与智能问答
 
@@ -2892,3 +2892,1405 @@ Hybrid 在 `0.50` 下召回不掉，是因为词法分支独立召回了 4 条�
 1. 让检索评估覆盖“检索 + 上下文组装”的完整链路，避免评估口径与在线链路不一致。
 2. 根据下一阶段目标决定是先扩语料（爬取 + 清洗 + 赏析 chunk），还是先补 Rerank、
    低召回重写重试和忠实度评估。
+
+### [2026-09-20] 固定来源 100 首真实语料闭环与扩库评估
+
+#### 本次目标
+
+- 不使用爬虫，先用固定版本的真实诗词数据验证完整语料闭环。
+- 只导入 100 首分层样本，验证来源、版本、注释、切块、向量索引和评估方法。
+- 记录扩库对旧检索集的影响，决定下一步是继续扩量还是先修检索。
+
+#### 上下文
+
+- 此前真实库只有 6 首种子诗词和 21 个 chunks，无法验证开放语料下的字段清洗、
+  长文本、注释和检索歧义。
+- `aopao/chinese-gushiwen` 的 `guwen0-1000.json` 同时包含诗词和非诗词记录，原始
+  NDJSON 与现有 `CorpusImportDataset` 不一致。
+- 原始数据没有 LICENSE，README 只说明来源网络、仅供交流学习。
+
+#### 做出的决定
+
+- 固定来源 commit `c2345d0abf2404b8b3601e4afc2e8fd12f90d6c8`，记录文件 SHA256。
+- 不使用爬虫；转换器只负责把固定 NDJSON 转成现有导入契约。
+- 从 1000 条中排除 534 条非诗词、1 条来源内重复，再从 465 条中按朝代和正文长度
+  分层抽取 100 首。
+- 映射 `remark -> note`、`translation -> translation`、`shangxi -> appreciation`；
+  第三方内容不得标记为 AI 生成。
+- 转换默认 `publish=false`；本次验证显式使用 `--publish`，让公开浏览和在线检索能
+  覆盖新语料。
+- 原始 NDJSON、转换后的完整正文和含第三方诗句的扩库评估报告不提交 Git。
+
+#### 完成内容
+
+- `app/services/chinese_gushiwen_conversion.py`：NDJSON 解析、诗词筛选、来源内去重、
+  朝代与长度分层抽样、字段映射、manifest 生成。
+- `apps/api/scripts/convert_chinese_gushiwen.py`：新增转换 CLI，支持输出数据集、
+  manifest、`--limit` 和显式 `--publish`。
+- `apps/api/tests/test_chinese_gushiwen_conversion.py`：覆盖非法 NDJSON、字段映射、
+  发布语义、非诗词与重复排除、分层抽样和候选不足。
+- `docs/features/20260920-chinese-gushiwen-100-corpus.md`：记录来源、抽样、导入、
+  索引、评估、许可风险和复现命令。
+- `.gitignore`：忽略原始语料、转换正文和本轮扩库评估报告。
+
+#### 真实结果
+
+- 输入 1000 条，排除非诗词 534 条、来源内重复 1 条，可抽样 465 条，最终选中 100 首。
+- 选中分布：唐 37、宋 36、先秦 10、汉 4，其余 9 个朝代共 13；短 50、中 40、长 10。
+- 注释 98 首、译文 100 首、赏析 97 首。
+- 导入：100 created、0 failed；数据库新增 2039 个 chunks。
+- 真实库：106 首已发布作品、100 条本轮来源记录、2069 个 chunks。
+- Qdrant `poem_chunks_v1`：`green`、2069 points、1024 维；其中 30 个为原种子向量，
+  2039 个为本轮新增。`indexed_vectors_count=0` 是因为 points 未达到 HNSW
+  `indexing_threshold=10000`，查询仍走全扫描。
+
+#### 扩库后评估
+
+原 31 条检索集、Top-5、真实 MySQL + Qdrant + Qwen：
+
+| 策略 | 通过 | Recall@5 | MRR | 无答案准确率 | 平均延迟 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `lexical-baseline-v1` | 28/31 | 0.869565 | 0.775362 | 1.000000 | 21.036 ms |
+| `expanded-lexical-v1` | 25/31 | 0.869565 | 0.768116 | 0.625000 | 21.841 ms |
+| `dense-baseline-v1` | 17/31 | 0.760870 | 0.718841 | 0.000000 | 217.912 ms |
+| `dense-baseline-v1` + `0.22` | 18/31 | 0.760870 | 0.718841 | 0.125000 | 203.762 ms |
+| `hybrid-rrf-v1` + `0.22` | 20/31 | 0.847826 | 0.834783 | 0.125000 | 202.499 ms |
+| `hybrid-rrf-v1` + `0.50` | 23/31 | 0.847826 | 0.813043 | 0.500000 | 246.967 ms |
+
+扩库前 `expanded-lexical-v1` 为 29/31、Hybrid + `0.50` 为 31/31。扩库后退化集中在
+自然语言、作者、朝代和领域内负样本；不能通过调高 `min_score` 掩盖。原 12 条生成
+样本仍为 `12/12`，引用精确率 `0.961538`、引用召回率 `1.0`、平均延迟 `1404.935 ms`、
+P95 `2697.422 ms`，但该集合仍只覆盖种子问题。
+
+#### 验证结果
+
+- 转换专项测试：`6 passed, 2 warnings`。
+- 后端完整测试：`123 passed, 3 warnings`。
+- Ruff：`All checks passed!`。
+- 导入预检：`dry_run ... records=100`。
+- 真实导入：100 created、0 failed。
+- 真实索引：2039 个新增 chunks 全部 1024 维，0 失败。
+- 检索评估：六组扩库后对照已写入本地报告。
+- 生成评估：原 12 条样本 `12/12`。
+
+#### 问题与风险
+
+- 原 31 条金标准只覆盖 6 首种子作品，已不能代表扩库后的候选歧义。
+- 导入作品和种子作品存在内容重复但 ID 不同，跨来源合并尚未实现。
+- 查询改写词典覆盖不足，自然语言问题在扩库后全部失败。
+- Dense 和 Hybrid 的门槛无法解决“话题相关但答案属性缺失”。
+- 生成集没有覆盖新导入作品、长诗、组诗和开放语料问题。
+- 来源没有 LICENSE，公开部署前必须复核授权并提供来源与移除入口。
+
+#### 下一步
+
+1. 建立开放语料检索评估 v1，重新标注金标准并覆盖新导入作品（已在下一节完成）。
+2. 设计跨来源作品去重与合并，优先消除种子作品和导入作品的 ID 歧义。
+3. 增加作者、朝代、体裁和标签的结构化过滤。
+4. 引入 Rerank，分别比较召回与排序阶段的变化。
+5. 在开放语料评估稳定后，再决定全量导入、Embedding 维度升级和云部署。
+
+### [2026-09-20] 开放语料检索评估 v1 与默认评估集切换
+
+#### 本次目标
+
+- 让检索评估与 100 首真实语料同步，不再用 6 首种子集解释开放语料结果。
+- 覆盖精确引用、短语、标题、作者、朝代、多证据、自然语言、长文本和拒答边界。
+- 在不修改公开 HTTP 契约的前提下，对 Lexical、Expanded、Dense 和 Hybrid 做同集对比。
+
+#### 做出的决定
+
+- 新增 `data/eval/retrieval_open_corpus_v1.json`，版本 `open-corpus-100-v1`，共 50 条：
+  42 条可回答、8 条无答案。
+- 作者和朝代查询使用元数据选择器，允许任意同作者、同朝代证据命中，避免把某一首
+  代表作误写成唯一答案。
+- 默认离线评估入口切换到开放语料集；旧 v1/v2 文件冻结，仍可通过 `--dataset` 复现。
+- `hybrid-rrf-v1 + 0.60` 只记录为候选工作点，不直接切换在线策略。
+
+#### 完成内容
+
+- `data/eval/retrieval_open_corpus_v1.json`：50 条版本化开放语料金标准。
+- `apps/api/scripts/evaluate_retrieval.py`：默认数据集切换为开放语料 v1。
+- `apps/api/tests/test_retrieval_evaluation.py`：新增规模、答案类型、唯一性和分类覆盖测试。
+- `docs/features/20260920-open-corpus-retrieval-evaluation.md`：记录契约、真实指标、
+  失败类型、风险和后续验证要求。
+
+#### 真实结果
+
+环境为真实 MySQL、Qdrant `poem_chunks_v1`、Qwen `text-embedding-v4`，Top-5：
+
+| 策略 | 通过 | Recall@5 | MRR | 可回答无结果率 | 无答案准确率 | 平均延迟 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `lexical-baseline-v1` | 36/50 | 0.678571 | 0.650794 | 0.309524 | 1.000000 | 16.435 ms |
+| `expanded-lexical-v1` | 35/50 | 0.773810 | 0.682540 | 0.071429 | 0.375000 | 19.812 ms |
+| `dense-baseline-v1` | 40/50 | 0.964286 | 0.895635 | 0.000000 | 0.000000 | 215.830 ms |
+| `hybrid-rrf-v1 + 0.50` | 43/50 | 0.976190 | 0.921429 | 0.000000 | 0.375000 | 200.804 ms |
+| `hybrid-rrf-v1 + 0.60` | 47/50 | 0.988095 | 0.927381 | 0.000000 | 0.750000 | 189.771 ms |
+
+Lexical 的精确引用、短语、标题、作者和朝代全部通过，但自然语言和长文本全部失败。
+Dense 将自然语言和长文本召回提升到 9/9、4/4，但无阈值时无法拒绝跨域负样本。
+Hybrid + `0.60` 仍漏拒《相思》缺实体和《将进酒》缺年份两类问题，证明阈值不能替代
+可答性判定。
+
+#### 验证结果
+
+- 检索评估专项测试：`5 passed, 2 warnings`。
+- 默认评估集：`open-corpus-100-v1`，50 条。
+- 真实策略对照：已完成 Lexical、Expanded、Dense、Hybrid 及两个阈值组合。
+
+#### 问题与风险
+
+- 50 条样本适合发现策略边界，不足以完成独立阈值校准。
+- 跨来源重复作品仍可能影响多证据排名。
+- 当前检索评估尚未接入父级上下文装饰器和在线 `assess` 节点。
+- `0.60` 是在观察集上的候选值，需要 holdout 或人工盲评复核。
+
+#### 下一步
+
+1. 增加 20 至 30 条 holdout，评估完整“检索 + 上下文组装 + 可答性判定”链路。
+2. 对多证据查询增加按作品去重和证据扩展，不继续抬高单一阈值。
+3. 为作者、朝代、体裁和标签设计结构化过滤，并保持公开契约兼容。
+4. 在 holdout 上复核 Hybrid 阈值后再决定在线策略切换。
+
+### [2026-09-20] 开放语料生成层 holdout v1 与默认评估集切换
+
+#### 本次目标
+
+- 不再用 6 首种子作品上的生成评估结论代表 100 首开放语料。
+- 用独立问题集验证完整在线链路：
+  `rewrite -> retrieve -> parent_context -> assess -> generate|refuse -> validate`。
+- 区分“检索命中作品”和“回答所需事实进入有效证据”这两种质量口径。
+
+#### 做出的决定
+
+- 新增 28 条开放语料生成 holdout，包含 21 条有答案和 7 条拒答；不直接复用 50 条
+  检索评估问题，降低过拟合同一批样本的风险。
+- 默认生成评估入口切换到 `generation_rag_open_corpus_v1.json`；旧 12 条种子集保持
+  冻结，仍可通过 `--dataset` 复现。
+- 四条失败不通过修改 `assess` Prompt 或放宽事实匹配来掩盖；判定拒绝的是证据不足，
+  应优先修检索召回和上下文组装。
+- 含模型回答和第三方引用正文的报告继续写入 Git 忽略目录。
+
+#### 完成内容
+
+- `data/eval/generation_rag_open_corpus_v1.json`：28 条开放语料 holdout。
+- `apps/api/scripts/evaluate_generation.py`：默认数据集切换到开放语料 holdout。
+- `apps/api/tests/test_generation_evaluation.py`：新增版本、规模、答案/拒答分布、
+  分类覆盖、ID 和问题唯一性契约测试。
+- `.gitignore`：统一忽略 `data/eval/reports/*open_corpus*.json`，避免第三方正文进入
+  Git。
+- `docs/features/20260920-open-corpus-generation-evaluation.md`：记录数据契约、真实
+  指标、失败分析和后续方向。
+
+#### 真实结果
+
+环境为真实 MySQL、Qdrant `poem_chunks_v1`、Qwen `text-embedding-v4`、
+`deepseek-chat`，在线策略为 `expanded-lexical-v1 + parent_context + assess`：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 通过 | 24/28 |
+| 有答案准确率 | 0.809524 |
+| 拒答准确率 | 1.000000 |
+| 拒答 P/R/F1 | 0.636364 / 1.000000 / 0.777778 |
+| 引用精确率 | 1.000000 |
+| 引用召回率 | 0.772727 |
+| 平均延迟 | 1748.391 ms |
+| P95 延迟 | 3549.023 ms |
+
+失败样本为 `gen-open-qingyuan-lantern`、`gen-open-pipa-music`、
+`gen-open-kongque-tragedy` 和 `gen-open-multi-moon`，全部是有答案问题被 `assess`
+判为 `missing_fact`。根因是目标事实句未进入有效证据、长诗父级上下文在 1200 字处
+截断，以及多证据问题未保证两首目标作品同时入选。拒答边界 7/7 全部通过。
+
+#### 验证结果
+
+- 生成评估专项测试：`5 passed, 2 warnings`。
+- Ruff：`All checks passed!`。
+- CLI `--help`：默认数据集路径已指向开放语料 holdout。
+- 真实 DeepSeek 评估：`24/28`，报告保存在本地忽略目录。
+
+#### 问题与风险
+
+- 28 条样本仍不足以完成统计显著评估，只能作为当前语料快照的 holdout。
+- `required_facts` 仍是关键词匹配，不能证明回答被引用证据蕴含。
+- 当前引用金标准验证作品级定位，不能保证引用片段本身覆盖目标事实。
+- 作品标题命中可能掩盖事实句缺失，长诗和多证据问题尤其明显。
+
+#### 下一步
+
+1. 设计答案证据选择器，区分作品命中、事实片段命中和上下文补充命中。
+2. 为长诗建立按段、韵脚或事实位置的上下文扩展，取消固定只取前 1200 字。
+3. 为多证据问题增加目标作品去重和证据槽位，不继续抬高全局 `top_k`。
+4. 用同一 28 条 holdout 复核 `hybrid-rrf-v1 + 0.60`、父级上下文和 `assess` 的组合。
+5. holdout 稳定后再决定在线检索策略切换和 Embedding 维度升级。
+
+### [2026-09-20] 修复开放语料长文本、多证据和领域查询召回
+
+#### 本次目标
+
+- 修复开放语料生成 holdout 中剩余的有答案失败，不用放宽 `assess` 或伪造引用通过。
+- 同时验证查询改写改动不会让开放语料检索基线回归。
+- 保持公开 HTTP、SSE 事件和数据库契约不变。
+
+#### 背景与问题
+
+上一轮 28 条生成 holdout 为 `24/28`，四个失败样本分别暴露三类问题：
+
+1. 《青玉案·元夕》的“元宵”没有触发“元夕、灯火、花灯”等领域扩展，且“元”被
+   误识别为朝代实体。
+2. 多证据问题允许一个作品占满 Top-K，导致《静夜思》和《水调歌头》无法同时进入
+   有效证据。
+3. 长诗父级上下文只保留固定前 1200 字，导致《琵琶行》和《孔雀东南飞》的尾部事实
+   没有进入 `assess`。
+4. 《江城子》的评估短语过于精确，模型实际回答已包含同义表达。
+
+#### 做出的决定
+
+- 继续使用确定性、可审查的词典扩展，不把失败样本直接交给 LLM 查询改写。
+- 只对显式“两首、分别、各自、对比”等问题启用多证据槽位限制，避免影响普通查询。
+- 领域概念触发词覆盖的字符不再同时触发朝代实体，修复“元宵”与“元”的冲突。
+- 长诗上下文按命中作品轮转选择，而不是让第一个作品占满预算。
+- 金标准只补充事实同义表达，不删除原要求，也不修改 `assess` Prompt。
+
+#### 完成内容
+
+- `data/query_expansion/lexicon_v1.json`：新增 `lantern_festival`、`longing` 和
+  作者“辛弃疾”。
+- `app/services/query_expansion.py`：新增概念触发区间、显式多证据识别和单作品
+  最多 2 个候选槽位的选择逻辑。
+- `app/services/evidence_context.py`：上下文预算调整为 40 chunks / 4800 字符，
+  长文本按作品轮转补全，支持长诗尾部事实。
+- `data/eval/generation_rag_open_corpus_v1.json`：补充《江城子》的答案同义表达。
+- 查询改写、生成评估、上下文选择和聊天图相关测试同步补齐。
+
+#### 真实结果
+
+环境为真实 MySQL、Qdrant `poem_chunks_v1`、Qwen `text-embedding-v4`、
+`deepseek-chat`，在线策略为 `expanded-lexical-v1 + parent_context + assess`：
+
+| 指标 | 修复前 | 修复后 |
+| --- | ---: | ---: |
+| 生成 holdout 通过 | 24/28 | 28/28 |
+| 有答案准确率 | 0.809524 | 1.000000 |
+| 拒答 P/R/F1 | 0.636364 / 1.000000 / 0.777778 | 1.000000 / 1.000000 / 1.000000 |
+| 引用精确率 | 1.000000 | 1.000000 |
+| 引用召回率 | 0.772727 | 1.000000 |
+| 平均延迟 | 1748.391 ms | 2087.159 ms |
+| P95 延迟 | 3549.023 ms | 4075.593 ms |
+
+检索侧同一 50 条开放语料、Top-5：
+
+| 策略 | 修复前 | 修复后 | Recall@5 | MRR |
+| --- | ---: | ---: | ---: | ---: |
+| `lexical-baseline-v1` | 36/50 | 36/50 | 0.678571 | 0.650794 |
+| `expanded-lexical-v1` | 35/50 | 36/50 | 0.797619 | 0.722222 |
+
+`expanded-lexical-v1` 的自然语言从 3/9 提升到 4/9，长文本从 0/4 提升到 1/4；
+词法基线未回归。生成修复和检索提升不能互相替代：当前在线问答仍依赖 `assess`
+兜底，Hybrid + `0.60` 仍需在独立 holdout 上复核。
+
+#### 验证结果
+
+- 定向测试：`40 passed, 2 warnings`。
+- Ruff：`All checks passed!`。
+- 真实生成评估：`28/28`、拒答 `7/7`、引用 P/R `1.0`。
+- 真实检索评估：`expanded-lexical-v1` 36/50，`lexical-baseline-v1` 36/50。
+- 评估报告继续保存在 Git 忽略的 `data/eval/reports/`。
+
+#### 问题与风险
+
+- 词典和候选槽位针对当前 28 条 holdout 的失败类型修改，存在小样本过拟合风险。
+- 4800 字上下文预算尚未按模型 token 成本和长尾长诗做系统校准。
+- 引用金标准仍是作品级，不能证明引用片段本身覆盖回答事实。
+- 多证据检索集仍有 1/3 失败，生成集通过不代表检索层已经通用解决。
+
+#### 下一步
+
+1. 新增独立生成和检索 holdout，复核本轮修改的泛化。
+2. 实现答案证据选择器，区分作品命中、事实命中与上下文补充。
+3. 对比 `hybrid-rrf-v1 + 0.60`、Rerank、结构化过滤和当前在线策略。
+4. 再决定在线检索策略切换、Embedding 维度升级和全量语料导入。
+
+### [2026-09-23] 固定来源扩库到 1000 首与扩库冲击回归
+
+#### 本次目标
+
+- 把固定来源 `aopao/chinese-gushiwen` 从 100 首扩展到 1000 首。
+- 复用现有转换、导入、切块和索引契约，不新增爬虫和数据库迁移。
+- 观察 10 个分片、跨分片筛选和候选规模增长后的真实 RAG 退化。
+- 把旧 50 条检索集明确降级为扩库冲击回归，停止在同一观察集上继续调参。
+
+#### 做出的决定
+
+- 固定 commit `c2345d0abf2404b8b3601e4afc2e8fd12f90d6c8`，使用
+  `guwen0-1000.json` 至 `guwen9001-10000.json` 共 10 个分片。
+- 转换器新增 `--input-dir`，按自然排序读取 `guwen*.json`，默认选择 1000 条。
+- 先排除非诗词、明确文言文和低置信度记录，再做来源内去重和
+  `dynasty_and_content_length_stratified_v1` 分层选择。
+- 数据集版本升级为 `chinese-gushiwen-c2345d0-guwen-10000-v2`，避免与 100 首
+  验证共用版本标识。
+- 本轮显式 `--publish` 以验证公开浏览和在线检索；代码默认仍为草稿。
+- 保留 100 首历史文档和结论，不覆盖为“当前指标”。
+
+#### 完成内容
+
+- `app/services/chinese_gushiwen_conversion.py`：支持 10 个分片、跨分片筛选、
+  来源内去重、分层抽样和 v2 manifest。
+- `apps/api/scripts/convert_chinese_gushiwen.py`：新增 `--input-dir`、
+  `--output`、`--manifest` 和 `--limit` 组合。
+- `apps/api/tests/test_chinese_gushiwen_conversion.py`：覆盖多分片、非法输入、
+  字段映射、筛选、重复排除、分层抽样和候选不足。
+- `data/import/generated/chinese-gushiwen-1000-v2.json`：本地生成的导入数据集，
+  不进入 Git。
+- `data/import/reports/chinese-gushiwen-1000-v2.manifest.json`：本地记录 10 个
+  分片的 URL、SHA256、输入记录数和筛选分布，位于 Git 忽略目录。
+- `data/import/reports/chinese-gushiwen-1000-v2.import.json`：本地记录 1000 条
+  真实导入结果，位于 Git 忽略目录。
+- `docs/features/20260923-chinese-gushiwen-1000-corpus.md`：记录来源、筛选、
+  导入、索引、检索冲击、生成评估、风险和复现命令。
+
+#### 真实结果
+
+转换和筛选：
+
+| 阶段 | 数量 |
+| --- | ---: |
+| 原始记录 | 10000 |
+| 排除非诗词 | 4088 |
+| 排除明确文言文 | 203 |
+| 排除低置信度记录 | 3885 |
+| 重复候选 | 37 |
+| 候选唯一诗词 | 5875 |
+| 最终选择 | 1000 |
+
+选中分布：宋 435、唐 206、明 149、清 89、元 28、先秦 20、近代 16、当代 15、
+南北朝 11、魏晋 9、汉 7、五代 6、金 3、隋 3、现代 2、未知 1；short 466、
+medium 458、long 76。注释 624 首、译文 664 首、赏析 537 首。
+
+真实导入和索引：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 导入总数 | 1000 |
+| created | 902 |
+| unchanged | 98 |
+| failed | 0 |
+| MySQL 已发布作品 | 1008 |
+| MySQL 作品版本 | 1009 |
+| MySQL chunks | 12415 |
+| 扩库新增 chunks | 10346 |
+| ready / pending chunks | 12415 / 0 |
+| 本轮索引版本 | 902 |
+| `poem_index_runs` 累计成功 / 失败 | 1009 / 0 |
+| Qdrant points | 12415 |
+| Qdrant 状态 | `green` |
+
+1000 首候选池上的旧 50 条检索集，Top-5：
+
+| 策略 | 通过 | Recall@5 | MRR | 无答案准确率 | 平均延迟 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `lexical-baseline-v1` | 36/50 | 0.678571 | 0.638889 | 1.000000 | 114.194 ms |
+| `expanded-lexical-v1` | 34/50 | 0.761905 | 0.662698 | 0.375000 | 182.992 ms |
+| `dense-baseline-v1` | 37/50 | 0.880952 | 0.815476 | 0.000000 | 176.095 ms |
+| `hybrid-rrf-v1 + 0.50` | 42/50 | 0.940476 | 0.876984 | 0.375000 | 211.241 ms |
+| `hybrid-rrf-v1 + 0.60` | 43/50 | 0.952381 | 0.888889 | 0.500000 | 218.330 ms |
+
+100 首时 Hybrid + `0.60` 为 47/50、Recall@5 `0.988095`、MRR `0.927381`、无答案
+准确率 `0.75`。扩库后召回仍高，但无答案准确率降到 `0.5`，多证据和领域内拒答
+明显受挤压。
+
+生成层在 1000 首真实语料快照上的结果：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 通过 | 28/28 |
+| 答案准确率 | 1.000000 |
+| 拒答 P/R/F1 | 1.000000 / 1.000000 / 1.000000 |
+| 引用精确率 | 0.933333 |
+| 引用召回率 | 1.000000 |
+| 平均延迟 | 2198.164 ms |
+| P95 延迟 | 4325.333 ms |
+
+生成结果仍然通过，但引用精确率从 `1.0` 降到 `0.933333`，说明回答正确时仍会有额外
+引用噪声。28 条样本已经经历多轮修复，不能用来证明 1000 首语料上的泛化能力。
+
+#### 验证结果
+
+- 后端全量测试：`135 passed, 3 warnings`。
+- Ruff：`All checks passed!`。
+- 转换专项测试：多分片、筛选、去重和分层抽样全部通过。
+- 真实导入：902 created、98 unchanged、0 failed。
+- 真实索引：902 个版本、10346 个新增 chunks、0 failed。
+- 检索评估：五组 1000 首候选池对照已完成。
+- 生成评估：28/28、拒答 7/7、引用精确率 `0.933333`。
+- 评估报告继续保存在 Git 忽略的 `data/eval/reports/`。
+
+#### 问题与风险
+
+- 原 50 条检索集和 28 条生成集已被用于多轮调参，不能继续代表独立测试集。
+- 扩库后 Dense/Hybrid 的召回更高，但领域内“作品在库、答案属性缺失”仍会漏拒。
+- 引用精确率下降，说明答案事实正确和引用集合精确仍是两个指标。
+- 跨来源作品合并、作者消歧和来源内版本差异审核仍未实现。
+- `aopao/chinese-gushiwen` 未声明 LICENSE，只适合学习和非公开技术展示。
+- Qdrant 当前 points 虽已超过 10000，但 `indexed_vectors_count=0` 仍需做性能验证，
+  不能直接修改正式 collection。
+
+#### 下一步
+
+1. 新建独立于当前 50/28 条样本的 1000 首 holdout。
+2. 重点覆盖多证据、领域内缺属性、引用噪声和作者/朝代/体裁结构化过滤。
+3. 在同一独立 holdout 上对比在线 `expanded-lexical-v1`、
+   `hybrid-rrf-v1 + 0.60` 和 Rerank。
+4. 验证 Qdrant 检索延迟、HNSW 参数和 Embedding 维度升级成本。
+5. 独立 holdout 稳定后再决定在线检索策略切换和云部署展示。
+
+### [2026-09-23] 独立 1000 首 holdout 与在线 Hybrid 检索切换
+
+#### 本次目标
+
+- 新建独立于旧 50/28 条调参集的检索和生成 holdout。
+- 在同一候选池和真实模型环境中比较词法扩展、Dense 和融合检索。
+- 只在独立 holdout 支持时切换在线策略，并保留基础设施故障降级和回滚路径。
+- 公开 HTTP、SSE 事件和数据库契约保持不变。
+
+#### 背景与问题
+
+扩库后旧 50 条检索集的无答案准确率明显下降，Dense/Hybrid 虽然召回更高，但该集
+已经被多轮观察和调参，不能继续作为策略选择依据。在线问答此前固定使用
+`expanded-lexical-v1`，导致已经完成真实联调的 Dense 和 Hybrid 无法进入端到端链路。
+
+#### 做出的决定
+
+- 新建 `retrieval-holdout-1000-v1` 和 `generation-holdout-1000-v1`，不把旧 50/28
+  条样本混入新 holdout 结论。
+- 在线组合使用 `expanded-lexical-v1 + Dense + RRF`，实际公开策略名为
+  `hybrid-rrf-v1`。
+- Dense 在线分支使用 `CHAT_DENSE_MIN_SCORE=0.60`，只负责过滤明显跨域候选，不承担
+  可答性判定。
+- 构造阶段缺少 Qdrant/DashScope 配置或初始化失败时直接降级到
+  `expanded-lexical-v1`。
+- 运行期只对 `EMBEDDING_PROVIDER_ERROR` 和 `VECTOR_STORE_ERROR` 降级，其他错误
+  继续抛出。
+- 不为唯一检索失败样例增加金标准特例，不继续用旧调参集搜索阈值。
+
+#### 完成内容
+
+- `app/services/chat.py`：`build_chat_retrieval()` 改为异步组合在线检索，并在 SSE
+  和生成评估的 `finally` 中关闭 Embedding、Qdrant 资源。
+- `app/services/hybrid_retrieval.py`：支持 `fallback_on_dense_error`，只对指定基础设施
+  错误降级到词法分支。
+- `app/core/config.py` 和 `.env.example`：新增 `CHAT_DENSE_MIN_SCORE=0.60`。
+- `apps/api/scripts/evaluate_generation.py`：评估在线图时复用真实检索栈并正确释放资源。
+- `apps/api/tests/test_chat.py` 和 `apps/api/tests/test_hybrid_retrieval.py`：覆盖在线
+  组合、降级、非降级异常和资源生命周期。
+- `data/eval/retrieval_holdout_1000_v1.json`、`data/eval/generation_holdout_1000_v1.json`：
+  新增独立 holdout。
+- `docs/features/20260923-independent-1000-holdout.md`：记录数据集、指标、失败边界、
+  降级和回滚方式。
+
+#### 真实结果
+
+独立 `retrieval-holdout-1000-v1`，Top-5：
+
+| 策略 | 通过 | Recall@5 | MRR | 无答案准确率 | 平均延迟 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `expanded-lexical-v1` | 44/50 | 0.857143 | 0.758730 | 1.0 | 348.243 ms | 1087.670 ms |
+| `hybrid-rrf-v1` | 40/50 | 0.869048 | 0.735714 | 0.5 | 289.602 ms | 433.798 ms |
+| `expanded-lexical-v1 + Dense + RRF` | 49/50 | 0.976190 | 0.842857 | 1.0 | 489.661 ms | 1198.665 ms |
+
+在线组合的唯一检索失败为 `long-holdout-qiupuge-white-hair-02`，未增加特例。
+
+独立 `generation-holdout-1000-v1`：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 通过 | 26/28 |
+| 有答案准确率 | 0.904762 |
+| 拒答准确率 | 1.000000 |
+| 拒答 P/R/F1 | 0.777778 / 1.000000 / 0.875000 |
+| 引用精确率 | 0.937500 |
+| 引用召回率 | 0.833333 |
+| 平均延迟 | 4098.369 ms |
+| P95 延迟 | 5721.679 ms |
+
+两条失败样例为 `gen-holdout-multi-farewell-home` 和
+`gen-holdout-multi-hero-people`，均被 `assess` 判为 `missing_fact`。失败集中在
+多证据覆盖与可答性判定，不应通过放宽引用校验或金标准特例掩盖。
+
+#### 验证结果
+
+- 后端全量测试：`151 passed, 3 warnings`。
+- Ruff：`All checks passed!`。
+- Chat/Hybrid 定向测试：`20 passed`。
+- 真实检索评估：三条策略在同一 holdout 完成，在线组合 49/50。
+- 真实生成评估：`26/28`、拒答 `7/7`。
+- 真实服务：MySQL、Qdrant、Qwen Embedding 和 `deepseek-chat` 均完成调用。
+
+#### 问题与风险
+
+- 50/28 条 holdout 仍属小样本，不能表述为生产泛化能力。
+- 在线 Hybrid 的平均延迟和 P95 高于纯词法分支。
+- `assess` 对多证据问题存在过度严格拒答，仍需要新的独立样本复核。
+- 基础设施故障降级只保证可用性，不代表降级结果与在线 Hybrid 等价。
+- 当前没有旧向量清理、active index 切换和跨库对账。
+
+#### 回滚方式
+
+如果真实线上指标恶化，把在线检索组合退回 `ExpandedRetrievalService`，移除 Hybrid
+分支，保留 Qdrant 索引和离线评估能力。该回滚不涉及数据库迁移，也不改变公开 HTTP
+和 SSE 事件结构。
+
+#### 下一步
+
+1. 为多证据问题建立明确的证据覆盖评估和 `assess` 判定口径。
+2. 新建下一批独立样本，重点覆盖多证据、引用噪声和结构化过滤。
+3. 评估 Rerank、低召回重写重试和作者/朝代/体裁过滤。
+4. 验证 Qdrant HNSW 参数、检索延迟和 Embedding 维度升级成本。
+5. 下一批样本稳定后再考虑云部署展示。
+
+### [2026-09-23] 加权 RRF v2 与 holdout 回归复跑
+
+#### 本次目标
+
+- 修复独立 holdout 暴露的通用检索排序问题，不增加样本 ID 或金标准作品特例。
+- 让生成评估 CLI 的默认入口与当前 1000 首独立 holdout 保持一致。
+- 用同一批 50/28 条样本复跑完整在线链路，记录收益和性能代价。
+- 明确该批样本转为回归集后，不能再用于证明未观察泛化能力。
+
+#### 背景与问题
+
+首次独立 holdout 中，在线组合为检索 49/50、生成 `26/28`。检索失败集中在秋浦歌
+白发案例；生成失败集中在两个多证据问题。根因不是缺少某一条金标准，而是：
+
+1. 查询扩展后所有召回路径等权融合，显式标题、概念扩展和普通内容词没有区分。
+2. 单个显式标题命中的作品可能被多条 note chunk 占满，完整作品没有保留槽位。
+3. `所见` 等自然语言疑问词仍参与内容匹配，白发夸张没有可审查的领域规则。
+
+#### 做出的决定
+
+- 在现有查询改写和 RRF 融合内做通用权重，不按样本 ID、问题文本或金标准作品 ID
+  增加特例。
+- 显式标题命中的作品保留一个 poem 粒度完整篇章槽位，其余候选继续按融合分排序。
+- 将 `所见` 等查询脚手架加入停用词，把“白发三千丈”映射为版本化
+  `white_hair_exaggeration` 受控概念。
+- 生成评估 CLI 默认数据集切换为 `generation_holdout_1000_v1.json`；旧开放语料
+  和 12 条种子集仍可通过 `--dataset` 复现。
+- 当前 50/28 条样本完成诊断后转为回归集，下一轮泛化结论必须使用新样本。
+
+#### 完成内容
+
+- `app/services/query_expansion.py`：增加查询来源权重、加权 RRF、显式标题完整作品
+  槽位和通用停用词处理。
+- `data/query_expansion/lexicon_v1.json`：新增可审查的 `white_hair_exaggeration`
+  概念规则。
+- `apps/api/scripts/evaluate_generation.py`：默认数据集切换到 1000 首独立 holdout。
+- `apps/api/tests/test_query_expansion.py`：增加白发夸张直接回归测试。
+- `apps/api/tests/test_generation_evaluation.py`：增加生成评估 CLI 默认数据集契约
+  测试。
+- 更新 README、项目导览、前后端契约和本开发日志的当前指标；历史章节保留旧结果。
+
+#### 真实结果
+
+同一 `retrieval-holdout-1000-v1`、Top-5：
+
+| 策略 | 通过 | Recall@5 | MRR | 无答案准确率 | 平均延迟 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `expanded-lexical-v1` | 48/50 | 0.952381 | 0.880952 | 1.0 | 399.557 ms | 1082.055 ms |
+| `hybrid-rrf-v1` | 40/50 | 0.869048 | 0.735714 | 0.5 | 273.208 ms | 431.425 ms |
+| `expanded-lexical-v1 + Dense + RRF` | 50/50 | 1.000000 | 0.887698 | 1.0 | 1006.362 ms | 2944.838 ms |
+
+在线组合的检索失败已经清零。加权后的成本也很明确：平均延迟从此前同集
+`489.661 ms` 增至 `1006.362 ms`，P95 从 `1198.665 ms` 增至 `2944.838 ms`。
+
+生成回归结果：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 通过 | 28/28 |
+| 有答案准确率 | 1.000000 |
+| 拒答准确率 | 1.000000 |
+| 拒答 P/R/F1 | 1.000000 / 1.000000 / 1.000000 |
+| 引用精确率 | 0.971429 |
+| 引用召回率 | 1.000000 |
+| 平均延迟 | 5687.155 ms |
+| P95 延迟 | 9481.742 ms |
+
+多证据类平均延迟 `8817.328 ms`、P95 `9940.227 ms`。回答正确率提升的代价是延迟，
+不能把 `28/28` 单独表述为生产级质量。
+
+报告位置：
+
+- `data/eval/reports/retrieval_holdout_1000_v1_expanded_after_weighting_v2.json`
+- `data/eval/reports/retrieval_holdout_1000_v1_hybrid_after_weighting_v2.json`
+- `data/eval/reports/retrieval_holdout_1000_v1_expanded_hybrid_after_weighting_v2.json`
+- `data/eval/reports/generation_holdout_1000_v1_after_weighting_v2.json`
+
+#### 验证结果
+
+- 后端全量测试：`160 passed, 3 warnings`。
+- Ruff：`All checks passed!`。
+- 真实检索回归：三条策略同集完成，在线组合 50/50。
+- 真实生成回归：`28/28`、拒答 `7/7`。
+- 真实服务：MySQL、Qdrant、Qwen Embedding 和 `deepseek-chat` 均完成调用。
+
+#### 问题与风险
+
+- 50/28 条样本已经参与失败诊断和修复，只能作为回归集，不能继续声称独立泛化。
+- 加权 RRF 提高了检索延迟，在线组合 P95 已接近 3 秒。
+- 多证据生成 P95 已接近 10 秒，是当前最明显的端到端性能瓶颈。
+- 白发规则仍是受控词典能力，需要验证是否能泛化到更多夸张、愁绪和时间流逝问题。
+- 当前没有 Rerank、低召回重写重试、结构化过滤、缓存和并发压测。
+
+#### 下一步
+
+1. 新建下一批未观察的检索和生成 holdout，覆盖夸张愁绪、多证据和引用噪声。
+2. 优化检索并发、候选裁剪、缓存和上下文预算，先降低在线与多证据延迟。
+3. 在性能预算内评估 Rerank、结构化过滤和低召回重写重试。
+4. 验证 Qdrant HNSW 参数、Embedding 维度升级成本和跨库索引对账。
+5. 本地性能和质量门槛稳定后，再启动云服务器、域名和 HTTPS 部署。
+
+### [2026-09-24] 独立 holdout v2 与粒度感知 Dense 阈值
+
+#### 本次目标
+
+- 新建第二批未观察的检索和生成 holdout，替换已经转为回归集的 50/28 条样本。
+- 修复 v2 暴露的通用检索问题，不按样本 ID、问题文本或金标准作品 ID 增加特例。
+- 重新标定 Dense 分数下限，避免“为了拒答把主文本证据一起过滤掉”。
+- 把 v2 的数据契约、真实指标和失败边界写入文档，冻结为回归集。
+
+#### 背景与问题
+
+v1 的 50/28 条样本已经参与失败诊断和修复，只能作为回归集。为了继续获得未观察证据，
+本轮新建：
+
+1. `retrieval-holdout-1000-v2`：46 条，38 条有答案 + 8 条无答案。
+2. `generation-holdout-1000-v2`：26 条，16 条有答案 + 10 条拒答。
+
+两份数据集的问题与 v1 完全不重叠，金标准和引用都通过选择器在转换后语料中核对。
+首轮真实评估暴露的问题集中在三处：
+
+1. 结构化主题查询（作者 + 朝代 + 体裁 + 主题）被显式标题槽位挤掉正文证据。
+2. 多标题查询优先命中单行 chunk，完整作品块没有保留槽位。
+3. 白居易长诗类主文本候选的余弦分数落在 `0.58` 到 `0.60` 之间，被全局阈值整段过滤。
+
+#### 做出的决定
+
+- 保持全局 `CHAT_DENSE_MIN_SCORE=0.60` 不变，不做“整体降到 `0.55`”的粗放调整。
+- Dense 过滤按粒度区分：`poem` 和 `line` 主文本允许 `0.02` 容差（有效下限
+  `0.58`），`note` 仍严格使用调用方阈值。理由是短诗和单行向量天然比长注释向量
+  分数低，同一阈值不能同时服务两种粒度。
+- 结构化主题查询保留一个正文候选，多标题查询优先完整 `poem` 块而不是单行。
+- `no-answer-v2-xinqiji-office-08` 保持在检索层失败，不加金标准特例，由在线
+  `assess` 节点负责拒答。
+- v2 的 46/26 条样本完成诊断后同样转为回归集，下一轮泛化结论必须使用 v3。
+
+#### 完成内容
+
+- `apps/api/app/services/dense_retrieval.py`：新增 `_PRIMARY_TEXT_SCORE_TOLERANCE = 0.02`
+  和 `_effective_min_score`，只对 `poem`/`line` 放宽下限。
+- `apps/api/app/services/query_expansion.py`：结构化主题查询保留正文候选；多标题查询优先
+  完整作品块。
+- `apps/api/tests/test_dense_retrieval.py`：新增粒度感知阈值回归测试，同时验证
+  `poem`/`line` 保留和 `note` 过滤。
+- `apps/api/tests/test_query_expansion.py`：新增结构化主题和多标题回归测试。
+- `data/eval/retrieval_holdout_1000_v2.json`、`data/eval/generation_holdout_1000_v2.json`：
+  新建第二批独立 holdout。
+- `apps/api/tests/test_retrieval_evaluation.py`、`test_generation_evaluation.py`：
+  增加 v2 覆盖度、唯一性和金标准可定位性契约测试。
+- `apps/api/scripts/profile_retrieval.py`：新增只读检索剖析脚本，输出候选排名和
+  分数，用于定位失败而不是猜测。
+- 更新 README、项目导览、前后端契约和检索相关功能文档的当前指标。
+
+#### 真实结果
+
+`retrieval-holdout-1000-v2`，Top-5：
+
+| 策略 | 通过 | Recall@5 | MRR | 无答案准确率 | 平均延迟 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `expanded-lexical-v1` | 38/46 | 0.815789 | 0.763158 | 0.875 | 411.059 ms | 1222.852 ms |
+| `hybrid-rrf-v1` | 36/46 | 0.855263 | 0.761842 | 0.500 | 301.742 ms | 572.421 ms |
+| `expanded-lexical-v1 + Dense + RRF`（修复前） | 40/46 | 0.868421 | 0.789474 | 0.875 | 952.536 ms | 2717.191 ms |
+| `expanded-lexical-v1 + Dense + RRF`（本轮修复后） | 45/46 | 1.000000 | 0.907895 | 0.875 | 874.575 ms | 2770.212 ms |
+
+剩余唯一失败为 `no-answer-v2-xinqiji-office-08`，属于“话题命中、答案缺失”的
+领域内缺属性样本。检索层召回相关诗句是正确行为，拒答由在线 `assess` 负责，
+因此该条不计入本轮检索修复目标。
+
+`generation-holdout-1000-v2`（26 条，真实 `deepseek-chat`）：
+
+| 阶段 | 通过 | 有答案准确率 | 拒答准确率 | 引用 P/R | 平均延迟 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 检索修复前 | 24/26 | 0.875000 | 1.000000 | 1.0 / 1.0 | 4633.567 ms | 7782.879 ms |
+| 检索修复后 | 26/26 | 1.000000 | 1.000000 | 1.0 / 1.0 | 4699.931 ms | 8422.616 ms |
+
+此前两条失败样例 `gen-v2-tianmu-freedom` 和 `gen-v2-qingyuan-search` 都缺必需事实：
+《梦游天姥吟留别》缺“且放白鹿青崖间”，《青玉案·元夕》缺“东风夜放花千树”。
+修复后两条都能引用完整 `poem` 块并命中全部必需事实，说明完整作品槽位的修复同时
+改善了端到端回答覆盖。该结果不改变“v2 已转为回归集”的结论。
+
+报告位置：
+
+- `data/eval/reports/retrieval_holdout_1000_v2_expanded_baseline.json`
+- `data/eval/reports/retrieval_holdout_1000_v2_hybrid_baseline.json`
+- `data/eval/reports/retrieval_holdout_1000_v2_expanded_hybrid_baseline.json`
+- `data/eval/reports/retrieval_holdout_1000_v2_expanded_hybrid_final.json`
+- `data/eval/reports/generation_holdout_1000_v2_baseline.json`
+- `data/eval/reports/generation_holdout_1000_v2_after_retrieval_fixes.json`
+
+#### 验证结果
+
+- Dense 定向测试：`7 passed, 2 warnings`。
+- 检索相关定向测试（query expansion / hybrid / evidence context / dense）：
+  `60 passed, 2 warnings`。
+- Ruff：`All checks passed!`。
+- 真实检索评估：三条策略同集完成，在线组合从 40/46 提升到 45/46。
+- 真实生成评估：检索修复后 `26/26`、拒答 `10/10`、引用 P/R 均为 `1.0`。
+- 真实服务：MySQL、Qdrant（宿主机 `6335/6336`）、Qwen Embedding、DeepSeek 均完成调用。
+
+#### 问题与风险
+
+- 46/26 条样本已经参与失败诊断，只能作为回归集，不能继续声称独立泛化。
+- 粒度容差是一个通用规则，但它只覆盖“主文本分数略低于阈值”这一种情况；
+  更长的作品和更短的词牌仍需在 v3 上复核。
+- 无答案准确率仍为 `0.875`，检索层不能独立完成拒答判定。
+- 在线组合 P95 仍在 `2.7 s` 量级，性能优化仍未开始。
+
+#### 回滚方式
+
+把 `_effective_min_score` 的调用还原为 `item.score >= self.min_score`，即恢复所有
+粒度统一阈值。该回滚只影响 Dense 候选过滤，不涉及数据库迁移、公开 HTTP 或 SSE 事件。
+
+#### 下一步
+
+1. 用新样本验证粒度容差是否泛化到更多长诗、短词和小令。
+2. 降低在线检索 P95，先做候选裁剪、并发和缓存，再考虑 Rerank。
+3. 用 v3 样本复核 v2 上的检索和生成收益，避免继续在同一批样本上调参。
+4. 建立 v3 样本前，不把 v2 结果写成生产级质量结论。
+5. 本地质量和性能门槛稳定后，再启动云服务器、域名和 HTTPS 部署。
+
+### [2026-09-24] 在线 RAG 可观测性与查询变体上限
+
+#### 本次目标
+
+- 补齐在线 RAG 每个阶段的耗时观测，定位慢请求发生在改写、检索、判定、生成还是校验。
+- 让流结束日志能够按请求、会话和助手消息关联，并记录策略、候选数、判定状态、TTFT
+  和总耗时。
+- 增加查询变体上限，限制扩展分支数量，同时保留原查询和可解释的权重顺序。
+- 保持公开 HTTP、SSE 和数据库契约不变，并在 v2 回归集上确认没有质量回退。
+
+#### 背景与问题
+
+此前只有整次问答的总耗时和最终消息状态。在线链路包含查询改写、Hybrid 检索、
+LLM 可答性判定、流式生成和引用校验，任一阶段变慢时都无法从现有日志区分。查询扩展
+也没有统一上限，长查询或多实体查询可能扩大检索扇出。
+
+本轮不引入指标系统，而是先用 LangGraph 内部事件和结构化日志建立最小可观测闭环，
+为后续并发、候选裁剪、缓存和 Rerank 优化提供基线。
+
+#### 做出的决定
+
+- `rewrite`、`retrieval`、`assess`、`generation` 和 `validate` 使用 `perf_counter`
+  计时，并在节点 `finally` 中发出内部 `timing` 事件。
+- `ChatService` 只消费 `timing`，不把它转换为公开 SSE；`done` 仍严格为
+  `{finish_reason, latency_ms}`。
+- 查询扩展默认上限设为 `8`，配置范围为 `1-20`。先按权重选变体，再恢复原始顺序，
+  原查询权重最高，不会被裁剪。
+- 本轮只在 v2 回归集做同集复跑。单次延迟下降不能归因于变体裁剪，也不替代正式
+  A/B 或 v3 独立泛化验证。
+
+#### 完成内容
+
+- `apps/api/app/core/config.py`：新增 `chat_query_variant_limit`，默认 `8`、
+  范围 `1-20`。
+- `.env.example`：新增 `CHAT_QUERY_VARIANT_LIMIT=8`。
+- `apps/api/app/services/query_expansion.py`：新增 `max_variants` 参数、权重表、
+  稳定裁剪和非法值校验。
+- `apps/api/app/ai/graphs/rag.py`：为五个节点增加内部 `timing` 事件，失败路径也在
+  `finally` 中记录耗时。
+- `apps/api/app/services/chat.py`：聚合阶段耗时，记录候选/入选数量、策略、判定状态、
+  判定原因、查询变体上限、TTFT 和总耗时；完成使用 info，失败使用 warning。
+- `apps/api/tests/test_query_expansion.py`：覆盖非法上限、按权重裁剪、保留原查询和
+  恢复原顺序。
+- `apps/api/tests/test_chat.py`：覆盖公开 SSE 不含 `timing`、`done` 字段严格不变，
+  以及完成日志字段和值。
+- 新建 `docs/features/20260924-online-rag-observability.md`，并同步 README、项目导览、
+  接口契约和本开发日志。
+
+#### 真实结果
+
+`retrieval-holdout-1000-v2`，Top-5 在线组合：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 通过 | 45/46 |
+| Recall@5 | 1.000000 |
+| MRR | 0.907895 |
+| 无答案准确率 | 0.875 |
+| 平均延迟 | 738.465 ms |
+| P95 | 1970.978 ms |
+
+唯一检索失败仍是 `no-answer-v2-xinqiji-office-08`，属于领域内缺属性样本，拒答由
+在线 `assess` 负责。
+
+`generation-holdout-1000-v2`，真实 `deepseek-chat`：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 通过 | 26/26 |
+| 有答案准确率 | 1.000000 |
+| 拒答 | 10/10 |
+| 引用 P/R | 1.0 / 1.0 |
+| 平均延迟 | 4043.728 ms |
+| P95 | 6566.794 ms |
+
+报告位置：
+
+- `data/eval/reports/retrieval_holdout_1000_v2_after_observability.json`
+- `data/eval/reports/generation_holdout_1000_v2_after_observability.json`
+
+本轮延迟低于上一版同集记录，但只有单次环境复跑，不能作为变体裁剪的因果结论。
+
+#### 验证结果
+
+- 后端全量测试：`176 passed, 3 warnings`。
+- Ruff：`All checks passed!`。
+- 公开 SSE：不包含 `timing`；`done` 仍严格只有 `finish_reason` 和 `latency_ms`。
+- 真实检索：在线组合 45/46、Recall@5 `1.0`、MRR `0.907895`。
+- 真实生成：`26/26`、拒答 `10/10`、引用 P/R 均为 `1.0`。
+- 真实服务：MySQL、Qdrant、Qwen Embedding 和 `deepseek-chat` 均完成调用。
+
+#### 问题与风险
+
+- 当前指标只写入日志，没有聚合、采样、保留策略或告警。
+- 变体上限是静态配置，没有按查询类型或实时延迟动态调整。
+- 单次 v2 复跑只能证明本轮没有明显质量回退，不能证明所有查询都能泛化。
+- `timing` 是内部实现事件，未来若公开必须单独做契约评审。
+
+#### 回滚方式
+
+短期可将 `CHAT_QUERY_VARIANT_LIMIT` 调到上限 `20`；完整回滚需在 `ChatService`
+构造检索服务时移除 `max_variants` 参数，并移除内部计时事件的消费。回滚不涉及
+数据库迁移、公开 HTTP 或 SSE 变更。
+
+#### 下一步
+
+1. 为在线 RAG 日志增加指标聚合、采样和慢请求告警。
+2. 基于阶段耗时评估检索并发、候选裁剪和缓存，而不是先引入 Rerank。
+3. 新建 v3 检索和生成 holdout，复核变体上限和粒度容差的泛化能力。
+4. 在本地质量和性能门槛稳定后，再启动云服务器、域名和 HTTPS 部署。
+
+### [2026-09-24] 在线 RAG 性能优化：资源复用与批量 Embedding
+
+#### 本次目标
+
+- 定位并降低在线检索的固定开销，在不牺牲 v2 回归质量的前提下缩短平均延迟和 P95。
+- 复用应用进程级的模型与向量库连接，消除每个请求重复构造客户端和连接的成本。
+- 把一次查询的所有扩展变体合并为一次 Embedding 请求和一次向量 ID 回查。
+- 统一离线检索评估与在线检索的阈值口径，避免同一实现出现两套通过率。
+- 保持公开 HTTP、SSE 和数据库契约不变，本轮不引入 Rerank，不做云部署。
+
+#### 背景与问题
+
+加权 RRF 和在线上线后，v2 回归集检索质量达到 45/46、MRR `0.907895`，但性能代价
+明显：
+
+1. 在线组合平均延迟 `874.575 ms`、P95 `2770.212 ms`，多证据长查询更慢。
+2. 每个问答请求都重新构造 Qwen Embedding Provider 和 Qdrant Client，重复付出
+   初始化与连接建立成本。
+3. 查询扩展产生的每个变体分别调用一次 Embedding，网络往返随变体数线性增长。
+4. 每个变体的向量候选分别回查 MySQL，产生重复查询和重复 ORM 映射。
+5. `evaluate_retrieval.py` 不传 `--min-score` 时使用脚本内部默认值，与线上
+   `CHAT_DENSE_MIN_SCORE=0.60` 不一致，同一实现出现 `42/46` 与 `45/46` 的口径分裂。
+
+#### 做出的决定
+
+- Qwen Embedding Provider 和 `AsyncQdrantClient` 提升为应用进程级共享实例，通过
+  应用生命周期管理和依赖注入复用，不再按请求构造。
+- `ExpandedRetrievalService` 一次性批量 Embedding 所有查询变体，再按变体顺序执行
+  Qdrant 搜索，最后按 `chunk_id` 去重融合。
+- 跨变体的向量 ID 回查合并为一次 MySQL 查询，减少数据库往返。
+- Qdrant 搜索本轮仍保持串行：在线请求持有的 `AsyncSession` 不能并发复用，只有在
+  引入独立会话或连接池隔离后才适合并行。先保证正确性，再评估并发收益。
+- 本轮不引入 Rerank。先降低现有链路的固定开销并统一评估口径，避免在慢链路上继续
+  叠加模型调用。
+- `evaluate_retrieval.py` 的 `--min-score` 默认改为 `None`：`dense`、`hybrid`、
+  `expanded-hybrid` 未显式传参时读取 `settings.chat_dense_min_score`，使报告与在线
+  一致；`lexical`、`expanded` 输出 `min_score=not-applicable`。显式传参仍可覆盖，
+  便于做阈值诊断。
+- 公开 `GET /api/v1/search/evidence` 的参数和响应、在线 SSE 事件结构、引用编号规则
+  和数据库表结构均不变。
+
+#### 完成内容
+
+- `apps/api/app/main.py`、`apps/api/app/api/deps.py`：在应用生命周期内创建并复用
+  Qwen Embedding Provider、Qdrant Client 和检索 Service 依赖。
+- `apps/api/app/services/chat.py`：改为消费共享检索依赖，不再按请求构造。
+- `apps/api/app/services/retrieval.py`：新增 `search_evidence_batch()` 批量协议，
+  `ExpandedRetrievalService` 优先调用批量能力。
+- `apps/api/app/services/dense_retrieval.py`、`hybrid_retrieval.py`：实现批量
+  Embedding 与合并向量 ID 回查，保持单查询路径兼容。
+- `apps/api/scripts/profile_retrieval.py`：支持记录批量 Embedding 调用和 Qdrant
+  调用次数，用于区分固定开销和检索耗时。
+- `apps/api/scripts/evaluate_retrieval.py`：新增 `resolve_min_score()`，默认口径
+  对齐线上 `CHAT_DENSE_MIN_SCORE`。
+- `apps/api/tests/`：补充批量检索、资源生命周期、降级路径和阈值默认值回归测试；
+  修正 `test_hybrid_retrieval.py` 对字典调用记录的断言。
+- `docs/features/20260924-online-rag-performance.md`：记录资源生命周期、批量策略、
+  串行原因、性能数据和回滚方式。
+
+#### 真实结果
+
+`retrieval-holdout-1000-v2`，Top-5 在线组合：
+
+| 指标 | 优化前 | 优化后 |
+| --- | ---: | ---: |
+| 通过 | 45/46 | 45/46 |
+| Recall@5 | 1.000000 | 1.000000 |
+| MRR | 0.907895 | 0.907895 |
+| 无答案准确率 | 0.875 | 0.875 |
+| 平均延迟 | 874.575 ms | 483.760 ms |
+| P95 | 2770.212 ms | 1239.925 ms |
+
+唯一失败仍是 `no-answer-v2-xinqiji-office-08`，属于领域内缺属性样本，拒答由在线
+`assess` 负责。正式报告为
+`data/eval/reports/retrieval_holdout_1000_v2_after_batch_perf_min060.json`，必须显式
+带线上 `0.60` 阈值口径；不带 `--min-score` 的旧诊断报告 `42/46` 不再作为正式结果。
+
+批量 Embedding 剖析结果：
+
+| 样本 | 批量化后总耗时 | Embedding | Qdrant |
+| --- | ---: | ---: | ---: |
+| `long-v2-changhen-tail-01` | 2021.648 ms | 一次 8 输入，432.784 ms | 8 次，合计 546.926 ms |
+| `multi-v2-changhen-yulin-01` | 1451.410 ms | 一次 8 输入，264.318 ms | - |
+| `structured-v2-song-ci-sorrow-02` | 484.000 ms | 一次 6 输入，197.615 ms | - |
+
+旧逐变体版本的 `multi-v2-changhen-yulin-01` 总耗时为 `4451.233 ms`，
+`structured-v2-song-ci-sorrow-02` 为 `1715.326 ms`，说明批量 Embedding 是长查询
+和多变体查询的主要收益来源。剖析中同批请求共享批量耗时，属于近似统计。
+
+真实 `deepseek-chat` 生成评估在同一 v2 集复跑两次：
+
+| 指标 | 第一次 | 第二次 |
+| --- | ---: | ---: |
+| 通过 | 25/26 | 25/26 |
+| 拒答 | 10/10 | 10/10 |
+| 引用 P/R | 1.0 / 1.0 | 1.0 / 1.0 |
+| 平均延迟 | 3768.214 ms | 3596.143 ms |
+| P95 | 6856.405 ms | 6490.154 ms |
+
+两次失败样本分别为 `gen-v2-qingyuan-search` 和 `gen-v2-tianmu-freedom`，答案语义基本
+正确，只是没有逐字命中评估使用的严格短语。此前为提高逐字命中率临时加入的引用提示词
+已经撤回，对应报告 `generation_holdout_1000_v2_after_quote_prompt.json` 不作为最终
+结果。生成波动说明当前评估对措辞仍敏感，不能用单次复跑判断检索优化造成质量回退。
+
+#### 验证结果
+
+- 后端全量测试：`180 passed, 3 warnings`。
+- Ruff：`All checks passed!`。
+- 定向测试曾达到 `70 passed`；`evaluate_retrieval.py --help` 正常。
+- 公开 SSE 和数据库契约未变；批量检索仅新增内部协议。
+- 真实服务：MySQL、Qdrant、Qwen Embedding 和 `deepseek-chat` 均完成调用。
+
+#### 问题与风险
+
+- 共享 `QwenEmbeddingProvider` 和 `AsyncQdrantClient` 尚未做跨请求并发负载验证，
+  当前只能证明单请求和串行回归正确。
+- 在线 `AsyncSession` 不能跨并发搜索复用，因此 Qdrant 搜索仍串行；真正的并发收益
+  需要先解决会话隔离和连接池边界。
+- 向量 ID 全量回查在 1000 首规模可用，语料继续增长后需要分块、限制候选量或改为
+  只回查 Top-K 候选。
+- 剖析脚本把同一批请求的耗时归属到每个变体，数据只能用于趋势判断，不能当作精确
+  分摊。
+- 生成评估对短语措辞敏感，两次复跑失败样本不同，仍缺少更稳定的语义级引用评估。
+- 本轮未引入 Rerank、缓存和候选裁剪，检索质量上限和进一步延迟优化空间仍在。
+
+#### 回滚方式
+
+如果共享资源或批量检索在生产负载下出现并发问题，可恢复按请求构造 Provider 和
+Client、逐变体 Embedding 与逐变体回查的实现；该回滚不涉及数据库迁移、公开 HTTP
+或 SSE 契约。阈值口径修复应保留：如需复现旧诊断结果，显式传
+`--min-score 0` 即可，不应恢复脚本内部与线上不一致的默认值。
+
+#### 下一步
+
+1. 新建 v3 检索和生成 holdout，复核批量 Embedding、粒度容差和变体上限的泛化能力。
+2. 在独立数据库会话前提下压测共享 Provider/Client 的跨请求并发和 Qdrant 并行搜索。
+3. 评估候选裁剪、Embedding 缓存和查询结果缓存，再决定是否引入 Rerank。
+4. 把生成评估从严格短语命中升级为引用证据覆盖与语义一致性指标。
+5. 本地质量、性能和并发门槛稳定后，再启动云服务器、域名和 HTTPS 部署。
+
+### [2026-09-24] 第三批独立 holdout v3
+
+#### 本次目标
+
+- 新建第三批未观察的检索和生成 holdout，复核批量 Embedding、资源复用、粒度容差和
+  查询变体上限的泛化能力。
+- 覆盖精确引用、短语、标题、作者、朝代、多证据、自然语言、长诗尾部、结构化筛选，
+  以及跨域、领域内缺实体和缺属性拒答。
+- 用在线实现执行真实评估，记录质量、延迟、失败边界和复现命令。
+- 创建后冻结 v3；不再根据 v3 失败选择实现参数，下一次泛化验证必须新建 v4。
+
+#### 背景与问题
+
+v1 和 v2 都已经参与失败诊断或修复，只能作为回归集。在线检索随后完成了资源复用和
+批量 Embedding，并增加了查询变体上限。需要在问题不重叠的新样本上确认这些改动没有
+只在旧集有效，同时观察粒度感知 Dense 阈值是否适用于更多长诗、短词和小令。
+
+#### 做出的决定
+
+- 新建 `retrieval-holdout-1000-v3`（46 条）和
+  `generation-holdout-1000-v3`（26 条），问题文本与 v1/v2 完全不重叠。
+- 检索集使用 38 条有答案 + 8 条无答案，生成集使用 16 条答案 + 10 条拒答。
+- 契约测试增加 v3 的版本、数量、分类、唯一性和问题不相交检查，并复用选择器
+  验证金标准可在 1000 首转换语料中定位。
+- 创建后做集合校验，确认 v3 检索金标准作品和生成引用作品均与 v1/v2 无交集。
+- 真实报告落盘后即冻结 v3。两个失败样本都不触发实现修改。
+
+#### 完成内容
+
+- `data/eval/retrieval_holdout_1000_v3.json`：46 条第三批独立检索 holdout。
+- `data/eval/generation_holdout_1000_v3.json`：26 条第三批独立生成 holdout。
+- `apps/api/tests/test_retrieval_evaluation.py`：增加 v3 契约覆盖。
+- `apps/api/tests/test_generation_evaluation.py`：增加 v3 契约覆盖。
+- `data/eval/reports/retrieval_holdout_1000_v3_expanded_hybrid.json`：在线组合报告。
+- `data/eval/reports/retrieval_holdout_1000_v3_expanded.json`：查询扩展词法报告。
+- `data/eval/reports/retrieval_holdout_1000_v3_hybrid.json`：普通 Hybrid 报告。
+- `data/eval/reports/generation_holdout_1000_v3.json`：真实 `deepseek-chat` 报告。
+- 同步 README、项目导览、功能文档索引、在线性能文档和本开发日志。
+
+#### 真实结果
+
+`retrieval-holdout-1000-v3`，Top-5：
+
+| 策略 | 通过 | Recall@5 | MRR | 无答案准确率 | 平均延迟 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `expanded-lexical-v1 + Dense + RRF` | 45/46 | 1.000000 | 0.929825 | 0.875 | 519.561 ms | 1280.804 ms |
+| `expanded-lexical-v1` | 44/46 | 0.973684 | 0.890351 | 0.875 | 220.978 ms | 776.836 ms |
+| `hybrid-rrf-v1` | 35/46 | 0.815789 | 0.759649 | 0.625 | 266.291 ms | 431.833 ms |
+
+在线组合仍是质量最高的路径。唯一失败为
+`no-answer-v3-dufu-death-year-08`：检索层召回了杜甫相关注释，但没有直接年份证据。
+该条属于领域内缺属性问题，在线 `assess` 已正确拒答，不增加检索层特例。
+
+`generation-holdout-1000-v3`（26 条，真实 `deepseek-chat`）：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 通过 | 25/26 |
+| 有答案准确率 | 0.937500 |
+| 拒答准确率 | 1.000000 |
+| 拒答 P/R/F1 | 1.0 / 1.0 / 1.0 |
+| 引用精确率/召回率 | 1.0 / 1.0 |
+| 平均延迟 | 4100.890 ms |
+| P95 | 6456.598 ms |
+
+唯一失败为 `gen-v3-guazhou-homesick`。回答命中了“春风又绿江南岸”，但缺少
+`distance` 事实“京口瓜洲一水间 / 钟山只隔数重山”；引用 P/R 仍为 `1.0`，语义
+基本正确，主要是严格事实覆盖不足。
+
+#### 验证结果
+
+- 检索评估契约测试：`12 passed, 2 warnings`。
+- 生成评估契约测试：`12 passed, 2 warnings`。
+- 真实检索：在线组合 45/46、Recall@5 `1.0`、MRR `0.929825`。
+- 真实生成：25/26、拒答 `10/10`、引用 P/R `1.0 / 1.0`。
+- 真实服务：MySQL、Qdrant、Qwen Embedding 和 `deepseek-chat` 均完成调用。
+
+#### 问题与风险
+
+- v3 已经完成真实观察，只能作为回归集，不能继续作为未观察泛化证据。
+- 检索层仍不能独立判定“话题命中但答案缺失”，无答案准确率保持 `0.875`。
+- 生成评估仍对严格事实短语敏感，单条失败不足以证明通用实现缺陷。
+- v3 生成报告只有一次运行，延迟和措辞都会受模型服务状态影响。
+- 跨请求并发、缓存、候选裁剪和更大语料下的性能上限仍未验证。
+
+#### 回滚方式
+
+v3 是评估数据，不涉及生产实现回滚。停止使用 v3 时不删除报告，只把新实现变更放到
+v4 上独立复核；如需继续保留回归价值，应在 CI 或本地验证中运行 v3 契约测试。
+
+#### 下一步
+
+1. 不再基于 v3 失败修实现；需要调整时新建 v4 检索和生成 holdout。
+2. 把生成评估从严格短语命中升级为引用证据覆盖与语义一致性指标。
+3. 在独立数据库会话前提下验证共享 Provider/Client 的跨请求并发。
+4. 评估候选裁剪、Embedding 缓存和查询结果缓存，再决定是否引入 Rerank。
+5. 本地质量、性能和并发门槛稳定后，再启动云服务器、域名和 HTTPS 部署。
+
+### [2026-09-24] 质量门禁与 v3 基线冻结
+
+#### 本次目标
+
+- 把后端 lint/test 和前端 typecheck/test/build 收口为一个可重复执行的本地质量门禁。
+- 在 GitHub Actions 中建立等价的后端与前端检查，不调用真实 MySQL、Redis、Qdrant、
+  Qwen 或 DeepSeek。
+- 区分正式评估基线与 `_probe`、`profile` 等可重复生成的诊断产物。
+- 完成 P0 收口后冻结当前 v3 回归状态，后续实现变更使用新的 v4 独立验证。
+
+#### 做出的决定
+
+- 使用 `scripts/verify.ps1` 作为本地统一入口，并提供 `-BackendOnly`、`-FrontendOnly`。
+- 后端 pytest 使用项目内 `.verify-tmp/pytest/`，同时关闭 pytest 缓存写入，避免 Windows
+  系统临时目录权限导致与业务无关的测试失败。
+- CI 后端测试使用 runner 临时目录和相同 pytest 参数；前端并行执行类型检查、Vitest
+  与生产构建。
+- 正式 holdout 数据集和最终报告继续版本化；`_probe_*.py`、`_probe_*.json` 和
+  `profile_*.json` 不进入 Git 基线。
+- 本轮不修改检索、生成、Prompt、阈值、SSE、数据库契约或 v3 报告。
+
+#### 完成内容
+
+- `scripts/verify.ps1`：本地全量、后端独有和前端独有质量门禁。
+- `.github/workflows/ci.yml`：push 与 pull request 的后端、前端并行检查。
+- `docs/features/20260924-quality-gate.md`：验收标准、边界、风险和回滚设计。
+- `.gitignore`：忽略 `.verify-tmp/` 和诊断产物，保留正式评估文件。
+- 同步更新 README、开发流程和功能文档索引。
+
+#### 验证结果
+
+执行 `.\scripts\verify.ps1`：
+
+| 阶段 | 结果 |
+| --- | --- |
+| 后端 Ruff | `All checks passed!` |
+| 后端 pytest | `184 passed, 3 warnings` |
+| 前端 typecheck | 通过 |
+| 前端 Vitest | `3` 个文件，`9 passed` |
+| 前端生产构建 | `1723` 个模块转换成功 |
+
+完整命令退出码为 `0`。构建仍提示主 bundle 超过 `500 kB`，不影响当前验收，但应作为
+后续前端性能优化项处理。
+
+#### 问题与风险
+
+- 该门禁验证代码契约和基础行为，不证明真实模型回答质量；RAG 质量仍以 holdout 和人工
+  评估为准。
+- GitHub Actions 尚未在远程仓库实际触发，首次推送后需要确认 workflow 权限和 runner
+  环境。
+- v3 已被真实观察，只能在后续作为回归集；不能根据 v3 失败继续调整实现后仍把 v3
+  当作泛化证据。
+
+#### 回滚方式
+
+删除质量脚本、CI workflow、质量门禁文档和对应 `.gitignore` 规则即可回滚本轮改动。
+回滚不涉及应用运行时、数据库迁移或公开 API 契约。
+
+#### 下一步
+
+1. 启动 P1 生成评估升级：忠实度、引用支撑度、答案相关性和拒答正确性。
+2. 设计 LLM-as-judge 的稳定结构、校准样本和人工盲评流程。
+3. 后续任何影响回答质量的实现变更使用新的 v4 holdout 独立验证。
+4. 本地质量、性能和评估协议稳定后，再处理 Rerank、缓存和云部署。
+
+### [2026-09-24] 生成质量 LLM-as-judge 与 v3 复核
+
+#### 本次目标
+
+- 在确定性生成指标之外，增加忠实度、回答相关性、claim 引用支撑度和拒答正确性检查。
+- judge 读取已有生成评估报告，不重新运行检索或回答生成，不改变在线 RAG 链路。
+- 保留 JSON 报告、单样本错误隔离和人工盲评导出，便于后续面试复盘与指标解释。
+
+#### 做出的决定
+
+- judge 作为离线 CLI 增量，不进入公开 API、SSE 或用户请求路径。
+- 模型只输出 relevance、claims 和理由；总体 `faithfulness` 由 claims 的 support 状态
+  确定性推导，避免模型自报与事实声明冲突。
+- `supported` claim 必须关联实际存在的引用 rank；rank 校验使用证据集合，不假设编号
+  连续。
+- refusal、空回答和生成错误不调用 judge；单样本 judge 失败记录错误码并继续。
+- 当前 judge 与生成器同为 `deepseek-chat`，只作为辅助信号，不能替代人工评价。
+
+#### 完成内容
+
+- `apps/api/app/schemas/generation_judge.py`：claim、assessment、case、summary 和 report
+  schema。
+- `apps/api/app/evaluation/generation_judge.py`：报告读取、judge Prompt、claims 校验、
+  faithfulness 推导、指标聚合和人工盲评导出。
+- `apps/api/scripts/judge_generation.py`：支持 `--limit`、`--json-output` 和
+  `--review-output`。
+- `apps/api/tests/test_generation_judge.py`：覆盖正常评分、部分支撑、冗余 verdict、
+  稀疏引用 rank、非法 JSON、Provider 错误和盲评导出。
+- `docs/features/20260924-generation-judge.md`：完整设计、契约、真实结果和风险边界。
+
+#### 真实结果
+
+首次 2 条真实冒烟暴露两个独立问题：
+
+1. 模型把部分 claims 标为 `partially_supported`，却把总体 faithfulness 错报为
+   `supported`。修复方式是由 claims 确定性推导总体 verdict，而不是放宽校验。
+2. 某样本证据 rank 为 `1,2,4,5`，原实现把引用数量 4 误当成最大 rank，导致合法 rank 5
+   被判越界。修复后按实际 rank 集合做成员校验。
+
+修复后真实结果：
+
+| 项目 | 结果 |
+| --- | ---: |
+| 输入样本 | 26 |
+| 已 judge | 16 |
+| judge 错误 | 0 |
+| 拒答正确率 | 1.000000 |
+| 忠实度通过率 | 0.812500 |
+| 回答相关性 | 1.000000 |
+| claim 支撑率 | 0.950920 |
+| 平均完全无支撑 claims | 0.000000 |
+
+报告：
+
+- `data/eval/reports/generation_holdout_1000_v3_judge.json`
+- `data/eval/reports/generation_holdout_1000_v3_blind_review.md`
+
+三条复核候选为 `gen-v3-duange-talent`、`gen-v3-pozhenzi-dream` 和
+`gen-v3-multi-dufu-life`，均属于“回答相关，但部分文学解释在引用中没有直接展开”的保守
+判定，不是 judge 执行失败。
+
+#### 验证结果
+
+- judge 定向测试：`8 passed, 2 warnings`。
+- judge Ruff：`All checks passed!`。
+- 真实 2 条冒烟：`judged=2, judge_errors=0`。
+- 真实 v3 全量：`judged=16, judge_errors=0`。
+- 完整质量门禁：后端 Ruff 通过、pytest `192 passed, 3 warnings`；前端 typecheck 通过、
+  Vitest `9 passed`、生产构建通过。
+
+#### 问题与风险
+
+- judge 与生成器同模型，存在同源偏差；自动指标仍需人工盲评校准。
+- claims 数量、文学解释粒度和模型措辞仍会影响忠实度结果。
+- JSON 报告包含回答和引用快照，只保存在本地评估目录，不输出密钥。
+- 该增量不修改 v3 数据集，也不用于继续调在线实现。
+
+#### 回滚方式
+
+删除 judge schema、evaluator、CLI、测试和功能文档即可回滚，不影响在线问答、数据库、
+公开 API 或已归档的 v3 生成报告。
+
+#### 下一步
+
+1. 完成三条 v3 复核候选的人工盲评，建立自动 judge 与人工评分的校准记录。
+2. 保持 v3 只作为回归集，任何在线实现改动使用新的 v4 holdout 独立验证。
+3. 在 Rerank、缓存、并发和云部署之前，先明确下一阶段的质量、性能和成本门槛。
+
+### [2026-09-24] 生成质量 judge 人工校准工具
+
+#### 本次目标
+
+- 把“需要人工盲评”从手工 Markdown 复核推进为可重复的 CSV 评分和自动校准。
+- 只复核 judge 已标出的分歧候选，不重新调用模型，不修改在线 RAG 链路。
+- 明确自动 judge 与人工评分的一致性、覆盖率以及偏严/偏松方向。
+
+#### 做出的决定
+
+- 校准作为纯离线工具，与 judge 共用同一份 JSON 报告，不访问模型、数据库或 Qdrant。
+- 默认只导出 `judge_failure_case_ids` 中仍为 `judged` 的候选；`--scope all` 才导出全部
+  可判断样本。
+- 人工评分采用 `relevance_0_2`、`faithfulness_0_2` 的 `0/1/2` 三档，并允许备注。
+- 严格通过要求相关性和忠实度都为 `2`；严格通过不一致时再区分 `judge_stricter` 与
+  `judge_looser`。
+- CSV 解析支持 BOM、空行和带引号备注，并拒绝空评分、非法分数、重复或未知 `case_id`。
+
+#### 完成内容
+
+- `apps/api/app/schemas/generation_judge_calibration.py`：人工评分、逐样本校准结果和
+  汇总报告 schema。
+- `apps/api/app/evaluation/generation_judge_calibration.py`：CSV 模板导出、人工评分
+  校验、覆盖率与一致率计算、分歧方向判定和摘要格式化。
+- `apps/api/scripts/calibrate_generation_judge.py`：支持候选导出和填写后统计两种模式。
+- `apps/api/tests/test_generation_judge_calibration.py`：覆盖 judge 成功样本过滤、候选
+  过滤、BOM/空行、非法分数、重复与未知样本、部分覆盖率、指标方向和 CLI 导出。
+- `apps/api/app/evaluation/generation_judge.py`：盲评 Markdown 支持按 `case_ids` 聚焦。
+
+#### 真实产物
+
+基于 `generation_holdout_1000_v3_judge.json` 已生成：
+
+- `data/eval/reports/generation_holdout_1000_v3_calibration.csv`
+- `data/eval/reports/generation_holdout_1000_v3_calibration_review.md`
+
+CSV 当前包含三条待人工评分样本：
+
+- `gen-v3-duange-talent`
+- `gen-v3-pozhenzi-dream`
+- `gen-v3-multi-dufu-life`
+
+该轮只完成模板导出，未提前生成校准 JSON 或汇总结论；填写后的实际执行命令为：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\calibrate_generation_judge.py `
+  --review-input data\eval\reports\generation_holdout_1000_v3_calibration.csv `
+  --json-output data\eval\reports\generation_holdout_1000_v3_calibration.json `
+  --summary-output data\eval\reports\generation_holdout_1000_v3_calibration_summary.md
+```
+
+#### 验证结果
+
+- 校准定向测试：`11 passed, 2 warnings`。
+- 校准模块 Ruff：`All checks passed!`。
+- 模板真实导出：`scope=flagged cases=3`。
+- 完整质量门禁：后端 Ruff 通过、pytest `203 passed, 3 warnings`；前端 typecheck 通过、
+  Vitest `9 passed`、生产构建通过。
+
+#### 问题与风险
+
+- 三条候选的人工评分仍是对文学解释保守程度的主观判断，需要保留备注说明分歧原因。
+- 当前样本只覆盖三条 judge 已标出的失败候选，不能代表 16 条可答样本的整体一致率。
+- CSV 需要人工保证逐个阅读问题和引用证据；脚本只校验格式，不能代替判断。
+
+#### 回滚方式
+
+删除校准 schema、校准模块、CLI、测试和本文档段落即可回滚；不影响 judge 报告、在线
+问答、数据库、公开 API 或已归档的评估结果。
+
+#### 下一步
+
+1. [已完成] 由人工填写三条候选的 `relevance_0_2`、`faithfulness_0_2` 和备注。
+2. [已完成] 运行校准统计，记录 exact agreement、strict-pass agreement 和 judge 偏严/偏松方向。
+3. [改为待执行] 在独立 v4 分层校准集上决定 judge Prompt 是否需要收紧或放宽；v3 仍只作为回归集。
+
+### [2026-09-25] v3 高难候选人工校准结果
+
+#### 本次目标
+
+- 校验并执行三条 `judge_failure_case_ids` 候选的人工评分，形成可复现的校准结论。
+- 明确当前判定的适用边界，避免把定向高难题集结果扩大为 judge 总体准确率。
+
+#### 输入校验
+
+人工填写的原始评分表达了三条样本均通过严格评审的意图，但不符合 CSV 契约：字段应为
+裸数值 `0/1/2`，不能写成 `relevance：2`，列名也不能写成 `relevance_：2`。已按原始评分
+意图规范为 `relevance_0_2=2`、`faithfulness_0_2=2`；解析器不放宽数字契约。
+
+#### 真实结果
+
+执行：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\calibrate_generation_judge.py `
+  --review-input data\eval\reports\generation_holdout_1000_v3_calibration.csv `
+  --json-output data\eval\reports\generation_holdout_1000_v3_calibration.json `
+  --summary-output data\eval\reports\generation_holdout_1000_v3_calibration_summary.md
+```
+
+| 指标 | 结果 |
+| --- | ---: |
+| 已复核 / 覆盖率 | 3 / 16，`0.187500` |
+| 相关性精确一致率 | 1.000000 |
+| 忠实度精确一致率 | 0.000000 |
+| 严格通过一致率 | 0.000000 |
+| `judge_stricter` / `judge_looser` | 3 / 0 |
+
+三条人工评分均为严格通过，judge 也判定相关性为 `relevant`，但忠实度为
+`partially_supported`。这与候选选择方式一致，当前只能得出“judge 对隐含文学解释偏保守”
+的定向结论，不能得出 judge 总体偏严或总体错误的结论。
+
+#### 决策与下一步
+
+- 暂不根据 v3 回归集修改 judge Prompt、阈值或在线 RAG。
+- 新建立包含通过和失败样本的 v4 分层校准集，再决定是否调整 judge。
+- 将检索重排、性能成本、产品体验和云部署分别绑定可验收指标后推进。
+
+#### 产物与验证
+
+- `data/eval/reports/generation_holdout_1000_v3_calibration.json`
+- `data/eval/reports/generation_holdout_1000_v3_calibration_summary.md`
+- 校准命令执行成功；文档更新后运行 `git diff --check`。

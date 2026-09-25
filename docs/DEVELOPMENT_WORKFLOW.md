@@ -267,6 +267,16 @@ P95 延迟 / 平均 Token / 单次成本
 
 ## 10. CI 质量门禁
 
+本地统一入口：
+
+```powershell
+.\scripts\verify.ps1
+```
+
+该脚本执行 Ruff、后端测试、前端类型检查、Vitest 和生产构建。GitHub Actions 使用
+等价的后端与前端 job，在每次 push 和 pull request 时执行基础门禁，不连接真实模型、
+MySQL、Redis 或 Qdrant。
+
 当前必须包含的基础检查：
 
 ```powershell
