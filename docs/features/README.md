@@ -37,6 +37,17 @@ docs/features/20260925-hybrid-retrieval-baseline.md
 14. `20260920-answerability-evaluation-v2.md`
 15. `20260920-generation-evaluation.md`
 16. `20260920-poem-context-evidence.md`
+17. `20260920-chinese-gushiwen-100-corpus.md`
+18. `20260920-open-corpus-retrieval-evaluation.md`
+19. `20260920-open-corpus-generation-evaluation.md`
+20. `20260923-chinese-gushiwen-1000-corpus.md`
+21. `20260923-independent-1000-holdout.md`
+22. `20260924-independent-1000-holdout-v2.md`
+23. `20260924-online-rag-observability.md`
+24. `20260924-online-rag-performance.md`
+25. `20260924-independent-1000-holdout-v3.md`
+26. `20260924-quality-gate.md`
+27. `20260924-generation-judge.md`
 
 ## 2. 模板
 

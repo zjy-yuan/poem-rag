@@ -1,0 +1,591 @@
+{
+  "version": "generation-holdout-1000-v1",
+  "description": "基于 chinese-gushiwen 1000 首开放语料的新增独立生成 holdout。样本优先选择 148 号之后的新作品，覆盖作品事实、自然语言、长诗长词、典故、多证据引用，以及跨域、领域内缺实体和缺属性拒答；该集与旧 28 条调参集分离，用于观察 1000 首语料上的生成与引用泛化表现。",
+  "cases": [
+    {
+      "id": "gen-holdout-yijiangnan-spring",
+      "category": "poem_fact",
+      "question": "《忆江南·江南好》如何描写江南春色？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "river-flowers",
+          "any_of": ["日出江花红胜火", "江花红胜火"]
+        },
+        {
+          "id": "river-water",
+          "any_of": ["春来江水绿如蓝", "江水绿如蓝"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["杜甫", "苏轼"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "忆江南·江南好",
+          "author_name": "白居易"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-weicheng-farewell",
+      "category": "poem_fact",
+      "question": "《送元二使安西》送别时劝酒表达了什么情感？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "toast",
+          "any_of": ["劝君更尽一杯酒"]
+        },
+        {
+          "id": "yang-pass",
+          "any_of": ["西出阳关无故人"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "送元二使安西 / 渭城曲",
+          "author_name": "王维"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-chusai-guard",
+      "category": "poem_fact",
+      "question": "《出塞二首·其一》如何表达对良将守边的期待？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "moon-pass",
+          "any_of": ["秦时明月汉时关"]
+        },
+        {
+          "id": "general",
+          "any_of": ["但使龙城飞将在", "龙城飞将"]
+        },
+        {
+          "id": "mountain",
+          "any_of": ["不教胡马度阴山", "胡马度阴山"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "出塞二首·其一",
+          "author_name": "王昌龄"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-zhuliguan-seclusion",
+      "category": "poem_fact",
+      "question": "《竹里馆》写了怎样的幽居生活？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "bamboo",
+          "any_of": ["独坐幽篁里", "幽篁"]
+        },
+        {
+          "id": "moon",
+          "any_of": ["明月来相照", "深林人不知"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "竹里馆",
+          "author_name": "王维"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-xiamujueju-xiangyu",
+      "category": "poem_fact",
+      "question": "《夏日绝句》怎样评价项羽和生死气节？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "hero",
+          "any_of": ["生当作人杰", "死亦为鬼雄"]
+        },
+        {
+          "id": "xiang-yu",
+          "any_of": ["至今思项羽", "项羽"]
+        },
+        {
+          "id": "river",
+          "any_of": ["不肯过江东"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["李白", "杜甫"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "夏日绝句",
+          "author_name": "李清照"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-denggao-autumn",
+      "category": "poem_fact",
+      "question": "《登高》怎样写秋天萧瑟和长江气势？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "fallen-leaves",
+          "any_of": ["无边落木萧萧下"]
+        },
+        {
+          "id": "yangtze",
+          "any_of": ["不尽长江滚滚来"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "登高",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-boqinhuai-satire",
+      "category": "poem_fact",
+      "question": "《泊秦淮》如何借商女讽喻晚唐？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "singer",
+          "any_of": ["商女不知亡国恨"]
+        },
+        {
+          "id": "song",
+          "any_of": ["隔江犹唱《后庭花》", "后庭花"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "泊秦淮",
+          "author_name": "杜牧"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-guanquelou-philosophy",
+      "category": "poem_fact",
+      "question": "《登鹳雀楼》后两句有什么哲理？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "view",
+          "any_of": ["欲穷千里目"]
+        },
+        {
+          "id": "higher",
+          "any_of": ["更上一层楼"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "登鹳雀楼",
+          "author_name": "王之涣"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-yueye-brothers",
+      "category": "natural_language",
+      "question": "杜甫在《月夜忆舍弟》中怎样写思乡和思弟？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "hometown-moon",
+          "any_of": ["月是故乡明"]
+        },
+        {
+          "id": "brothers",
+          "any_of": ["有弟皆分散", "无家问死生"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "月夜忆舍弟",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-luocheng-flute",
+      "category": "natural_language",
+      "question": "李白《春夜洛城闻笛》怎样借折柳写思乡？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "willow",
+          "any_of": ["此夜曲中闻折柳", "折柳"]
+        },
+        {
+          "id": "homesickness",
+          "any_of": ["何人不起故园情", "故园情"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "春夜洛城闻笛 / 春夜洛阳城闻笛",
+          "author_name": "李白"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-yujiaao-peng",
+      "category": "natural_language",
+      "question": "李清照《渔家傲·天接云涛连晓雾》借大鹏表达了什么志向？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "peng",
+          "any_of": ["九万里风鹏正举"]
+        },
+        {
+          "id": "boat",
+          "any_of": ["蓬舟吹取三山去", "三山"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "渔家傲·天接云涛连晓雾",
+          "author_name": "李清照"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-shengchazi-yuanxiao",
+      "category": "natural_language",
+      "question": "欧阳修《生查子·元夕》怎样写物是人非？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "moon-date",
+          "any_of": ["月上柳梢头", "人约黄昏后"]
+        },
+        {
+          "id": "missing-person",
+          "any_of": ["不见去年人"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "生查子·元夕",
+          "author_name": "欧阳修"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-xinglunan-transition",
+      "category": "long_form",
+      "question": "李白《行路难三首》如何从苦闷转向希望？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "obstacle",
+          "any_of": ["欲渡黄河冰塞川", "将登太行雪满山"]
+        },
+        {
+          "id": "hope",
+          "any_of": ["长风破浪会有时", "直挂云帆济沧海"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "行路难三首",
+          "author_name": "李白"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-qiupuge-exaggeration",
+      "category": "long_form",
+      "question": "李白《秋浦歌十七首》怎样夸张地写愁？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "white-hair",
+          "any_of": ["白发三千丈"]
+        },
+        {
+          "id": "sorrow",
+          "any_of": ["缘愁似个长", "愁"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "秋浦歌十七首",
+          "author_name": "李白"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-taohuage-attitude",
+      "category": "long_form",
+      "question": "唐寅《桃花庵歌》表达了怎样的人生态度？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "flowers-wine",
+          "any_of": ["酒醒只在花前坐", "酒醉还须花下眠"]
+        },
+        {
+          "id": "freedom",
+          "any_of": ["不愿鞠躬车马前", "世人笑我忒风颠"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "桃花庵歌",
+          "author_name": "唐寅"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-qianchusai-tactics",
+      "category": "long_form",
+      "question": "杜甫《前出塞九首》对作战方法有什么看法？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "strong-bow",
+          "any_of": ["挽弓当挽强", "用箭当用长"]
+        },
+        {
+          "id": "leader-first",
+          "any_of": ["射人先射马", "擒贼先擒王"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "前出塞九首",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-jinse-allusions",
+      "category": "allusion",
+      "question": "李商隐《锦瑟》用了哪些典故？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "zhuangzi",
+          "any_of": ["庄生晓梦迷蝴蝶", "庄生", "蝴蝶"]
+        },
+        {
+          "id": "wangdi",
+          "any_of": ["望帝春心托杜鹃", "望帝", "杜鹃"]
+        },
+        {
+          "id": "mermaid",
+          "any_of": ["沧海月明珠有泪", "珠有泪"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "锦瑟",
+          "author_name": "李商隐"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-chibi-allusion",
+      "category": "allusion",
+      "question": "杜牧《赤壁》借哪一历史事件抒发感慨？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "zhou-yu",
+          "any_of": ["东风不与周郎便", "周郎", "周瑜"]
+        },
+        {
+          "id": "qiao",
+          "any_of": ["铜雀春深锁二乔", "二乔"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-figure",
+          "any_of": ["诸葛亮"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "赤壁",
+          "author_name": "杜牧"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-multi-moon",
+      "category": "multi_evidence",
+      "question": "请比较《竹里馆》和《月夜忆舍弟》中的明月意象。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "bamboo-moon",
+          "any_of": ["明月来相照", "深林人不知"]
+        },
+        {
+          "id": "hometown-moon",
+          "any_of": ["月是故乡明"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "竹里馆",
+          "author_name": "王维"
+        },
+        {
+          "poem_title": "月夜忆舍弟",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-multi-farewell-home",
+      "category": "multi_evidence",
+      "question": "请找两首分别写阳关送别和洛城思乡的唐诗，并说明情感。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "farewell",
+          "any_of": ["西出阳关无故人", "劝君更尽一杯酒"]
+        },
+        {
+          "id": "homesickness",
+          "any_of": ["故园情", "此夜曲中闻折柳"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "送元二使安西 / 渭城曲",
+          "author_name": "王维"
+        },
+        {
+          "poem_title": "春夜洛城闻笛 / 春夜洛阳城闻笛",
+          "author_name": "李白"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-multi-hero-people",
+      "category": "multi_evidence",
+      "question": "请找两首分别写个人气节和百姓疾苦的作品。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "integrity",
+          "any_of": ["生当作人杰", "死亦为鬼雄"]
+        },
+        {
+          "id": "people-suffering",
+          "any_of": ["兴，百姓苦；亡，百姓苦", "百姓苦"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "夏日绝句",
+          "author_name": "李清照"
+        },
+        {
+          "poem_title": "山坡羊·潼关怀古",
+          "author_name": "张养浩"
+        }
+      ]
+    },
+    {
+      "id": "gen-holdout-refusal-xiangsi",
+      "category": "refusal_missing_entity",
+      "question": "王维《相思》的译文是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-holdout-refusal-shanzhongsongbie",
+      "category": "refusal_missing_entity",
+      "question": "王维《山中送别》的赏析是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-holdout-refusal-zhuliguan-year",
+      "category": "refusal_missing_attribute",
+      "question": "《竹里馆》写于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-holdout-refusal-jinse-year",
+      "category": "refusal_missing_attribute",
+      "question": "《锦瑟》写于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-holdout-refusal-wangchangling-birthplace",
+      "category": "refusal_missing_attribute",
+      "question": "王昌龄的出生地在哪里？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-holdout-refusal-transformer",
+      "category": "refusal_cross_domain",
+      "question": "Transformer 的自注意力机制是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-holdout-refusal-docker",
+      "category": "refusal_cross_domain",
+      "question": "Docker 容器和虚拟机有什么区别？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    }
+  ]
+}

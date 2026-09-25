@@ -1,0 +1,503 @@
+{
+  "version": "generation-holdout-1000-v2",
+  "description": "基于 chinese-gushiwen 1000 首开放语料的新一代未观察生成 holdout。覆盖长诗尾部事实、作品引用、自然语言赏析、典故与情感、多证据引用，以及跨域、领域内缺实体和缺属性拒答。该集创建后冻结；如果用于调参，必须另建 v3 复核泛化。",
+  "cases": [
+    {
+      "id": "gen-v2-chunwang-war",
+      "category": "poem_fact",
+      "question": "杜甫《春望》如何写战乱中的长安、思亲与衰老？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "ruined-capital",
+          "any_of": ["国破山河在", "城春草木深"]
+        },
+        {
+          "id": "family-letter",
+          "any_of": ["家书抵万金", "烽火连三月"]
+        },
+        {
+          "id": "aging",
+          "any_of": ["白头搔更短", "浑欲不胜簪"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["李白", "白居易"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "春望",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-changhen-vow",
+      "category": "poem_fact",
+      "question": "白居易《长恨歌》结尾怎样写长生殿誓言和绵绵遗恨？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "vow",
+          "any_of": ["在天愿作比翼鸟", "在地愿为连理枝"]
+        },
+        {
+          "id": "regret",
+          "any_of": ["此恨绵绵无绝期", "天长地久有时尽"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["李白", "杜甫"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "长恨歌",
+          "author_name": "白居易"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-pipaxing-fate",
+      "category": "poem_fact",
+      "question": "《琵琶行》怎样借琵琶女的身世写同病相怜？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "same-fate",
+          "any_of": ["同是天涯沦落人", "相逢何必曾相识"]
+        },
+        {
+          "id": "tears",
+          "any_of": ["江州司马青衫湿", "座中泣下谁最多"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "琵琶行 / 琵琶引",
+          "author_name": "白居易"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-tianmu-freedom",
+      "category": "poem_fact",
+      "question": "李白《梦游天姥吟留别》结尾表达了怎样的人格态度？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "white-deer",
+          "any_of": ["且放白鹿青崖间", "须行即骑访名山"]
+        },
+        {
+          "id": "no-bow",
+          "any_of": ["安能摧眉折腰事权贵", "使我不得开心颜"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "梦游天姥吟留别 / 梦游天姥山别东鲁诸公",
+          "author_name": "李白"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-shudao-gate",
+      "category": "poem_fact",
+      "question": "李白《蜀道难》怎样描写剑阁险要和守关形势？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "jiange",
+          "any_of": ["剑阁峥嵘而崔嵬", "剑阁"]
+        },
+        {
+          "id": "gate",
+          "any_of": ["一夫当关，万夫莫开"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "蜀道难",
+          "author_name": "李白"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-maowu-hope",
+      "category": "poem_fact",
+      "question": "杜甫《茅屋为秋风所破歌》结尾表达了怎样的理想？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "houses",
+          "any_of": ["安得广厦千万间", "大庇天下寒士俱欢颜"]
+        },
+        {
+          "id": "self-sacrifice",
+          "any_of": ["吾庐独破受冻死亦足", "风雨不动安如山"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "茅屋为秋风所破歌",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-spring-river-ending",
+      "category": "natural_language",
+      "question": "《春江花月夜》结尾怎样写月落、归思和离情？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "return",
+          "any_of": ["不知乘月几人归"]
+        },
+        {
+          "id": "falling-moon",
+          "any_of": ["落月摇情满江树"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "春江花月夜",
+          "author_name": "张若虚"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-red-cliff-scene",
+      "category": "natural_language",
+      "question": "苏轼《念奴娇·赤壁怀古》如何描写赤壁江山和周瑜？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "river",
+          "any_of": ["大江东去", "浪淘尽"]
+        },
+        {
+          "id": "cliff",
+          "any_of": ["乱石穿空", "惊涛拍岸"]
+        },
+        {
+          "id": "zhou-yu",
+          "any_of": ["遥想公瑾当年", "雄姿英发"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "念奴娇·赤壁怀古",
+          "author_name": "苏轼"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-shengsheng-loneliness",
+      "category": "natural_language",
+      "question": "李清照《声声慢·寻寻觅觅》怎样层层写孤独和愁绪？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "opening",
+          "any_of": ["寻寻觅觅", "冷冷清清", "凄凄惨惨戚戚"]
+        },
+        {
+          "id": "ending",
+          "any_of": ["怎一个愁字了得", "梧桐更兼细雨"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["苏轼", "辛弃疾"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "声声慢·寻寻觅觅",
+          "author_name": "李清照"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-qingyuan-search",
+      "category": "natural_language",
+      "question": "辛弃疾《青玉案·元夕》怎样写热闹元宵中的寻找与发现？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "lanterns",
+          "any_of": ["东风夜放花千树", "宝马雕车香满路"]
+        },
+        {
+          "id": "search",
+          "any_of": ["众里寻他千百度", "蓦然回首"]
+        },
+        {
+          "id": "found",
+          "any_of": ["那人却在，灯火阑珊处"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "青玉案·元夕",
+          "author_name": "辛弃疾"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-yulinling-farewell",
+      "category": "natural_language",
+      "question": "柳永《雨霖铃·寒蝉凄切》如何写临别和别后想象？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "parting",
+          "any_of": ["执手相看泪眼", "竟无语凝噎"]
+        },
+        {
+          "id": "after",
+          "any_of": ["杨柳岸，晓风残月", "今宵酒醒何处"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "雨霖铃·寒蝉凄切",
+          "author_name": "柳永"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-lingding-loyalty",
+      "category": "natural_language",
+      "question": "文天祥《过零丁洋》如何表达身世之悲和舍生取义？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "fate",
+          "any_of": ["辛苦遭逢起一经", "零丁洋里叹零丁"]
+        },
+        {
+          "id": "loyalty",
+          "any_of": ["人生自古谁无死", "留取丹心照汗青"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "过零丁洋",
+          "author_name": "文天祥"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-guishui-ambition",
+      "category": "natural_language",
+      "question": "曹操《龟虽寿》怎样看待生命有限与老当益壮？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "mortality",
+          "any_of": ["神龟虽寿，犹有竟时", "螣蛇乘雾，终为土灰"]
+        },
+        {
+          "id": "ambition",
+          "any_of": ["老骥伏枥，志在千里", "烈士暮年，壮心不已"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "龟虽寿",
+          "author_name": "曹操"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-multi-separation",
+      "category": "multi_evidence",
+      "question": "请比较《长恨歌》和《雨霖铃·寒蝉凄切》中不同的离别书写。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "changhen",
+          "any_of": ["在天愿作比翼鸟", "此恨绵绵无绝期"]
+        },
+        {
+          "id": "yulinling",
+          "any_of": ["杨柳岸，晓风残月", "执手相看泪眼"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "长恨歌",
+          "author_name": "白居易"
+        },
+        {
+          "poem_title": "雨霖铃·寒蝉凄切",
+          "author_name": "柳永"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-multi-dufu",
+      "category": "multi_evidence",
+      "question": "请比较杜甫《春望》和《茅屋为秋风所破歌》中的家国忧思。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "chunwang",
+          "any_of": ["国破山河在", "家书抵万金"]
+        },
+        {
+          "id": "maowu",
+          "any_of": ["安得广厦千万间", "大庇天下寒士俱欢颜"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "春望",
+          "author_name": "杜甫"
+        },
+        {
+          "poem_title": "茅屋为秋风所破歌",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-multi-sorrow-search",
+      "category": "multi_evidence",
+      "question": "请比较《声声慢·寻寻觅觅》和《青玉案·元夕》中不同的愁与寻找。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "shengsheng",
+          "any_of": ["寻寻觅觅", "怎一个愁字了得"]
+        },
+        {
+          "id": "qingyuan",
+          "any_of": ["众里寻他千百度", "那人却在，灯火阑珊处"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "声声慢·寻寻觅觅",
+          "author_name": "李清照"
+        },
+        {
+          "poem_title": "青玉案·元夕",
+          "author_name": "辛弃疾"
+        }
+      ]
+    },
+    {
+      "id": "gen-v2-refusal-kubernetes",
+      "category": "refusal_cross_domain",
+      "question": "Kubernetes 的 Pod 调度器如何选择节点？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v2-refusal-graphql",
+      "category": "refusal_cross_domain",
+      "question": "GraphQL 和 REST 的查询方式有什么区别？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v2-refusal-react-hooks",
+      "category": "refusal_cross_domain",
+      "question": "React Hooks 的 useEffect 依赖数组有什么作用？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v2-refusal-tidu-nancheng",
+      "category": "refusal_missing_entity",
+      "question": "崔护《题都城南庄》的译文是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v2-refusal-xunyinzhe",
+      "category": "refusal_missing_entity",
+      "question": "贾岛《寻隐者不遇》的赏析是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v2-refusal-pinnv",
+      "category": "refusal_missing_entity",
+      "question": "秦韬玉《贫女》表达了什么主题？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v2-refusal-chunwang-year",
+      "category": "refusal_missing_attribute",
+      "question": "《春望》写于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v2-refusal-baijuyi-birthplace",
+      "category": "refusal_missing_attribute",
+      "question": "白居易的出生地在哪里？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v2-refusal-xinqiji-office",
+      "category": "refusal_missing_attribute",
+      "question": "辛弃疾担任过哪些具体官职？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v2-refusal-changhen-year",
+      "category": "refusal_missing_attribute",
+      "question": "《长恨歌》具体写于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    }
+  ]
+}

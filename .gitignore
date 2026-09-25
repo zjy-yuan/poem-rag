@@ -30,3 +30,11 @@ apps/api/scripts/_probe_*.py
 data/eval/_probe_*.json
 data/eval/reports/_probe_*.json
 data/eval/reports/profile_*.json
+
+# Intermediate tuning runs are reproducible; keep frozen datasets and milestone reports.
+data/eval/reports/*_after_anchor*.json
+data/eval/reports/*_after_fix*.json
+data/eval/reports/*_after_structured_fix*.json
+data/eval/reports/*_after_entity_tail.json
+data/eval/reports/*_after_quote_prompt.json
+data/eval/reports/*_next.json

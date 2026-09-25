@@ -1,8 +1,8 @@
 # 生成层评估骨架
 
-> 状态：已实现（确定性指标 + 真实基线）  
+> 状态：已实现（确定性指标 + 真实基线；已有独立 LLM-as-judge 增量）
 > 创建日期：2026-09-20  
-> 最近更新：2026-09-20  
+> 最近更新：2026-09-24
 > 关联任务：生成质量、引用准确率、拒答 P/R/F1 和真实模型回归
 
 ## 1. 背景与问题
@@ -29,7 +29,8 @@
 
 ## 3. 非目标
 
-- 首版不实现 LLM-as-judge，不把模型自评当作事实正确率。
+- 首版不实现 LLM-as-judge；该项已在 2026-09-24 作为读取现有报告的独立离线增量实现，
+  见 [生成质量 LLM-as-judge](20260924-generation-judge.md)。
 - 首版不计算 Token 成本、忠实度蕴含或人工文学赏析评分。
 - 不在普通单元测试中调用真实 DeepSeek，真实评估由 CLI 手动执行。
 - 不修改公开 HTTP API、SSE 事件或数据库表结构。
@@ -49,7 +50,7 @@
 ## 5. 方案概览
 
 ```text
-data/eval/generation_rag_v1.json
+data/eval/generation_rag_open_corpus_v1.json
   -> GenerationEvaluator
   -> 每个 case 打开独立 MySQL Session
   -> RagChatGraph.stream()
@@ -75,7 +76,7 @@ data/eval/generation_rag_v1.json
 
 ```powershell
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
-  --json-output data\eval\reports\generation_rag_v1_20260920.json
+  --json-output data\eval\reports\generation_rag_open_corpus_v1_20260920.json
 ```
 
 前置条件：
@@ -88,7 +89,7 @@ CLI 只输出受控指标和模型 ID，不输出 API Key、完整上游响应�
 
 ## 7. 数据设计
 
-数据集：`data/eval/generation_rag_v1.json`
+数据集：`data/eval/generation_rag_open_corpus_v1.json`
 
 每个样本包含：
 
@@ -98,9 +99,9 @@ CLI 只输出受控指标和模型 ID，不输出 API Key、完整上游响应�
 4. `forbidden_facts`：回答中不得出现的事实。
 5. `expected_citations`：可移植的引用选择器。
 
-首版共 12 条：8 条有答案，4 条拒答，覆盖月亮、思乡、写景、哲理、意象、主题、
-领域内缺实体、领域内缺属性和跨域问题。评估集只基于当前 6 首种子诗词，不能代表
-开放语料分布。
+当前默认集共 28 条：21 条有答案、7 条拒答，覆盖真实作品事实、自然语言、长诗长词、
+典故、多证据和三类拒答边界。旧 `data/eval/generation_rag_v1.json` 共 12 条，基于
+6 首种子诗词，已冻结为历史回归集，不再作为默认口径。
 
 ## 8. 后端设计
 
@@ -161,7 +162,8 @@ apps/api/tests/test_generation_evaluation.py
 
 ## 12. 风险与回滚
 
-1. 12 条样本不足以代表开放语料，指标只能作为回归基线。
+1. 旧 12 条样本不足以代表开放语料，当前默认 28 条 holdout 也仍不足以完成统计显著
+   评估。
 2. `required_facts` 仍是关键词匹配，不能证明事实被证据蕴含。
 3. 真实模型有随机性，温度固定为 `0` 仍可能存在供应商侧差异。
 4. 评估会消耗真实 Token，需要控制数据集规模和运行频率。
@@ -174,7 +176,7 @@ apps/api/tests/test_generation_evaluation.py
 - [x] Evaluator 与 CLI
 - [x] 单元测试和错误隔离
 - [x] 真实 DeepSeek 基线与报告归档
-- [ ] LLM-as-judge 或人工忠实度评分
+- [x] LLM-as-judge 或人工忠实度评分
 
 ## 14. 真实基线与结论
 
@@ -202,6 +204,21 @@ P95 `3230.334 ms`。
 4. 关键词事实匹配只能验证“回答提到了关键信息”，不能证明事实被证据蕴含，忠实度
    仍需 entailment 或人工评分。
 
+### 14.1 当前开放语料 holdout
+
+默认评估集已切换为 `generation-rag-open-corpus-100-v1`，真实 `deepseek-chat` 结果为
+`28/28`：有答案准确率、拒答准确率、拒答 F1、引用精确率和引用召回率均为 `1.0`，
+平均延迟 `2087.159 ms`、P95 `4075.593 ms`。
+
+修复前曾有四个失败样本被 `assess` 判为 `missing_fact`：
+`gen-open-qingyuan-lantern`、`gen-open-pipa-music`、`gen-open-kongque-tragedy`、
+`gen-open-multi-moon`。根因分别是目标事实句未进入有效证据、长诗父级上下文在 1200
+字处截断，以及多证据问题未保证两首目标作品同时入选。随后通过领域词典扩展、
+多证据候选槽位、父级上下文轮转和 4800 字预算完成修复；`assess` Prompt 未修改。
+
+完整数据契约、分类结果和后续方向见
+[开放语料生成层 holdout v1](20260920-open-corpus-generation-evaluation.md)。
+
 ## 15. 决策与变更记录
 
 | 日期 | 决策或变化 | 原因 |
@@ -211,5 +228,17 @@ P95 `3230.334 ms`。
 | 2026-09-20 | 每个样本使用独立数据库 Session | 避免前一样本事务和身份状态污染后续样本 |
 | 2026-09-20 | 单样本异常记录错误码后继续 | 一份评估报告应能暴露所有失败样本，而不是提前中断 |
 | 2026-09-20 | 失败样本按“检索、语料、评估口径、组装”分类定位 | 避免用调 Prompt 掩盖结构缺陷 |
+| 2026-09-20 | 开放语料 holdout 从 24/28 修复到 28/28 | 通过证据召回和上下文组装修复，不修改 assess Prompt |
 | 2026-09-20 | 历史报告保留原样，不因口径变更回写 | 报告是历史证据，覆盖会破坏可追溯性 |
 | 2026-09-20 | 评估与在线问答共用 `build_chat_retrieval` | 证据组装链一旦分叉，评估结论就失去意义 |
+| 2026-09-20 | 默认评估集切换为 28 条开放语料 holdout | 12 条种子集无法代表扩库后的生成质量 |
+
+## 16. LLM-as-judge 增量
+
+v3 生成报告生成后，新增 `judge_generation.py` 读取已有 JSON，对 16 条可答样本执行独立
+judge，10 条拒答样本按设计跳过。真实结果为 16/16 完成、0 个 judge 错误、忠实度通过率
+`0.8125`、回答相关性 `1.0`、claim 支撑率 `0.950920`，没有完全无支撑 claim。
+
+judge 不修改在线图或原始 v3 报告。总体忠实度由 claims 确定性推导，模型只负责拆分事实
+声明；引用 rank 按实际证据集合校验。完整设计、失败边界和人工盲评流程见
+[生成质量 LLM-as-judge](20260924-generation-judge.md)。

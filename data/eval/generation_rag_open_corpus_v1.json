@@ -1,0 +1,586 @@
+{
+  "version": "generation-rag-open-corpus-100-v1",
+  "description": "基于 chinese-gushiwen 100 首开放语料的生成层独立 holdout。样本覆盖真实作品事实回答、自然语言、长诗长词、多证据、引用完整性，以及跨域、领域内缺实体和领域内缺属性拒答；不包含 LLM-as-judge 或人工忠实度评分。",
+  "cases": [
+    {
+      "id": "gen-open-jiangjinjiu-confidence",
+      "category": "poem_fact",
+      "question": "《将进酒》怎样表现李白的自信和豪情？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "self-worth",
+          "any_of": ["天生我材必有用"]
+        },
+        {
+          "id": "money",
+          "any_of": ["千金散尽还复来"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["杜甫", "苏轼"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "将进酒"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-chunwang-family",
+      "category": "poem_fact",
+      "question": "《春望》如何写战乱中的思家之情？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "war",
+          "any_of": ["烽火连三月", "烽火"]
+        },
+        {
+          "id": "family-letter",
+          "any_of": ["家书抵万金", "家书"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "春望"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-shuidiaogetou-brother",
+      "category": "natural_language",
+      "question": "苏轼中秋怀念弟弟的词中，怎样表达相隔千里仍共享月光？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "wish",
+          "any_of": ["但愿人长久", "人长久"]
+        },
+        {
+          "id": "moon-sharing",
+          "any_of": ["千里共婵娟", "共婵娟"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-relation",
+          "any_of": ["亡妻", "妻子"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-niannujiao-redcliff",
+      "category": "poem_fact",
+      "question": "《念奴娇·赤壁怀古》怎样借赤壁古迹追怀周瑜？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "red-cliff",
+          "any_of": ["大江东去", "赤壁"]
+        },
+        {
+          "id": "zhou-yu",
+          "any_of": ["周瑜", "公瑾"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-figure",
+          "any_of": ["诸葛亮"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "念奴娇·赤壁怀古"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-jiangchengzi-dream",
+      "category": "natural_language",
+      "question": "苏轼悼念亡妻时，在梦里见到了什么场景？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "window",
+          "any_of": ["小轩窗", "正梳妆", "窗前梳妆"]
+        },
+        {
+          "id": "silent-tears",
+          "any_of": [
+            "相顾无言",
+            "相看无言",
+            "惟有泪千行",
+            "泪千行",
+            "泪流千行"
+          ]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-relation",
+          "any_of": ["弟弟", "苏辙"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "江城子·乙卯正月二十日夜记梦"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-shengshengman-reduplication",
+      "category": "poem_fact",
+      "question": "《声声慢·寻寻觅觅》开篇如何用叠字营造愁绪？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "search",
+          "any_of": ["寻寻觅觅"]
+        },
+        {
+          "id": "sadness",
+          "any_of": ["凄凄惨惨戚戚", "冷冷清清"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["苏轼", "辛弃疾"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "声声慢·寻寻觅觅"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-qingyuan-lantern",
+      "category": "natural_language",
+      "question": "辛弃疾写元宵夜寻找意中人的词句是什么？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "search-crowd",
+          "any_of": ["众里寻他千百度", "寻他千百度"]
+        },
+        {
+          "id": "lantern-end",
+          "any_of": ["灯火阑珊处"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["李清照", "苏轼"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "青玉案·元夕"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-chunjiang-cosmic",
+      "category": "long_form",
+      "question": "《春江花月夜》如何由江月写到人生感慨？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "first-moon",
+          "any_of": ["江畔何人初见月", "江月何年初照人"]
+        },
+        {
+          "id": "generations",
+          "any_of": ["人生代代无穷已", "代代无穷已"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "春江花月夜"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-yuanri-custom",
+      "category": "poem_fact",
+      "question": "《元日》写了哪些春节习俗？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "firecracker",
+          "any_of": ["爆竹"]
+        },
+        {
+          "id": "tusu",
+          "any_of": ["屠苏"]
+        },
+        {
+          "id": "spring-couplet",
+          "any_of": ["新桃换旧符", "桃符"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "元日"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-youzi-mother",
+      "category": "poem_fact",
+      "question": "《游子吟》如何表现母爱？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "mother-thread",
+          "any_of": ["慈母手中线", "手中线"]
+        },
+        {
+          "id": "child-clothes",
+          "any_of": ["游子身上衣", "身上衣"]
+        },
+        {
+          "id": "repayment",
+          "any_of": ["报得三春晖", "三春晖"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "游子吟"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-wangyue-ambition",
+      "category": "poem_fact",
+      "question": "《望岳》结尾表达了怎样的志向？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "summit",
+          "any_of": ["会当凌绝顶", "凌绝顶"]
+        },
+        {
+          "id": "small-mountains",
+          "any_of": ["一览众山小", "众山小"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "望岳"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-dingfengbo-optimism",
+      "category": "poem_fact",
+      "question": "《定风波·莫听穿林打叶声》如何表现旷达？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "rain",
+          "any_of": ["莫听穿林打叶声"]
+        },
+        {
+          "id": "life-rain",
+          "any_of": ["一蓑烟雨任平生"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "定风波·莫听穿林打叶声"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-yongyule-allusions",
+      "category": "allusion",
+      "question": "《永遇乐·京口北固亭怀古》用了哪些历史人物典故？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "sun-quan",
+          "any_of": ["孙仲谋", "孙权"]
+        },
+        {
+          "id": "liu-yu",
+          "any_of": ["寄奴", "刘裕"]
+        },
+        {
+          "id": "lian-po",
+          "any_of": ["廉颇"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "永遇乐·京口北固亭怀古"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-pipa-music",
+      "category": "long_form",
+      "question": "《琵琶行》怎样用比喻描写琵琶声？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "heavy-strings",
+          "any_of": ["大弦嘈嘈如急雨", "嘈嘈如急雨"]
+        },
+        {
+          "id": "light-strings",
+          "any_of": ["小弦切切如私语", "切切如私语"]
+        },
+        {
+          "id": "pearls",
+          "any_of": ["大珠小珠落玉盘"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "琵琶行 / 琵琶引"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-shudao-danger",
+      "category": "long_form",
+      "question": "《蜀道难》如何写蜀道艰险？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "harder-than-sky",
+          "any_of": ["难于上青天", "蜀道之难"]
+        },
+        {
+          "id": "jiange",
+          "any_of": ["剑阁峥嵘而崔嵬", "剑阁", "一夫当关"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "蜀道难"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-kongque-tragedy",
+      "category": "long_form",
+      "question": "《孔雀东南飞》讲述了什么爱情悲剧？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "couple",
+          "any_of": ["焦仲卿", "刘兰芝"]
+        },
+        {
+          "id": "death",
+          "any_of": ["投水", "自尽", "殉情", "吊死"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "孔雀东南飞 / 古诗为焦仲卿妻作"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-caiwei-return",
+      "category": "poem_fact",
+      "question": "《采薇》结尾怎样写归途和今昔之感？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "past",
+          "any_of": ["昔我往矣", "杨柳依依"]
+        },
+        {
+          "id": "present",
+          "any_of": ["今我来思", "雨雪霏霏"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "采薇"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-guansui-courtship",
+      "category": "poem_fact",
+      "question": "《关雎》怎样表现对淑女的追求？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "ideal-woman",
+          "any_of": ["窈窕淑女", "君子好逑"]
+        },
+        {
+          "id": "sleepless",
+          "any_of": ["辗转反侧"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "关雎"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-baixue-snow",
+      "category": "poem_fact",
+      "question": "《白雪歌送武判官归京》如何用春花比喻边塞雪景？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "spring-wind",
+          "any_of": ["忽如一夜春风来"]
+        },
+        {
+          "id": "pear-blossom",
+          "any_of": ["千树万树梨花开"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "白雪歌送武判官归京"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-momei-character",
+      "category": "poem_fact",
+      "question": "《墨梅》如何借梅花表达品格？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "no-praise",
+          "any_of": ["不要人夸好颜色"]
+        },
+        {
+          "id": "clear-air",
+          "any_of": ["只留清气满乾坤", "清气满乾坤"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "墨梅"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-multi-moon",
+      "category": "multi_evidence",
+      "question": "请找两首借明月分别写思乡和怀人的作品，并说明各自情感。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "homesickness",
+          "any_of": ["思乡", "故乡"]
+        },
+        {
+          "id": "longing",
+          "any_of": ["怀人", "怀念", "思念", "子由", "苏辙"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "静夜思"
+        },
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "gen-open-refusal-xiangsi",
+      "category": "refusal_missing_entity",
+      "question": "王维《相思》的译文是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-open-refusal-qingming",
+      "category": "refusal_missing_entity",
+      "question": "杜牧《清明》的赏析是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-open-refusal-jingyesi-year",
+      "category": "refusal_missing_attribute",
+      "question": "《静夜思》写于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-open-refusal-jiangjinjiu-year",
+      "category": "refusal_missing_attribute",
+      "question": "《将进酒》写于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-open-refusal-libai-birthplace",
+      "category": "refusal_missing_attribute",
+      "question": "李白的出生地在哪里？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-open-refusal-kubernetes",
+      "category": "refusal_cross_domain",
+      "question": "Kubernetes 的滚动发布机制是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-open-refusal-quantum",
+      "category": "refusal_cross_domain",
+      "question": "量子纠缠的物理实验是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    }
+  ]
+}

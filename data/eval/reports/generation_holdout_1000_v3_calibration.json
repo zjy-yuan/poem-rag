@@ -1,0 +1,70 @@
+{
+  "source_dataset_version": "generation-holdout-1000-v3",
+  "source_generated_at": "2026-09-24T13:44:14.913427Z",
+  "generator_model": "deepseek-chat",
+  "judge_model": "deepseek-chat",
+  "reviewed_at": "2026-09-25T11:22:09.199337Z",
+  "summary": {
+    "eligible_cases": 16,
+    "reviewed_cases": 3,
+    "coverage_rate": 0.1875,
+    "relevance_exact_agreement_rate": 1.0,
+    "faithfulness_exact_agreement_rate": 0.0,
+    "strict_pass_agreement_rate": 0.0,
+    "judge_stricter_cases": 3,
+    "judge_looser_cases": 0
+  },
+  "results": [
+    {
+      "case_id": "gen-v3-duange-talent",
+      "category": "poem_fact",
+      "human_relevance_0_2": 2,
+      "judge_relevance": "relevant",
+      "judge_relevance_0_2": 2,
+      "relevance_exact_match": true,
+      "human_faithfulness_0_2": 2,
+      "judge_faithfulness": "partially_supported",
+      "judge_faithfulness_0_2": 1,
+      "faithfulness_exact_match": false,
+      "human_strict_pass": true,
+      "judge_strict_pass": false,
+      "strict_pass_match": false,
+      "strict_pass_direction": "judge_stricter",
+      "notes": ""
+    },
+    {
+      "case_id": "gen-v3-pozhenzi-dream",
+      "category": "natural_language",
+      "human_relevance_0_2": 2,
+      "judge_relevance": "relevant",
+      "judge_relevance_0_2": 2,
+      "relevance_exact_match": true,
+      "human_faithfulness_0_2": 2,
+      "judge_faithfulness": "partially_supported",
+      "judge_faithfulness_0_2": 1,
+      "faithfulness_exact_match": false,
+      "human_strict_pass": true,
+      "judge_strict_pass": false,
+      "strict_pass_match": false,
+      "strict_pass_direction": "judge_stricter",
+      "notes": ""
+    },
+    {
+      "case_id": "gen-v3-multi-dufu-life",
+      "category": "multi_evidence",
+      "human_relevance_0_2": 2,
+      "judge_relevance": "relevant",
+      "judge_relevance_0_2": 2,
+      "relevance_exact_match": true,
+      "human_faithfulness_0_2": 2,
+      "judge_faithfulness": "partially_supported",
+      "judge_faithfulness_0_2": 1,
+      "faithfulness_exact_match": false,
+      "human_strict_pass": true,
+      "judge_strict_pass": false,
+      "strict_pass_match": false,
+      "strict_pass_direction": "judge_stricter",
+      "notes": ""
+    }
+  ]
+}

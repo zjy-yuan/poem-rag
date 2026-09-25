@@ -13,7 +13,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(APP_ROOT) not in sys.path:
     sys.path.insert(0, str(APP_ROOT))
 
-DEFAULT_DATASET = PROJECT_ROOT / "data" / "eval" / "generation_rag_v1.json"
+DEFAULT_DATASET = (
+    PROJECT_ROOT / "data" / "eval" / "generation_holdout_1000_v1.json"
+)
 
 if TYPE_CHECKING:
     from app.schemas.generation_evaluation import GenerationEvaluationReport
@@ -46,12 +48,16 @@ async def run_evaluation(dataset_path: Path) -> GenerationEvaluationReport:
     @asynccontextmanager
     async def graph_factory() -> AsyncIterator[RagChatGraph]:
         async with session_factory() as session:
-            yield RagChatGraph(
-                retrieval=build_chat_retrieval(session),
-                rewriter=rewriter,
-                provider=provider,
-                settings=settings,
-            )
+            retrieval = await build_chat_retrieval(session, settings)
+            try:
+                yield RagChatGraph(
+                    retrieval=retrieval,
+                    rewriter=rewriter,
+                    provider=provider,
+                    settings=settings,
+                )
+            finally:
+                await retrieval.aclose()
 
     try:
         evaluator = GenerationEvaluator(

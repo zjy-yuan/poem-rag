@@ -1,0 +1,481 @@
+{
+  "version": "generation-holdout-1000-v3",
+  "description": "基于 chinese-gushiwen 1000 首开放语料的第三批独立生成 holdout。答案题覆盖作品事实、自然语言赏析和多证据比较，引用作品与 v1/v2 已用引用金标准不相交；拒答题覆盖跨域技术问题、领域内缺实体和缺属性。该集创建后冻结；若用于样本级修复，必须另建 v4 复核泛化。",
+  "cases": [
+    {
+      "id": "gen-v3-duange-talent",
+      "category": "poem_fact",
+      "question": "曹操《短歌行》怎样从人生短促写到求贤若渴？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "life-short",
+          "any_of": ["对酒当歌，人生几何", "譬如朝露，去日苦多"]
+        },
+        {
+          "id": "seek-talent",
+          "any_of": ["周公吐哺，天下归心", "山不厌高，海不厌深"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["李白", "杜甫"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "短歌行",
+          "author_name": "曹操"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-guancanghai-sea",
+      "category": "poem_fact",
+      "question": "曹操《观沧海》怎样由眼前海景写到宇宙气象和志向？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "sea-scene",
+          "any_of": ["水何澹澹，山岛竦峙", "秋风萧瑟，洪波涌起"]
+        },
+        {
+          "id": "cosmos",
+          "any_of": ["日月之行，若出其中", "星汉灿烂，若出其里"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "观沧海",
+          "author_name": "曹操"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-wangyue-summit",
+      "category": "poem_fact",
+      "question": "杜甫《望岳》如何描写泰山并表达登临绝顶的雄心？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "mountain",
+          "any_of": ["造化钟神秀，阴阳割昏晓", "齐鲁青未了"]
+        },
+        {
+          "id": "summit",
+          "any_of": ["会当凌绝顶，一览众山小"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "望岳",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-shizhi-border",
+      "category": "poem_fact",
+      "question": "王维《使至塞上》如何写边塞行程和壮阔景色？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "journey",
+          "any_of": ["单车欲问边，属国过居延", "征蓬出汉塞，归雁入胡天"]
+        },
+        {
+          "id": "desert",
+          "any_of": ["大漠孤烟直，长河落日圆"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "使至塞上",
+          "author_name": "王维"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-youshanxi-turn",
+      "category": "poem_fact",
+      "question": "陆游《游山西村》怎样写山村人情和柳暗花明的转折？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "village",
+          "any_of": ["莫笑农家腊酒浑", "丰年留客足鸡豚", "箫鼓追随春社近"]
+        },
+        {
+          "id": "turn",
+          "any_of": ["山重水复疑无路，柳暗花明又一村"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "游山西村",
+          "author_name": "陆游"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-dingfeng-calm",
+      "category": "poem_fact",
+      "question": "苏轼《定风波·莫听穿林打叶声》怎样表现雨中徐行和旷达心境？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "rain",
+          "any_of": ["莫听穿林打叶声，何妨吟啸且徐行", "一蓑烟雨任平生"]
+        },
+        {
+          "id": "calm",
+          "any_of": ["也无风雨也无晴", "回首向来萧瑟处"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "定风波·莫听穿林打叶声",
+          "author_name": "苏轼"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-yumeiren-sorrow",
+      "category": "natural_language",
+      "question": "李煜《虞美人·春花秋月何时了》怎样由故国回忆写到滔滔愁绪？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "past",
+          "any_of": ["春花秋月何时了", "往事知多少", "故国不堪回首月明中"]
+        },
+        {
+          "id": "river-sorrow",
+          "any_of": ["问君能有几多愁", "恰似一江春水向东流"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "虞美人·春花秋月何时了",
+          "author_name": "李煜"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-wuling-sorrow",
+      "category": "natural_language",
+      "question": "李清照《武陵春·春晚》怎样写物是人非和愁重难载？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "changed",
+          "any_of": ["物是人非事事休", "欲语泪先流"]
+        },
+        {
+          "id": "heavy-sorrow",
+          "any_of": ["只恐双溪舴艋舟", "载不动许多愁"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "武陵春·春晚",
+          "author_name": "李清照"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-dielianhua-longing",
+      "category": "natural_language",
+      "question": "柳永《蝶恋花·伫倚危楼风细细》怎样写春愁和执着相思？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "spring-sorrow",
+          "any_of": ["伫倚危楼风细细", "望极春愁", "黯黯生天际"]
+        },
+        {
+          "id": "persistent",
+          "any_of": ["衣带渐宽终不悔", "为伊消得人憔悴"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "蝶恋花·伫倚危楼风细细",
+          "author_name": "柳永"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-yeyu-reunion",
+      "category": "natural_language",
+      "question": "李商隐《夜雨寄北》怎样写归期未定和对未来重逢的想象？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "no-return-date",
+          "any_of": ["君问归期未有期", "巴山夜雨涨秋池"]
+        },
+        {
+          "id": "future-reunion",
+          "any_of": ["何当共剪西窗烛", "却话巴山夜雨时"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "夜雨寄北",
+          "author_name": "李商隐"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-guazhou-homesick",
+      "category": "natural_language",
+      "question": "王安石《泊船瓜洲》怎样借江南春色写归乡之情？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "distance",
+          "any_of": ["京口瓜洲一水间", "钟山只隔数重山"]
+        },
+        {
+          "id": "spring-return",
+          "any_of": ["春风又绿江南岸", "明月何时照我还"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "泊船瓜洲",
+          "author_name": "王安石"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-yijianmei-lovesick",
+      "category": "natural_language",
+      "question": "李清照《一剪梅·红藕香残玉簟秋》怎样写独上兰舟和两处相思？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "boat",
+          "any_of": ["红藕香残玉簟秋", "轻解罗裳，独上兰舟"]
+        },
+        {
+          "id": "two-sorrows",
+          "any_of": ["一种相思，两处闲愁", "才下眉头，却上心头"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "一剪梅·红藕香残玉簟秋",
+          "author_name": "李清照"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-pozhenzi-dream",
+      "category": "natural_language",
+      "question": "辛弃疾《破阵子·为陈同甫赋壮词以寄之》怎样从军旅梦境写到白发悲慨？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "military-dream",
+          "any_of": ["醉里挑灯看剑", "梦回吹角连营", "沙场秋点兵"]
+        },
+        {
+          "id": "sad-ending",
+          "any_of": ["了却君王天下事", "赢得生前身后名", "可怜白发生"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "破阵子·为陈同甫赋壮词以寄之",
+          "author_name": "辛弃疾"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-multi-dufu-life",
+      "category": "multi_evidence",
+      "question": "请比较杜甫《望岳》和《登岳阳楼》中青年壮志与晚年境遇的不同。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "wangyue",
+          "any_of": ["会当凌绝顶，一览众山小"]
+        },
+        {
+          "id": "dengyueyang",
+          "any_of": ["亲朋无一字，老病有孤舟", "戎马关山北，凭轩涕泗流"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "望岳",
+          "author_name": "杜甫"
+        },
+        {
+          "poem_title": "登岳阳楼",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-multi-sorrow",
+      "category": "multi_evidence",
+      "question": "请比较李煜《虞美人·春花秋月何时了》和《武陵春·春晚》中不同的愁绪写法。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "yumeiren",
+          "any_of": ["问君能有几多愁", "恰似一江春水向东流"]
+        },
+        {
+          "id": "wuling",
+          "any_of": ["只恐双溪舴艋舟", "载不动许多愁"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "虞美人·春花秋月何时了",
+          "author_name": "李煜"
+        },
+        {
+          "poem_title": "武陵春·春晚",
+          "author_name": "李清照"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-multi-adversity",
+      "category": "multi_evidence",
+      "question": "请比较苏轼《定风波·莫听穿林打叶声》和陆游《游山西村》面对困境的态度。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "dingfeng",
+          "any_of": ["一蓑烟雨任平生", "也无风雨也无晴"]
+        },
+        {
+          "id": "youshanxi",
+          "any_of": ["山重水复疑无路，柳暗花明又一村"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "定风波·莫听穿林打叶声",
+          "author_name": "苏轼"
+        },
+        {
+          "poem_title": "游山西村",
+          "author_name": "陆游"
+        }
+      ]
+    },
+    {
+      "id": "gen-v3-refusal-docker-ready",
+      "category": "refusal_cross_domain",
+      "question": "在 Docker Compose 中，depends_on 是否保证服务完全就绪？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v3-refusal-mysql-index",
+      "category": "refusal_cross_domain",
+      "question": "MySQL 的聚簇索引和二级索引在回表时有什么区别？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v3-refusal-vue-reactivity",
+      "category": "refusal_cross_domain",
+      "question": "Vue 3 中 ref 和 reactive 在模板解包上有什么差异？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v3-refusal-yuweng",
+      "category": "refusal_missing_entity",
+      "question": "柳宗元《渔翁》的译文是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v3-refusal-zashi",
+      "category": "refusal_missing_entity",
+      "question": "王维《杂诗三首·其二》表达了什么主题？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v3-refusal-jinlvyi",
+      "category": "refusal_missing_entity",
+      "question": "杜秋娘《金缕衣》表达了什么主题？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v3-refusal-jiangjin-year",
+      "category": "refusal_missing_attribute",
+      "question": "《将进酒》创作于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v3-refusal-wangzhihuan-birthplace",
+      "category": "refusal_missing_attribute",
+      "question": "王之涣的出生地在哪里？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v3-refusal-dufu-death-year",
+      "category": "refusal_missing_attribute",
+      "question": "杜甫去世于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v3-refusal-su-shi-office",
+      "category": "refusal_missing_attribute",
+      "question": "苏轼一生担任过哪些具体官职？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    }
+  ]
+}

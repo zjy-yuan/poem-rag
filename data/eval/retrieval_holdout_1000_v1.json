@@ -1,0 +1,621 @@
+{
+  "version": "retrieval-holdout-1000-v1",
+  "description": "基于 chinese-gushiwen 1000 首开放语料的新增独立检索 holdout。金标准优先使用 148 号之后的新作品，覆盖精确诗句、短语、标题、作者、朝代、多证据、自然语言、长诗长词，以及跨域、领域内缺实体和缺属性边界；该集与旧 50 条调参集分离，用于评估 1000 首语料上的泛化表现。",
+  "cases": [
+    {
+      "id": "exact-holdout-yijiangnan-sunrise-01",
+      "category": "exact_quote",
+      "question": "日出江花红胜火，春来江水绿如蓝。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "忆江南·江南好",
+          "author_name": "白居易",
+          "granularity": "line",
+          "text_contains": "日出江花红胜火，春来江水绿如蓝"
+        }
+      ]
+    },
+    {
+      "id": "exact-holdout-weicheng-toast-02",
+      "category": "exact_quote",
+      "question": "劝君更尽一杯酒，西出阳关无故人。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "送元二使安西 / 渭城曲",
+          "author_name": "王维",
+          "granularity": "line",
+          "text_contains": "劝君更尽一杯酒，西出阳关无故人"
+        }
+      ]
+    },
+    {
+      "id": "exact-holdout-chusai-border-03",
+      "category": "exact_quote",
+      "question": "秦时明月汉时关，万里长征人未还。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "出塞二首·其一",
+          "author_name": "王昌龄",
+          "granularity": "line",
+          "text_contains": "秦时明月汉时关，万里长征人未还"
+        }
+      ]
+    },
+    {
+      "id": "exact-holdout-zhuliguan-moon-04",
+      "category": "exact_quote",
+      "question": "深林人不知，明月来相照。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "竹里馆",
+          "author_name": "王维",
+          "granularity": "line",
+          "text_contains": "深林人不知，明月来相照"
+        }
+      ]
+    },
+    {
+      "id": "exact-holdout-xiamujueju-hero-05",
+      "category": "exact_quote",
+      "question": "生当作人杰，死亦为鬼雄。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "夏日绝句",
+          "author_name": "李清照",
+          "granularity": "line",
+          "text_contains": "生当作人杰，死亦为鬼雄"
+        }
+      ]
+    },
+    {
+      "id": "exact-holdout-denggao-fallen-leaves-06",
+      "category": "exact_quote",
+      "question": "无边落木萧萧下，不尽长江滚滚来。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "登高",
+          "author_name": "杜甫",
+          "granularity": "line",
+          "text_contains": "无边落木萧萧下，不尽长江滚滚来"
+        }
+      ]
+    },
+    {
+      "id": "exact-holdout-yueye-hometown-moon-07",
+      "category": "exact_quote",
+      "question": "露从今夜白，月是故乡明。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "月夜忆舍弟",
+          "author_name": "杜甫",
+          "granularity": "line",
+          "text_contains": "露从今夜白，月是故乡明"
+        }
+      ]
+    },
+    {
+      "id": "exact-holdout-xinglunan-sail-08",
+      "category": "exact_quote",
+      "question": "长风破浪会有时，直挂云帆济沧海。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "行路难三首",
+          "author_name": "李白",
+          "granularity": "line",
+          "text_contains": "长风破浪会有时，直挂云帆济沧海"
+        }
+      ]
+    },
+    {
+      "id": "phrase-holdout-jingmen-plain-01",
+      "category": "phrase",
+      "question": "山随平野尽",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "渡荆门送别",
+          "author_name": "李白",
+          "granularity": "line",
+          "text_contains": "山随平野尽"
+        }
+      ]
+    },
+    {
+      "id": "phrase-holdout-jinse-butterfly-02",
+      "category": "phrase",
+      "question": "庄生晓梦迷蝴蝶",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "锦瑟",
+          "author_name": "李商隐",
+          "granularity": "line",
+          "text_contains": "庄生晓梦迷蝴蝶"
+        }
+      ]
+    },
+    {
+      "id": "phrase-holdout-qinhuai-moon-03",
+      "category": "phrase",
+      "question": "烟笼寒水月笼沙",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "泊秦淮",
+          "author_name": "杜牧",
+          "granularity": "line",
+          "text_contains": "烟笼寒水月笼沙"
+        }
+      ]
+    },
+    {
+      "id": "phrase-holdout-guanquelou-view-04",
+      "category": "phrase",
+      "question": "欲穷千里目",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "登鹳雀楼",
+          "author_name": "王之涣",
+          "granularity": "line",
+          "text_contains": "欲穷千里目"
+        }
+      ]
+    },
+    {
+      "id": "phrase-holdout-xiangjianhuan-li-05",
+      "category": "phrase",
+      "question": "剪不断，理还乱",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "相见欢·无言独上西楼",
+          "author_name": "李煜",
+          "granularity": "line",
+          "text_contains": "剪不断，理还乱"
+        }
+      ]
+    },
+    {
+      "id": "phrase-holdout-hanju-fragrance-06",
+      "category": "phrase",
+      "question": "宁可枝头抱香死",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "寒菊 / 画菊",
+          "author_name": "郑思肖",
+          "granularity": "line",
+          "text_contains": "宁可枝头抱香死"
+        }
+      ]
+    },
+    {
+      "id": "title-holdout-zhuliguan-01",
+      "category": "title",
+      "question": "竹里馆",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "竹里馆",
+          "author_name": "王维"
+        }
+      ]
+    },
+    {
+      "id": "title-holdout-jinse-02",
+      "category": "title",
+      "question": "锦瑟",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "锦瑟",
+          "author_name": "李商隐"
+        }
+      ]
+    },
+    {
+      "id": "title-holdout-denggao-03",
+      "category": "title",
+      "question": "登高",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "登高",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "title-holdout-fengqiaoyebo-04",
+      "category": "title",
+      "question": "枫桥夜泊",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "枫桥夜泊",
+          "author_name": "张继"
+        }
+      ]
+    },
+    {
+      "id": "author-holdout-wangchangling-01",
+      "category": "author",
+      "question": "王昌龄",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "王昌龄"
+        }
+      ]
+    },
+    {
+      "id": "author-holdout-liqingzhao-02",
+      "category": "author",
+      "question": "李清照",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "李清照"
+        }
+      ]
+    },
+    {
+      "id": "author-holdout-dumu-03",
+      "category": "author",
+      "question": "杜牧",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "杜牧"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-holdout-tang-01",
+      "category": "dynasty",
+      "question": "唐",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "唐"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-holdout-song-02",
+      "category": "dynasty",
+      "question": "宋",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "宋"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-holdout-yuan-03",
+      "category": "dynasty",
+      "question": "元",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "元"
+        }
+      ]
+    },
+    {
+      "id": "multi-holdout-moon-01",
+      "category": "multi_evidence",
+      "question": "王维《竹里馆》和杜甫《月夜忆舍弟》中的明月意象",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "竹里馆",
+          "author_name": "王维",
+          "text_contains": "明月来相照"
+        },
+        {
+          "poem_title": "月夜忆舍弟",
+          "author_name": "杜甫",
+          "text_contains": "月是故乡明"
+        }
+      ]
+    },
+    {
+      "id": "multi-holdout-farewell-02",
+      "category": "multi_evidence",
+      "question": "《送元二使安西》的阳关送别和《夏日绝句》的乌江自刎",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "送元二使安西 / 渭城曲",
+          "author_name": "王维",
+          "text_contains": "西出阳关无故人"
+        },
+        {
+          "poem_title": "夏日绝句",
+          "author_name": "李清照",
+          "text_contains": "不肯过江东"
+        }
+      ]
+    },
+    {
+      "id": "multi-holdout-yangtze-03",
+      "category": "multi_evidence",
+      "question": "《登高》和《临江仙·滚滚长江东逝水》中的长江",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "登高",
+          "author_name": "杜甫",
+          "text_contains": "不尽长江滚滚来"
+        },
+        {
+          "poem_title": "临江仙·滚滚长江东逝水",
+          "author_name": "杨慎",
+          "text_contains": "滚滚长江东逝水"
+        }
+      ]
+    },
+    {
+      "id": "natural-holdout-libai-yellow-river-01",
+      "category": "natural_language",
+      "question": "李白在《行路难三首》中怎样写黄河和太行",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "行路难三首",
+          "author_name": "李白",
+          "text_contains": "欲渡黄河冰塞川"
+        }
+      ]
+    },
+    {
+      "id": "natural-holdout-dufu-autumn-climb-02",
+      "category": "natural_language",
+      "question": "杜甫《登高》如何写秋日登高所见",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "登高",
+          "author_name": "杜甫",
+          "text_contains": "无边落木萧萧下"
+        }
+      ]
+    },
+    {
+      "id": "natural-holdout-wangwei-bamboo-moon-03",
+      "category": "natural_language",
+      "question": "王维写竹林月夜幽居的诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "竹里馆",
+          "author_name": "王维",
+          "text_contains": "明月来相照"
+        }
+      ]
+    },
+    {
+      "id": "natural-holdout-liqingzhao-xiangyu-04",
+      "category": "natural_language",
+      "question": "李清照借项羽讽刺苟安的诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "夏日绝句",
+          "author_name": "李清照",
+          "text_contains": "至今思项羽"
+        }
+      ]
+    },
+    {
+      "id": "natural-holdout-dumu-red-cliff-05",
+      "category": "natural_language",
+      "question": "杜牧借赤壁之战感慨机遇的诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "赤壁",
+          "author_name": "杜牧",
+          "text_contains": "东风不与周郎便"
+        }
+      ]
+    },
+    {
+      "id": "natural-holdout-liyu-separation-06",
+      "category": "natural_language",
+      "question": "李煜写离愁难解的词",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "相见欢·无言独上西楼",
+          "author_name": "李煜",
+          "text_contains": "剪不断，理还乱"
+        }
+      ]
+    },
+    {
+      "id": "natural-holdout-dufu-brothers-07",
+      "category": "natural_language",
+      "question": "杜甫月夜思念分散兄弟的诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "月夜忆舍弟",
+          "author_name": "杜甫",
+          "text_contains": "有弟皆分散"
+        }
+      ]
+    },
+    {
+      "id": "natural-holdout-zhangyanghao-people-08",
+      "category": "natural_language",
+      "question": "张养浩感叹兴亡百姓皆苦的散曲",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "山坡羊·潼关怀古",
+          "author_name": "张养浩",
+          "text_contains": "兴，百姓苦；亡，百姓苦"
+        }
+      ]
+    },
+    {
+      "id": "long-holdout-xinglunan-hope-01",
+      "category": "long_form",
+      "question": "《行路难三首》结尾怎样表达乘风破浪的信念",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "行路难三首",
+          "author_name": "李白",
+          "text_contains": "长风破浪会有时，直挂云帆济沧海"
+        }
+      ]
+    },
+    {
+      "id": "long-holdout-qiupuge-white-hair-02",
+      "category": "long_form",
+      "question": "《秋浦歌十七首》怎样夸张描写愁绪",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "秋浦歌十七首",
+          "author_name": "李白",
+          "text_contains": "白发三千丈"
+        }
+      ]
+    },
+    {
+      "id": "long-holdout-taohuage-life-03",
+      "category": "long_form",
+      "question": "《桃花庵歌》怎样写花酒人生",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "桃花庵歌",
+          "author_name": "唐寅",
+          "text_contains": "酒醒只在花前坐，酒醉还须花下眠"
+        }
+      ]
+    },
+    {
+      "id": "long-holdout-changanguyi-couple-04",
+      "category": "long_form",
+      "question": "《长安古意》中表达生死相随愿望的句子",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "长安古意",
+          "author_name": "卢照邻",
+          "text_contains": "得成比目何辞死，愿作鸳鸯不羡仙"
+        }
+      ]
+    },
+    {
+      "id": "long-holdout-changganxing-childhood-05",
+      "category": "long_form",
+      "question": "《长干行二首》中青梅竹马的句子",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "长干行二首",
+          "author_name": "李白",
+          "text_contains": "郎骑竹马来，绕床弄青梅"
+        }
+      ]
+    },
+    {
+      "id": "long-holdout-qianchusai-war-06",
+      "category": "long_form",
+      "question": "《前出塞九首》中关于擒敌先擒王的句子",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "前出塞九首",
+          "author_name": "杜甫",
+          "text_contains": "射人先射马，擒贼先擒王"
+        }
+      ]
+    },
+    {
+      "id": "long-holdout-huangniban-travel-07",
+      "category": "long_form",
+      "question": "《黄泥坂词》中清晨与傍晚游赏的句子",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "黄泥坂词",
+          "author_name": "苏轼",
+          "text_contains": "朝嬉黄泥之白云兮，暮宿雪堂之青烟"
+        }
+      ]
+    },
+    {
+      "id": "no-answer-holdout-transformer-01",
+      "category": "no_answer_cross_domain",
+      "question": "Transformer 的自注意力机制是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-holdout-docker-02",
+      "category": "no_answer_cross_domain",
+      "question": "Docker 容器和虚拟机有什么区别",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-holdout-fastapi-di-03",
+      "category": "no_answer_cross_domain",
+      "question": "FastAPI 的依赖注入机制如何工作",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-holdout-xiangsi-entity-04",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "王维《相思》的译文是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-holdout-shanzhongsongbie-entity-05",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "王维《山中送别》的赏析是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-holdout-zhuliguan-year-06",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "《竹里馆》写于哪一年",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-holdout-jinse-year-07",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "《锦瑟》写于哪一年",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-holdout-wangchangling-birthplace-08",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "王昌龄的出生地在哪里",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    }
+  ]
+}

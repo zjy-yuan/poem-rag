@@ -1,0 +1,565 @@
+{
+  "version": "open-corpus-100-v1",
+  "description": "基于 chinese-gushiwen 100 首分层样本的开放语料检索评估集。样本覆盖真实导入作品、长诗长词、作者与朝代查询、多证据查询、自然语言意图和无答案边界；版本与语料快照绑定，不与旧的 6 首种子集混合比较。",
+  "cases": [
+    {
+      "id": "exact-jiangjinjiu-huanghe-01",
+      "category": "exact_quote",
+      "question": "君不见，黄河之水天上来，奔流到海不复回。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "将进酒",
+          "granularity": "line",
+          "text_contains": "黄河之水天上来，奔流到海不复回"
+        }
+      ]
+    },
+    {
+      "id": "exact-jiangjinjiu-tiansheng-01",
+      "category": "exact_quote",
+      "question": "天生我材必有用，千金散尽还复来。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "将进酒",
+          "granularity": "line",
+          "text_contains": "天生我材必有用，千金散尽还复来"
+        }
+      ]
+    },
+    {
+      "id": "exact-yuanri-01",
+      "category": "exact_quote",
+      "question": "爆竹声中一岁除，春风送暖入屠苏。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "元日",
+          "granularity": "line",
+          "text_contains": "爆竹声中一岁除，春风送暖入屠苏"
+        }
+      ]
+    },
+    {
+      "id": "exact-chunwang-01",
+      "category": "exact_quote",
+      "question": "烽火连三月，家书抵万金。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春望",
+          "granularity": "line",
+          "text_contains": "烽火连三月，家书抵万金"
+        }
+      ]
+    },
+    {
+      "id": "exact-shuidiaogetou-01",
+      "category": "exact_quote",
+      "question": "明月几时有？把酒问青天。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "水调歌头·明月几时有",
+          "granularity": "line",
+          "text_contains": "明月几时有？把酒问青天"
+        }
+      ]
+    },
+    {
+      "id": "exact-niannujiao-01",
+      "category": "exact_quote",
+      "question": "大江东去，浪淘尽，千古风流人物。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "念奴娇·赤壁怀古",
+          "granularity": "line",
+          "text_contains": "大江东去，浪淘尽，千古风流人物"
+        }
+      ]
+    },
+    {
+      "id": "exact-jiangchengzi-01",
+      "category": "exact_quote",
+      "question": "十年生死两茫茫，不思量，自难忘。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "江城子·乙卯正月二十日夜记梦",
+          "granularity": "line",
+          "text_contains": "十年生死两茫茫，不思量，自难忘"
+        }
+      ]
+    },
+    {
+      "id": "phrase-qingyuan-01",
+      "category": "phrase",
+      "question": "灯火阑珊处",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "青玉案·元夕",
+          "granularity": "line",
+          "text_contains": "灯火阑珊处"
+        }
+      ]
+    },
+    {
+      "id": "phrase-shengshengman-01",
+      "category": "phrase",
+      "question": "寻寻觅觅",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "声声慢·寻寻觅觅",
+          "granularity": "line",
+          "text_contains": "寻寻觅觅"
+        }
+      ]
+    },
+    {
+      "id": "phrase-chunjiang-01",
+      "category": "phrase",
+      "question": "春江潮水连海平",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春江花月夜",
+          "granularity": "line",
+          "text_contains": "春江潮水连海平"
+        }
+      ]
+    },
+    {
+      "id": "phrase-guansui-01",
+      "category": "phrase",
+      "question": "窈窕淑女，君子好逑",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "关雎",
+          "granularity": "line",
+          "text_contains": "窈窕淑女，君子好逑"
+        }
+      ]
+    },
+    {
+      "id": "phrase-jingyesi-01",
+      "category": "phrase",
+      "question": "举头望明月",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思",
+          "granularity": "line",
+          "text_contains": "举头望明月"
+        }
+      ]
+    },
+    {
+      "id": "phrase-niannujiao-01",
+      "category": "phrase",
+      "question": "大江东去",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "念奴娇·赤壁怀古",
+          "granularity": "line",
+          "text_contains": "大江东去"
+        }
+      ]
+    },
+    {
+      "id": "phrase-jiangchengzi-01",
+      "category": "phrase",
+      "question": "十年生死两茫茫",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "江城子·乙卯正月二十日夜记梦",
+          "granularity": "line",
+          "text_contains": "十年生死两茫茫"
+        }
+      ]
+    },
+    {
+      "id": "title-jiangjinjiu-01",
+      "category": "title",
+      "question": "将进酒",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "将进酒"
+        }
+      ]
+    },
+    {
+      "id": "title-shuidiaogetou-01",
+      "category": "title",
+      "question": "水调歌头·明月几时有",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "title-niannujiao-01",
+      "category": "title",
+      "question": "念奴娇·赤壁怀古",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "念奴娇·赤壁怀古"
+        }
+      ]
+    },
+    {
+      "id": "title-shengshengman-01",
+      "category": "title",
+      "question": "声声慢·寻寻觅觅",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "声声慢·寻寻觅觅"
+        }
+      ]
+    },
+    {
+      "id": "title-chunjiang-01",
+      "category": "title",
+      "question": "春江花月夜",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春江花月夜"
+        }
+      ]
+    },
+    {
+      "id": "author-libai-01",
+      "category": "author",
+      "question": "李白",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "李白"
+        }
+      ]
+    },
+    {
+      "id": "author-sushi-01",
+      "category": "author",
+      "question": "苏轼",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "苏轼"
+        }
+      ]
+    },
+    {
+      "id": "author-liqingzhao-01",
+      "category": "author",
+      "question": "李清照",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "李清照"
+        }
+      ]
+    },
+    {
+      "id": "author-xinqiji-01",
+      "category": "author",
+      "question": "辛弃疾",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "辛弃疾"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-tang-01",
+      "category": "dynasty",
+      "question": "唐",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "唐"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-song-01",
+      "category": "dynasty",
+      "question": "宋",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "宋"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-pre-qin-01",
+      "category": "dynasty",
+      "question": "先秦",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "先秦"
+        }
+      ]
+    },
+    {
+      "id": "multi-moon-01",
+      "category": "multi_evidence",
+      "question": "明月",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思"
+        },
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "multi-spring-wind-01",
+      "category": "multi_evidence",
+      "question": "春风",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "元日"
+        },
+        {
+          "poem_title": "泊船瓜洲"
+        }
+      ]
+    },
+    {
+      "id": "multi-east-wind-01",
+      "category": "multi_evidence",
+      "question": "东风",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "青玉案·元夕"
+        },
+        {
+          "poem_title": "无题·相见时难别亦难"
+        }
+      ]
+    },
+    {
+      "id": "natural-libai-yellow-river-01",
+      "category": "natural_language",
+      "question": "李白写黄河的诗句",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "将进酒"
+        }
+      ]
+    },
+    {
+      "id": "natural-sushi-midautumn-01",
+      "category": "natural_language",
+      "question": "苏轼中秋怀人的词",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "水调歌头·明月几时有"
+        }
+      ]
+    },
+    {
+      "id": "natural-xinqiji-lantern-01",
+      "category": "natural_language",
+      "question": "辛弃疾写元宵灯会的词",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "青玉案·元夕"
+        }
+      ]
+    },
+    {
+      "id": "natural-liqingzhao-reduplication-01",
+      "category": "natural_language",
+      "question": "李清照用叠字写愁的词",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "声声慢·寻寻觅觅"
+        }
+      ]
+    },
+    {
+      "id": "natural-dufu-war-family-01",
+      "category": "natural_language",
+      "question": "杜甫写战乱中思念家人的诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春望"
+        }
+      ]
+    },
+    {
+      "id": "natural-zhangruoxu-river-moon-01",
+      "category": "natural_language",
+      "question": "张若虚描写春江明月的诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春江花月夜"
+        }
+      ]
+    },
+    {
+      "id": "natural-wanganshi-new-year-01",
+      "category": "natural_language",
+      "question": "王安石写春节习俗的诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "元日"
+        }
+      ]
+    },
+    {
+      "id": "natural-sushi-wife-01",
+      "category": "natural_language",
+      "question": "苏轼悼念亡妻的词",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "江城子·乙卯正月二十日夜记梦"
+        }
+      ]
+    },
+    {
+      "id": "natural-caocao-old-age-01",
+      "category": "natural_language",
+      "question": "曹操表达老当益壮的诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "龟虽寿"
+        }
+      ]
+    },
+    {
+      "id": "long-changhenge-smile-01",
+      "category": "long_form",
+      "question": "《长恨歌》中描写杨贵妃回眸一笑的句子",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "长恨歌",
+          "text_contains": "回眸一笑百媚生"
+        }
+      ]
+    },
+    {
+      "id": "long-pipa-pearls-01",
+      "category": "long_form",
+      "question": "《琵琶行》中形容琵琶声如珠落玉盘的句子",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "琵琶行 / 琵琶引",
+          "text_contains": "大珠小珠落玉盘"
+        }
+      ]
+    },
+    {
+      "id": "long-shudao-pass-01",
+      "category": "long_form",
+      "question": "《蜀道难》中描写剑阁险要的句子",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "蜀道难",
+          "text_contains": "剑阁峥嵘而崔嵬，一夫当关，万夫莫开"
+        }
+      ]
+    },
+    {
+      "id": "long-kongque-opening-01",
+      "category": "long_form",
+      "question": "《孔雀东南飞》开头写孔雀徘徊的句子",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "孔雀东南飞 / 古诗为焦仲卿妻作",
+          "text_contains": "孔雀东南飞，五里一徘徊"
+        }
+      ]
+    },
+    {
+      "id": "no-answer-quantum-01",
+      "category": "no_answer_cross_domain",
+      "question": "量子纠缠的物理实验",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-mars-01",
+      "category": "no_answer_cross_domain",
+      "question": "火星探测器的着陆过程",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-kubernetes-01",
+      "category": "no_answer_cross_domain",
+      "question": "Kubernetes 的滚动发布机制",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-missing-qingming-01",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "杜牧《清明》的赏析",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-missing-xiangsi-01",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "王维《相思》的译文",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-jingyesi-year-01",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "《静夜思》写于哪一年",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-libai-birthplace-01",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "李白的出生地在哪里",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-jiangjinjiu-year-01",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "《将进酒》写于哪一年",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    }
+  ]
+}

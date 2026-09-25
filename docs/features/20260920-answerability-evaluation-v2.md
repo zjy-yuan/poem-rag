@@ -4,6 +4,9 @@
 > 创建日期：2026-09-20  
 > 最近更新：2026-09-20  
 > 关联任务：领域内无答案样本、拒答 P/R/F1、相关性门槛重新标定
+>
+> 历史说明：本文件记录 v2 过渡评估集。2026-09-20 后续已建立并切换默认数据集为
+> `open-corpus-100-v1`；v2 文件冻结，仅用于复现本文件中的历史指标。
 
 ## 1. 背景与问题
 
@@ -46,7 +49,7 @@
 
 ```text
 data/eval/retrieval_lexical_v1.json   # 冻结，27 条，历史报告仍可复现
-data/eval/retrieval_lexical_v2.json   # 现行默认，31 条，拆分无答案类别
+data/eval/retrieval_lexical_v2.json   # 当时默认，31 条，拆分无答案类别
   -> RetrievalEvaluator 逐条检索
   -> 汇总 Recall/MRR/Hit Rate
   -> 汇总拒答 precision/recall/F1
@@ -62,8 +65,9 @@ data/eval/retrieval_lexical_v2.json   # 现行默认，31 条，拆分无答案�
 
 本切片不新增 HTTP 接口，SSE 事件结构和错误码不变。
 
-评估脚本默认数据集从 `retrieval_lexical_v1.json` 切换为 `retrieval_lexical_v2.json`，
-可用 `--dataset` 显式指定 v1 复现历史报告。摘要新增一行：
+本切片曾把评估脚本默认数据集从 `retrieval_lexical_v1.json` 切换为
+`retrieval_lexical_v2.json`；当前默认已进一步切换为 `open-corpus-100-v1`，可用
+`--dataset` 显式指定 v1/v2 复现历史报告。摘要新增一行：
 
 ```text
 refusal_precision=... refusal_recall=... refusal_f1=...
@@ -189,7 +193,8 @@ Hybrid 在 `min_score=0.50` 时达到 31/31 且召回不掉，原因是宋、唐
 3. 当前语料没有注释和赏析 chunk，负样本“无答案”成立；一旦导入赏析与背景语料，
    这些样本可能变成可回答，必须重新标注而不是沿用旧标签。
 4. 新增字段使旧报告 JSON 不再符合当前 Schema；旧文件保留为历史产物，不再被脚本读取。
-5. 回滚方式是把脚本默认数据集改回 v1，并忽略新指标字段；无迁移、无数据变更。
+5. 本切片的回滚方式是把脚本默认数据集改回 v1，并忽略新指标字段；当前版本的
+   回滚方式则是显式传入 `retrieval_open_corpus_v1.json`；均无迁移、无数据变更。
 
 ## 13. 实施任务
 
