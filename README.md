@@ -31,6 +31,7 @@
 25. 第三批独立 holdout v3（检索 46 条、生成 26 条）已完成真实复核：在线检索组合为 45/46、Recall@5 `1.0`、MRR `0.929825`，生成层为 25/26、拒答 `10/10`、引用 P/R `1.0 / 1.0`。v3 完成观察后同样冻结为回归集，后续泛化验证必须新建 v4。
 26. 生成质量 LLM-as-judge 已作为离线增量实现：读取已有生成报告，对 16 条可答样本执行独立调用，v3 结果为 `judge_errors=0`、忠实度通过率 `0.8125`、回答相关性 `1.0`、claim 支撑率 `0.950920`；拒答样本跳过 judge，并支持导出人工盲评 Markdown、填写评分 CSV 后自动计算人工与 judge 的一致率及偏严/偏松方向。首次定向校准复核 3/16 条，`judge_stricter=3`，说明 judge 对隐含文学解释偏保守，但该高难子集不能代表总体准确率。
 27. Retrieval 2.0 离线评估已完成：新增 `nDCG@k`、唯一 Gold 匹配、`EvidenceReranker` 协议和 `expanded-hybrid-rerank-v1`，并冻结 46 条 v4 泛化集。`deterministic-evidence-v1` 在 v4 上为 38/46、Recall@5 `0.828947`、nDCG@5 `0.776326`、MRR `0.757456`，低于不重排基线的 45/46、`1.0`、`0.915410`、`0.885965`，因此拒绝在线启用；Rerank 仅保留为离线实验能力，在线策略仍为 `expanded-hybrid-rrf-v1`。
+28. 生成性能评估新增 TTFT、五阶段平均/P95、wall time 和吞吐，并支持 `evaluate_generation.py --concurrency` 有界并发。v3 回归集实测 `c1 -> c4` 吞吐从 `0.269` 提升到 `0.644 cases/s`，质量保持 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`，但平均延迟从 `3711.359 ms` 升到 `5888.418 ms`、平均 TTFT 从 `2602.745 ms` 升到 `4291.510 ms`；因此只保留为离线测量能力，在线服务不启用并发配置。
 
 ## 文档入口
 
@@ -272,12 +273,31 @@ DashScope 网络和有效 Key；DeepSeek 烟测只报告模型、模式、增量
 该命令直接运行在线 `RagChatGraph`，需要真实 MySQL、Qdrant、Qwen Embedding 和
 DeepSeek 配置。默认数据集为 `data/eval/generation_holdout_1000_v1.json`，
 共 28 条独立 holdout；输出答案正确率、引用精确率/召回率、拒答 P/R/F1、平均延迟
-和 P95。该确定性命令本身不执行 LLM-as-judge；可在报告生成后单独运行质量 judge。
+P95、TTFT、阶段耗时、wall time 和吞吐。`--concurrency` 默认 `1`，只限制离线评估
+同时执行的样本数，不修改在线服务。该确定性命令本身不执行 LLM-as-judge；可在报告
+生成后单独运行质量 judge。
 复现旧 12 条种子集时显式传入
 `--dataset data\eval\generation_rag_v1.json`。该数据集当前真实结果为 `28/28`、
 平均延迟 `5687.155 ms`、P95 `9481.742 ms`；完整指标、修复记录和剩余
 风险见
 [独立 1000 首 holdout](docs/features/20260923-independent-1000-holdout.md)。
+
+v3 生成性能对照：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
+  --dataset data\eval\generation_holdout_1000_v3.json `
+  --concurrency 1 `
+  --json-output data\eval\reports\generation_holdout_1000_v3_performance_c1.json
+
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
+  --dataset data\eval\generation_holdout_1000_v3.json `
+  --concurrency 4 `
+  --json-output data\eval\reports\generation_holdout_1000_v3_performance_c4.json
+```
+
+`c4` 吞吐提升约 `2.39x`，但单请求延迟和 TTFT 均上升，说明请求重叠不代表单请求
+更快，当前不启用生产并发。
 
 在已有生成报告上执行独立质量 judge：
 

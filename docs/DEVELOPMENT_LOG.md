@@ -4460,3 +4460,77 @@ Top-5 不丢召回，但 nDCG@5 和 MRR 仍低于不重排基线。在线检索�
 3. 同步评估 Rerank 之外更可能影响用户感知的方向：多证据上下文预算、生成 P95、
    缓存和在线并发。
 4. 本地质量、性能和检索策略稳定后，再启动云服务器、域名和 HTTPS 部署。
+
+### [2026-09-26] 生成延迟、TTFT 与有界并发评估
+
+#### 本次目标
+
+- 补齐生成评估的 TTFT 和 `rewrite/retrieval/assess/generation/validate`
+  阶段耗时。
+- 在固定 v3 生成回归集上实测 `concurrency=1` 与 `concurrency=4` 的质量、吞吐和
+  单请求延迟变化。
+- 只建立离线测量能力，不修改在线 RAG、SSE、公开 API、数据库和前端。
+
+#### 完成内容
+
+- `apps/api/app/evaluation/generation.py`：用 `asyncio.Semaphore` 限制并发，保持
+  `asyncio.gather` 结果顺序；采集首个非空 `delta` 的 TTFT 和内部 `timing` 事件。
+- `apps/api/app/schemas/generation_evaluation.py`：case、summary 和 report 新增
+  TTFT、阶段平均/P95、wall time、吞吐和评估并发数；新增字段全部提供默认值。
+- `apps/api/scripts/evaluate_generation.py`：新增 `--concurrency`，默认 `1`，
+  非法值在调用模型前退出。
+- `apps/api/tests/test_generation_evaluation.py`：覆盖 timing 解析、TTFT、并发上限、
+  结果顺序、非法并发和旧报告兼容性。
+- `docs/features/20260926-generation-performance-concurrency.md`：记录契约、真实
+  结果、风险边界和复现命令。
+
+#### 真实结果
+
+`generation-holdout-1000-v3`、真实 `deepseek-chat`、在线策略
+`expanded-hybrid-rrf-v1`：
+
+| 指标 | `c1` | `c4` |
+| --- | ---: | ---: |
+| 通过 | 25/26 | 25/26 |
+| 拒答 | 10/10 | 10/10 |
+| 引用 P/R | 1.0 / 1.0 | 1.0 / 1.0 |
+| wall time | 96499.338 ms | 40381.079 ms |
+| 吞吐 | 0.269 cases/s | 0.644 cases/s |
+| 平均延迟 | 3711.359 ms | 5888.418 ms |
+| P95 延迟 | 6100.595 ms | 9330.414 ms |
+| 平均 TTFT | 2602.745 ms | 4291.510 ms |
+| P95 TTFT | 4204.813 ms | 6583.609 ms |
+
+两组都只失败 `gen-v3-guazhou-homesick`。`c4` 吞吐提升约 `2.39x`，但单请求延迟、
+P95 和 TTFT 同时上升；阶段统计显示 `retrieval` 的 P95 从 `1831.997 ms` 增至
+`4676.794 ms`，是并发下最明显的延迟变化。当前只能判断存在资源竞争，不能把原因
+单独归因到 Qdrant、MySQL、Embedding 或 Chat Provider。
+
+报告：
+
+- `data/eval/reports/generation_holdout_1000_v3_performance_c1.json`
+- `data/eval/reports/generation_holdout_1000_v3_performance_c4.json`
+
+#### 决策与边界
+
+- `--concurrency` 仅属于离线评估 CLI，不接入 FastAPI 服务或反向代理。
+- 默认仍为 `1`，保证旧评估行为可复现，也不制造非预期出网压力。
+- 吞吐提升不能替代单请求延迟优化；当前不把 `c4` 写成在线容量结论。
+- 旧生成报告可继续被 judge 和人工校准脚本读取，缺失字段使用默认值。
+
+#### 验证结果
+
+- 生成评估定向测试：`14 passed, 2 warnings`。
+- Ruff：`All checks passed!`。
+- `scripts/verify.ps1` 改为每次使用唯一 pytest basetemp，避免 Windows 权限残留导致
+  清理失败；统一门禁结果为后端 `215 passed`、前端 `9 passed`，类型检查和构建通过。
+- 真实评估使用 MySQL、Qdrant、Qwen `text-embedding-v4` 和 `deepseek-chat`；
+  `c1/c4` 均无 Provider 错误或被隐藏的样本失败。
+- 提交前继续执行后端全量测试、前端门禁和 `.\scripts\verify.ps1`。
+
+#### 风险与后续
+
+- 26 条单次运行只能支持当前环境下的工程判断，不能代表生产负载。
+- 共享 Provider、Embedding 和 Qdrant 客户端仍需用独立会话与重复试验拆解并发边界。
+- 后续优先验证检索资源竞争、连接池预算和单请求 P95，再决定是否启用缓存或在线并发。
+- 性能与资源边界稳定后，再进入云服务器、域名和 HTTPS 部署阶段。

@@ -243,6 +243,7 @@ erDiagram
 | LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；在线检索使用 `expanded-lexical-v1 + Dense + RRF`，基础设施故障时降级到 `expanded-lexical-v1`；命中作品追加诗词级父级上下文，长文本按作品轮转并受 40 chunks / 4800 字符预算约束；`assess` 用 LLM 结构化判定可答性，无证据或判定不可答时走 `refuse` 且不调用生成模型；判定异常 fail-open |
 | 在线 RAG 可观测性 | 已实现 | 图节点在 `finally` 中发出内部 `timing`，`ChatService` 聚合 `rewrite/retrieval/assess/generation/validate`、TTFT、候选数、策略和判定状态；流结束记录请求级日志。`timing` 不进入公开 SSE，`done` 仍为 `{finish_reason, latency_ms}`；`CHAT_QUERY_VARIANT_LIMIT` 默认 `8`、范围 `1-20` |
 | 在线检索资源复用与批量 Embedding | 已实现 | Embedding Provider 和 Qdrant 客户端在应用 `lifespan` 中创建并共享，流结束不再重复初始化；`BatchEvidenceRetriever` 协议让一次查询的全部变体合并为一次 Embedding 调用，跨变体向量 ID 回查合并为一次 MySQL 查询。Qdrant 搜索仍按变体串行，因为 `AsyncSession` 不能并发复用。同一 v2 回归集下检索仍为 45/46、MRR `0.907895`，平均延迟 `874.575 ms -> 483.760 ms`、P95 `2770.212 ms -> 1239.925 ms` |
+| 生成性能与有界并发评估 | 已实现（仅离线评估） | 生成评估报告新增 TTFT、五阶段平均/P95、wall time 和吞吐；`evaluate_generation.py --concurrency` 默认 `1`，用信号量限制同时执行的样本并保持结果顺序。v3 真实 `c1 -> c4`：吞吐 `0.269 -> 0.644 cases/s`，质量保持 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`，但平均延迟 `3711.359 -> 5888.418 ms`、平均 TTFT `2602.745 -> 4291.510 ms`。该参数不接入在线服务 |
 | SSE 引用问答 | 已实现 | `meta -> retrieval -> delta* -> citation* -> done/error`；持久化最终消息和引用，无证据时不调用模型 |
 | RAG 评估体系 | 已实现（检索层 + 生成层 + 离线 judge/校准） | v1 回归集 50 条中 `expanded-lexical-v1` 为 48/50、Hybrid 为 40/50、在线组合为 50/50；生成回归集 28 条为 `28/28`、拒答 `7/7`。v2 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、MRR `0.907895`，生成 26 条为 `26/26`、拒答 `10/10`、引用 P/R 均为 `1.0`。v3 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、nDCG@5 `0.947993`、MRR `0.929825`，生成 26 条为 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`。v4 检索 holdout 46 条（38 有答案 + 8 无答案）首次用于 Rerank 泛化验证：不重排基线为 45/46、Recall@5 `1.0`、nDCG@5 `0.915410`、MRR `0.885965`；`deterministic-evidence-v1` 未达标，已拒绝在线启用。v3 的可答样本进一步由独立 LLM judge 复核：16/16 完成、0 错误、忠实度通过率 `0.8125`、相关性 `1.0`、claim 支撑率 `0.950920`；首次人工校准覆盖 3/16，`judge_stricter=3`。四批样本都已参与失败观察或策略筛选，只能作为回归集 |
 | 云服务器部署 | 未实现 | 核心 RAG 闭环后再处理域名和 HTTPS |
@@ -312,13 +313,28 @@ erDiagram
 ```
 
 默认数据集 `data/eval/generation_holdout_1000_v1.json` 共 28 条，指标包括答案
-正确率、引用精确率/召回率、拒答 P/R/F1、平均延迟和 P95。每个样本使用独立 Session，
-单样本异常不会中断整份报告。该数据集当前回归结果为 `28/28`、拒答 `7/7`，
+正确率、引用精确率/召回率、拒答 P/R/F1、总延迟、TTFT、五阶段耗时、wall time
+和吞吐。`--concurrency` 默认 `1`，只限制离线评估同时执行的样本数，不接入在线服务。
+每个样本使用独立 Session，单样本异常不会中断整份报告。该数据集当前回归结果为 `28/28`、拒答 `7/7`，
 有答案准确率 `1.0`、拒答 P/R/F1 `1.0`、引用精确率 `0.971429`、
 引用召回率 `1.0`，平均延迟 `5687.155 ms`、P95 `9481.742 ms`。多证据问题平均
 `8817.328 ms`、P95 `9940.227 ms`，是当前主要性能瓶颈。旧 12 条种子集仍可通过
 `--dataset data\eval\generation_rag_v1.json` 复现。评估结果仍不能替代人工忠实度
 复核。
+
+v3 的串行与有界并发对照：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
+  --dataset data\eval\generation_holdout_1000_v3.json `
+  --concurrency 1 `
+  --json-output data\eval\reports\generation_holdout_1000_v3_performance_c1.json
+
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
+  --dataset data\eval\generation_holdout_1000_v3.json `
+  --concurrency 4 `
+  --json-output data\eval\reports\generation_holdout_1000_v3_performance_c4.json
+```
 
 生成报告的离线质量 judge：
 
@@ -451,6 +467,14 @@ P95 `1285.898 ms`。Top-10 和 Top-5 候选消融仍分别只有 41/46 和 45/46
 低于基线，因此拒绝在线启用。Rerank 代码只保留为离线实验能力，在线策略仍为
 `expanded-hybrid-rrf-v1`；v4 已观察，后续再验证需冻结 v5。详细边界见
 `docs/features/20260926-retrieval-2-rerank-v4.md`。
+
+生成评估现在记录 TTFT 和 `rewrite/retrieval/assess/generation/validate` 的阶段
+平均/P95，并支持离线有界并发。v3 在 `concurrency=1/4` 下的吞吐为
+`0.269/0.644 cases/s`，质量均为 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`；
+但 `c4` 平均延迟从 `3711.359 ms` 升到 `5888.418 ms`，平均 TTFT 从
+`2602.745 ms` 升到 `4291.510 ms`。因此当前只把并发作为评估能力，不把它写入在线
+服务配置。详细契约、阶段耗时和风险边界见
+`docs/features/20260926-generation-performance-concurrency.md`。
 
 完成在线 RAG 可观测性和变体上限后，同一 v2 回归集再次运行在线组合，检索为 45/46、
 平均延迟 `738.465 ms`、P95 `1970.978 ms`；生成为 `26/26`、拒答 `10/10`、引用

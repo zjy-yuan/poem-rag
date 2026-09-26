@@ -21,7 +21,11 @@ if TYPE_CHECKING:
     from app.schemas.generation_evaluation import GenerationEvaluationReport
 
 
-async def run_evaluation(dataset_path: Path) -> GenerationEvaluationReport:
+async def run_evaluation(
+    dataset_path: Path,
+    *,
+    concurrency: int = 1,
+) -> GenerationEvaluationReport:
     from app.ai.graphs.rag import RagChatGraph
     from app.ai.providers.deepseek import create_deepseek_chat_provider
     from app.core.config import get_settings
@@ -63,6 +67,7 @@ async def run_evaluation(dataset_path: Path) -> GenerationEvaluationReport:
         evaluator = GenerationEvaluator(
             graph_factory,
             model=provider.model,
+            concurrency=concurrency,
         )
         return await evaluator.evaluate(dataset)
     finally:
@@ -70,7 +75,7 @@ async def run_evaluation(dataset_path: Path) -> GenerationEvaluationReport:
         await engine.dispose()
 
 
-def main() -> None:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Evaluate the online RAG graph with a fixed generation dataset. "
@@ -89,9 +94,27 @@ def main() -> None:
         default=None,
         help="Optional path for the full JSON report.",
     )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=1,
+        help="Maximum concurrent evaluation cases. Default: 1",
+    )
+    return parser
+
+
+def main() -> None:
+    parser = _build_parser()
     args = parser.parse_args()
+    if args.concurrency < 1:
+        parser.error("--concurrency 必须大于等于 1")
     try:
-        report = asyncio.run(run_evaluation(args.dataset))
+        report = asyncio.run(
+            run_evaluation(
+                args.dataset,
+                concurrency=args.concurrency,
+            )
+        )
     except RuntimeError as exc:
         parser.error(str(exc))
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 from collections.abc import AsyncIterator, Sequence
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
@@ -19,6 +20,7 @@ from app.schemas.generation_evaluation import (
     FactRequirement,
     GenerationEvaluationCase,
     GenerationEvaluationDataset,
+    GenerationEvaluationReport,
 )
 from pydantic import ValidationError
 
@@ -173,6 +175,8 @@ async def test_generation_evaluator_reports_answer_citation_and_refusal_metrics(
     factory = FakeGraphFactory(
         events_by_query={
             "good answer": [
+                {"kind": "timing", "stage": "rewrite", "duration_ms": 1.5},
+                {"kind": "timing", "stage": "retrieval", "duration_ms": 12.5},
                 {
                     "kind": "retrieval",
                     "candidate_count": 3,
@@ -184,8 +188,11 @@ async def test_generation_evaluator_reports_answer_citation_and_refusal_metrics(
                     "status": "passed",
                     "reason_code": "supported",
                 },
+                {"kind": "timing", "stage": "assess", "duration_ms": 25.0},
                 {"kind": "delta", "text": "明月常与思乡相连。[1]"},
+                {"kind": "timing", "stage": "generation", "duration_ms": 40.0},
                 {"kind": "citation", "citation": _citation()},
+                {"kind": "timing", "stage": "validate", "duration_ms": 1.0},
                 {
                     "kind": "final",
                     "answer": "明月常与思乡相连。[1]",
@@ -254,6 +261,37 @@ async def test_generation_evaluator_reports_answer_citation_and_refusal_metrics(
     assert report.results[0].passed is True
     assert report.results[0].assessment_status == "passed"
     assert report.results[0].assessment_reason_code == "supported"
+    assert report.results[0].ttft_ms is not None
+    assert report.results[0].ttft_ms >= 0
+    assert report.results[0].stage_timings_ms == {
+        "rewrite": 1.5,
+        "retrieval": 12.5,
+        "assess": 25.0,
+        "generation": 40.0,
+        "validate": 1.0,
+    }
+    assert report.summary.average_ttft_ms is not None
+    assert report.summary.average_ttft_ms >= 0
+    assert report.summary.p95_ttft_ms is not None
+    assert report.summary.p95_ttft_ms >= 0
+    assert report.summary.average_stage_timings_ms == {
+        "rewrite": 1.5,
+        "retrieval": 12.5,
+        "assess": 25.0,
+        "generation": 40.0,
+        "validate": 1.0,
+    }
+    assert report.summary.p95_stage_timings_ms == {
+        "rewrite": 1.5,
+        "retrieval": 12.5,
+        "assess": 25.0,
+        "generation": 40.0,
+        "validate": 1.0,
+    }
+    assert report.concurrency == 1
+    assert report.wall_time_ms is not None and report.wall_time_ms >= 0
+    assert report.throughput_cases_per_second is not None
+    assert report.throughput_cases_per_second > 0
     assert report.results[1].refused is True
     assert report.results[1].answer_correct is False
     assert report.results[1].assessment_status == "refused"
@@ -261,6 +299,27 @@ async def test_generation_evaluator_reports_answer_citation_and_refusal_metrics(
     assert report.results[1].missing_expected_citation_indexes == [1]
     assert report.results[3].citation_precision == 0.0
     assert report.results[3].assessment_status is None
+
+    legacy_payload = report.model_dump(mode="json")
+    legacy_payload.pop("concurrency")
+    legacy_payload.pop("wall_time_ms")
+    legacy_payload.pop("throughput_cases_per_second")
+    for field in ("average_ttft_ms", "p95_ttft_ms"):
+        legacy_payload["summary"].pop(field)
+    legacy_payload["summary"].pop("average_stage_timings_ms")
+    legacy_payload["summary"].pop("p95_stage_timings_ms")
+    for result in legacy_payload["results"]:
+        result.pop("ttft_ms")
+        result.pop("stage_timings_ms")
+
+    legacy_report = GenerationEvaluationReport.model_validate(legacy_payload)
+    assert legacy_report.concurrency == 1
+    assert legacy_report.wall_time_ms is None
+    assert legacy_report.throughput_cases_per_second is None
+    assert legacy_report.summary.average_ttft_ms is None
+    assert legacy_report.summary.average_stage_timings_ms == {}
+    assert legacy_report.results[0].ttft_ms is None
+    assert legacy_report.results[0].stage_timings_ms == {}
 
 
 @pytest.mark.asyncio
@@ -309,6 +368,81 @@ async def test_generation_evaluator_isolates_graph_errors_per_case() -> None:
     assert report.results[0].error_code == ErrorCode.MODEL_TIMEOUT.value
     assert report.results[1].passed is True
     assert report.summary.pass_rate == 0.5
+
+
+@pytest.mark.asyncio
+async def test_generation_evaluator_bounds_concurrency_and_preserves_order() -> None:
+    class TrackingGraph:
+        def __init__(self) -> None:
+            self.active = 0
+            self.max_active = 0
+
+        async def stream(
+            self,
+            *,
+            query: str,
+            history: Sequence[ChatMessage],
+        ) -> AsyncIterator[dict[str, Any]]:
+            del query, history
+            self.active += 1
+            self.max_active = max(self.max_active, self.active)
+            try:
+                await asyncio.sleep(0.02)
+                yield {"kind": "delta", "text": "明月常与思乡相连。[1]"}
+                yield {"kind": "citation", "citation": _citation()}
+                yield {
+                    "kind": "final",
+                    "answer": "明月常与思乡相连。[1]",
+                    "citations": [_citation()],
+                    "finish_reason": "stop",
+                }
+            finally:
+                self.active -= 1
+
+    graph = TrackingGraph()
+
+    @asynccontextmanager
+    async def graph_factory() -> AsyncIterator[TrackingGraph]:
+        yield graph
+
+    dataset = GenerationEvaluationDataset(
+        version="generation-concurrency-test-v1",
+        description="Concurrency must be bounded while result order stays stable.",
+        cases=[
+            _answer_case(
+                case_id=f"answer-{index}",
+                question=f"question-{index}",
+            )
+            for index in range(4)
+        ],
+    )
+
+    report = await GenerationEvaluator(
+        graph_factory,
+        model="fake-generation-model",
+        concurrency=2,
+    ).evaluate(dataset)
+
+    assert graph.max_active == 2
+    assert graph.active == 0
+    assert report.concurrency == 2
+    assert [result.case_id for result in report.results] == [
+        "answer-0",
+        "answer-1",
+        "answer-2",
+        "answer-3",
+    ]
+
+
+def test_generation_evaluator_rejects_invalid_concurrency() -> None:
+    factory = FakeGraphFactory(events_by_query={})
+
+    with pytest.raises(ValueError, match="concurrency"):
+        GenerationEvaluator(
+            factory,
+            model="fake-generation-model",
+            concurrency=0,
+        )
 
 
 def test_generation_dataset_has_answer_and_refusal_coverage() -> None:
@@ -485,6 +619,9 @@ def test_generation_evaluation_cli_defaults_to_1000_holdout() -> None:
     spec.loader.exec_module(module)
 
     assert module.DEFAULT_DATASET == HOLDOUT_1000_DATASET_PATH
+    parser = module._build_parser()
+    assert parser.parse_args([]).concurrency == 1
+    assert parser.parse_args(["--concurrency", "4"]).concurrency == 4
 
 
 def test_generation_dataset_rejects_duplicate_questions() -> None:

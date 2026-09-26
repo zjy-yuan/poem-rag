@@ -112,6 +112,8 @@ class GenerationEvaluationCaseResult(BaseModel):
     retrieval_selected_count: int
     strategy: str | None
     latency_ms: float
+    ttft_ms: float | None = None
+    stage_timings_ms: dict[str, float] = Field(default_factory=dict)
     citations: list[GenerationCitationSnapshot]
 
 
@@ -130,6 +132,10 @@ class GenerationEvaluationSummary(BaseModel):
     citation_recall: float | None
     average_latency_ms: float
     p95_latency_ms: float
+    average_ttft_ms: float | None = None
+    p95_ttft_ms: float | None = None
+    average_stage_timings_ms: dict[str, float] = Field(default_factory=dict)
+    p95_stage_timings_ms: dict[str, float] = Field(default_factory=dict)
 
 
 class GenerationEvaluationReport(BaseModel):
@@ -137,6 +143,9 @@ class GenerationEvaluationReport(BaseModel):
     model: str
     strategy: str | None
     generated_at: datetime
+    concurrency: int = Field(default=1, ge=1)
+    wall_time_ms: float | None = None
+    throughput_cases_per_second: float | None = None
     summary: GenerationEvaluationSummary
     categories: dict[str, GenerationEvaluationSummary]
     failure_case_ids: list[str]

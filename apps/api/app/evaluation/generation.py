@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import math
 import statistics
@@ -83,18 +84,36 @@ class GenerationEvaluator:
         graph_factory: GenerationGraphFactory,
         *,
         model: str,
+        concurrency: int = 1,
     ) -> None:
+        if concurrency < 1:
+            raise ValueError("concurrency 必须大于等于 1")
         self.graph_factory = graph_factory
         self.model = model
+        self.concurrency = concurrency
 
     async def evaluate(
         self,
         dataset: GenerationEvaluationDataset,
     ) -> GenerationEvaluationReport:
-        results = [
-            await self._evaluate_case(case)
-            for case in dataset.cases
-        ]
+        started_at = perf_counter()
+        semaphore = asyncio.Semaphore(self.concurrency)
+
+        async def run_case(
+            case: GenerationEvaluationCase,
+        ) -> GenerationEvaluationCaseResult:
+            async with semaphore:
+                return await self._evaluate_case(case)
+
+        results = await asyncio.gather(
+            *(run_case(case) for case in dataset.cases)
+        )
+        wall_time_ms = round((perf_counter() - started_at) * 1000, 3)
+        throughput = (
+            round(len(results) / (wall_time_ms / 1000), 3)
+            if wall_time_ms > 0
+            else None
+        )
         categories = {
             category: _summarize(
                 [result for result in results if result.category == category]
@@ -106,6 +125,9 @@ class GenerationEvaluator:
             model=self.model,
             strategy=_summarize_strategy(results),
             generated_at=datetime.now(UTC),
+            concurrency=self.concurrency,
+            wall_time_ms=wall_time_ms,
+            throughput_cases_per_second=throughput,
             summary=_summarize(results),
             categories=categories,
             failure_case_ids=[result.case_id for result in results if not result.passed],
@@ -127,6 +149,8 @@ class GenerationEvaluator:
         strategy: str | None = None
         candidate_count = 0
         selected_count = 0
+        ttft_ms: float | None = None
+        stage_timings_ms: dict[str, float] = {}
 
         try:
             async with self.graph_factory() as graph:
@@ -138,9 +162,16 @@ class GenerationEvaluator:
                         raw_strategy = event.get("strategy")
                         if isinstance(raw_strategy, str) and raw_strategy:
                             strategy = raw_strategy
+                    elif kind == "timing":
+                        stage = event.get("stage")
+                        duration_ms = _safe_duration_ms(event.get("duration_ms"))
+                        if isinstance(stage, str) and stage and duration_ms is not None:
+                            stage_timings_ms[stage] = duration_ms
                     elif kind == "delta":
                         text = event.get("text")
                         if isinstance(text, str) and text:
+                            if ttft_ms is None:
+                                ttft_ms = _elapsed_ms(started_at)
                             answer_parts.append(text)
                     elif kind == "citation":
                         citation = event.get("citation")
@@ -188,6 +219,8 @@ class GenerationEvaluator:
             selected_count=selected_count,
             strategy=strategy,
             latency_ms=latency_ms,
+            ttft_ms=ttft_ms,
+            stage_timings_ms=stage_timings_ms,
         )
 
 
@@ -198,6 +231,12 @@ def format_generation_evaluation_report(
     lines = [
         f"dataset={report.dataset_version}",
         f"model={report.model} strategy={report.strategy or 'unknown'}",
+        (
+            f"concurrency={report.concurrency} "
+            f"wall_time_ms={_format_optional(report.wall_time_ms)} "
+            "throughput_cases_per_second="
+            f"{_format_optional(report.throughput_cases_per_second)}"
+        ),
         (
             f"cases={summary.total_cases} passed={summary.passed_cases} "
             f"pass_rate={_format_optional(summary.pass_rate)}"
@@ -219,6 +258,15 @@ def format_generation_evaluation_report(
             f"average_latency_ms={summary.average_latency_ms:.3f} "
             f"p95_latency_ms={summary.p95_latency_ms:.3f}"
         ),
+        (
+            f"average_ttft_ms={_format_optional(summary.average_ttft_ms)} "
+            f"p95_ttft_ms={_format_optional(summary.p95_ttft_ms)}"
+        ),
+        (
+            "average_stage_timings_ms="
+            f"{_format_stage_timings(summary.average_stage_timings_ms)}"
+        ),
+        f"p95_stage_timings_ms={_format_stage_timings(summary.p95_stage_timings_ms)}",
         "",
         "categories:",
     ]
@@ -260,6 +308,8 @@ def _score_case(
     selected_count: int,
     strategy: str | None,
     latency_ms: float,
+    ttft_ms: float | None,
+    stage_timings_ms: dict[str, float],
 ) -> GenerationEvaluationCaseResult:
     normalized_answer = normalize_content(answer)
     required_matches = _match_required_facts(
@@ -349,6 +399,8 @@ def _score_case(
         retrieval_selected_count=selected_count,
         strategy=strategy,
         latency_ms=latency_ms,
+        ttft_ms=ttft_ms,
+        stage_timings_ms=stage_timings_ms,
         citations=[
             _snapshot_citation(citation)
             for citation in citations
@@ -444,6 +496,12 @@ def _summarize(
         for result in results
     )
     latencies = [result.latency_ms for result in results]
+    ttfts = [
+        result.ttft_ms
+        for result in results
+        if result.ttft_ms is not None
+    ]
+    stage_timings = _collect_stage_timings(results)
 
     return GenerationEvaluationSummary(
         total_cases=len(results),
@@ -481,6 +539,16 @@ def _summarize(
         ),
         average_latency_ms=round(statistics.fmean(latencies), 3) if latencies else 0.0,
         p95_latency_ms=_p95(latencies),
+        average_ttft_ms=round(statistics.fmean(ttfts), 3) if ttfts else None,
+        p95_ttft_ms=_p95(ttfts) if ttfts else None,
+        average_stage_timings_ms={
+            stage: round(statistics.fmean(values), 3)
+            for stage, values in stage_timings.items()
+        },
+        p95_stage_timings_ms={
+            stage: _p95(values)
+            for stage, values in stage_timings.items()
+        },
     )
 
 
@@ -507,6 +575,30 @@ def _safe_int(value: Any) -> int:
     return 0
 
 
+def _safe_duration_ms(value: Any) -> float | None:
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+    ):
+        return None
+    return round(max(0.0, float(value)), 3)
+
+
+def _elapsed_ms(started_at: float) -> float:
+    return round(max(0.0, (perf_counter() - started_at) * 1000), 3)
+
+
+def _collect_stage_timings(
+    results: list[GenerationEvaluationCaseResult],
+) -> dict[str, list[float]]:
+    collected: dict[str, list[float]] = {}
+    for result in results:
+        for stage, duration_ms in result.stage_timings_ms.items():
+            collected.setdefault(stage, []).append(duration_ms)
+    return collected
+
+
 def _rounded_ratio(numerator: int, denominator: int) -> float:
     return round(numerator / denominator, 6) if denominator else 0.0
 
@@ -527,3 +619,12 @@ def _p95(values: list[float]) -> float:
 
 def _format_optional(value: float | None) -> str:
     return "n/a" if value is None else f"{value:.6f}"
+
+
+def _format_stage_timings(timings: dict[str, float]) -> str:
+    if not timings:
+        return "n/a"
+    return ", ".join(
+        f"{stage}={duration_ms:.3f}"
+        for stage, duration_ms in sorted(timings.items())
+    )
