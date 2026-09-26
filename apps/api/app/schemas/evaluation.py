@@ -62,10 +62,13 @@ class RetrievalEvaluationDataset(BaseModel):
     cases: list[RetrievalEvaluationCase] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def validate_unique_case_ids(self) -> RetrievalEvaluationDataset:
+    def validate_unique_cases(self) -> RetrievalEvaluationDataset:
         case_ids = [case.id for case in self.cases]
         if len(case_ids) != len(set(case_ids)):
             raise ValueError("评估样本 ID 必须唯一")
+        questions = [case.question for case in self.cases]
+        if len(questions) != len(set(questions)):
+            raise ValueError("评估样本 question 必须唯一")
         return self
 
 

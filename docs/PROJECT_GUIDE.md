@@ -1,8 +1,8 @@
 # 项目说明与代码导览
 
 > 项目：Poem RAG  
-> 文档状态：当前实现快照 v0.3  
-> 更新日期：2026-09-20  
+> 文档状态：当前实现快照 v0.7.0-rag-eval-baseline
+> 更新日期：2026-09-26
 > 说明：本文件描述“现在是什么”，目标接口见 `FRONTEND_BACKEND_CONTRACT.md`
 
 ## 1. 一句话说明
@@ -14,11 +14,12 @@ Poem RAG 是一个面向诗词领域的全栈知识库与智能问答项目。�
 **诗词管理与浏览平台 + RAG 开发底座。**
 
 当前问答已经接入带条件路由的 LangGraph，流程为
-`rewrite -> retrieve -> assess -> generate|refuse -> validate`，并固定使用
-`expanded-lexical-v1` 检索；Dense、Hybrid 和 Rerank 尚未切换为在线问答策略。`assess`
-已接入 DeepSeek 非流式 JSON 结构化判定，Provider 已完成真实 `deepseek-chat`
-流式与 JSON 烟测，并完成真实 MySQL + SSE 基础在线联调：有证据问题返回带引用回答，
-无答案问题稳定拒答且不产生引用。后续设计和实现不能把评估中能力或规划能力写成生产已实现成果。
+`rewrite -> retrieve -> assess -> generate|refuse -> validate`。在线检索使用
+`expanded-lexical-v1 + Dense + RRF`，公开策略名为 `hybrid-rrf-v1`；Qdrant 或
+Embedding 基础设施故障时降级到 `expanded-lexical-v1`。`assess` 已接入 DeepSeek
+非流式 JSON 结构化判定，Provider 已完成真实 `deepseek-chat` 流式与 JSON 烟测，
+并完成真实 MySQL + SSE 基础在线联调：有证据问题返回带引用回答，无答案问题稳定拒答
+且不产生引用。后续设计和实现不能把评估中能力或规划能力写成生产已实现成果。
 
 ## 2. 用户与核心流程
 
@@ -53,10 +54,11 @@ flowchart LR
     A --> C[(Redis 7)]
     A --> Q[(Qdrant)]
     A --> G[LangGraph 条件路由问答]
-    G -->|expanded-lexical-v1| M
+    G -->|expanded-lexical-v1 + Dense + RRF| M
+    G -->|基础设施故障时降级| M
     G -->|证据不足| X[稳定拒答]
     G -. 调用生成模型 .-> P[DeepSeek Chat]
-    A -. 内部 Dense/Hybrid 评估 .-> Q
+    A -. 在线 Dense/Hybrid 检索 .-> Q
     A -. 内部向量化 .-> E[Qwen Embedding]
 ```
 
@@ -65,7 +67,7 @@ flowchart LR
 1. 采用模块化单体，暂不拆微服务。
 2. MySQL 是用户、权限和诗词业务数据的唯一事实来源。
 3. Redis 用于健康检查，后续承担缓存、限流、短期状态和任务基础设施。
-4. Qwen Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid/查询改写检索和 DeepSeek Chat Provider 已实现；在线问答固定使用已评估的 `expanded-lexical-v1`，Dense/Hybrid 仍仅供内部 Service 与离线评估使用。真实 Qwen 索引和四条策略的同集评估已完成；Dense 检索支持 `min_score` 相关性下限，低于门槛的候选不再交给生成模型。v2 评估实测证明该门槛只能防跨域漂移，领域内“话题命中、答案缺失”的样本由 `assess` 节点通过 LLM 结构化输出判定；判定失败时 fail-open 继续生成，引用校验仍作为兜底。
+4. Qwen Embedding Provider、Qdrant 最小索引闭环、Dense/Hybrid/查询改写检索和 DeepSeek Chat Provider 已实现；固定来源语料已扩展到 1000 首并完成真实索引。加权 RRF v2 在 v1 检索回归集上，在线组合达到 50/50；在第二批独立 holdout v2 上，在线组合从 40/46 提升到 45/46，生成 holdout 从 24/26 提升到 26/26。第三批独立 holdout v3 上，在线检索为 45/46、Recall@5 `1.0`、MRR `0.929825`，生成为 25/26、拒答 `10/10`。在线问答使用 `expanded-lexical-v1 + Dense + RRF`，并通过 `CHAT_DENSE_MIN_SCORE=0.60` 控制 Dense 候选下限：`poem`/`line` 主文本允许 `0.02` 容差，`note` 仍严格使用该阈值。Qdrant 或 Embedding 构造失败时降级到 `expanded-lexical-v1`，运行期仅对 `EMBEDDING_PROVIDER_ERROR` 和 `VECTOR_STORE_ERROR` 降级。Dense 门槛只能防跨域漂移，领域内“话题命中、答案缺失”的样本由 `assess` 节点通过 LLM 结构化输出判定；判定失败时 fail-open 继续生成，引用校验仍作为兜底。在线图同时记录各阶段内部耗时，`CHAT_QUERY_VARIANT_LIMIT=8` 限制查询扩展分支；指标只进入服务端日志，不改变公开 SSE。在线检索进一步复用进程级 Embedding 与 Qdrant 客户端，并把一次查询的全部变体合并为一次 Embedding 调用；同一 v2 回归集下检索质量不变，平均延迟从 `874.575 ms` 降到 `483.760 ms`。
 5. FastAPI Router 只处理 HTTP 映射，业务状态变化放在 Service，数据访问放在 Repository。
 6. MySQL 保存会话、消息和引用快照；SSE 只负责传输过程状态，不成为长期数据源。
 
@@ -189,7 +191,7 @@ erDiagram
 2. `messages`：用户/助手消息、流式状态、模型、延迟和错误码。
 3. `message_citations`：回答引用的作品、版本、注释、chunk、文本和排名快照。
 
-尚未实现但已进入目标的模型包括意象和评估数据。结构化切块、MySQL 词法检索、Embedding Provider、Qdrant 最小索引闭环、内部 Dense/Hybrid 检索已经实现，21 个 chunks 已完成真实向量化；在线问答固定使用 `expanded-lexical-v1`，不能把向量数据塞入现有 `poems.content`。
+尚未实现但已进入目标的模型包括意象和评估数据。结构化切块、MySQL 词法检索、Embedding Provider、Qdrant 最小索引闭环、Dense/Hybrid 在线检索已经实现；真实库现有 1008 首已发布作品、1009 个作品版本和 12415 个 chunks。固定来源的 1000 首分层语料完成 902 个新建和 98 个未变化导入，所有 chunks 均已使用 1024 维 Qwen 向量写入 Qdrant。在线问答使用 Hybrid RRF，并在基础设施故障时降级到查询扩展词法检索；不能把向量数据塞入现有 `poems.content`。
 
 ## 7. 前端页面地图
 
@@ -222,25 +224,27 @@ erDiagram
 | MySQL 迁移与种子 | 已实现 | Alembic head 为 `20260920_0005`，真实 MySQL 已升级 |
 | Redis 健康检查 | 已实现 | 缓存和队列尚未使用 |
 | 语料来源与版本快照 | 已实现 | 来源、不可变版本和编辑版本链已接入 |
-| 结构化语料导入 | 已实现 | CLI 支持 JSON 预检、幂等创建/更新、逐条失败隔离、版本留痕和可选 chunk 重建；尚无 HTTP 导入任务 |
+| 结构化语料导入 | 已实现 | CLI 支持 JSON 预检、幂等创建/更新、逐条失败隔离、版本留痕和可选 chunk 重建；固定来源已扩展到 1000 首，真实结果为 902 created、98 unchanged、0 failed；尚无 HTTP 导入任务 |
 | 注释与 chunk 数据模型 | 已实现 | 支持 poem/line/note 粒度和向量索引状态 |
-| 结构切块器 `structural-v1` | 已实现 | 支持版本级幂等重建；真实库已生成 21 个 pending chunks |
+| 结构切块器 `structural-v1` | 已实现 | 支持版本级幂等重建；真实库现有 12415 个 chunks，扩库新增 10346 个并全部完成向量索引 |
 | 索引运行元数据 | 已实现 | 记录 `pending/running/succeeded/failed/cancelled` 状态和 `chunk/embed/upsert` 阶段；配置快照入库前脱敏；同一版本禁止重复活跃运行 |
 | MySQL 可解释检索基线 | 已实现 | `lexical-baseline-v1` 从当前版本的 poem/line/note chunks 返回出处、行号、得分和 `match_types`；只读取已发布且未删除作品 |
 | 索引任务 API 与 Worker | 未实现 | 当前只有 Service 和数据库记录，没有 HTTP 任务接口、租约、超时回收或取消 |
 | 爬虫与任务化导入 | 未实现 | 结构化文件导入已实现；网站爬虫、上传接口、导入任务和 Worker 尚未实现 |
 | Qwen Embedding Provider | 已实现（Provider 层） | 支持批量、维度、超时、有限重试和响应校验；已接入索引 Service，真实 DashScope 烟测已通过 |
 | Qdrant 向量索引 | 已实现（最小闭环） | chunks -> Qwen Embedding -> Collection -> upsert -> chunk 映射；真实 Qdrant 1.19.1 已完成临时 Collection 烟测 |
-| Dense 检索 | 已实现（内部 Service） | `dense-baseline-v1` 使用 Qdrant 召回，并回查 MySQL 校验当前版本、发布状态和注释可见性；支持 `min_score` 余弦相似度下限，低于门槛的候选在检索层丢弃，供上层拒答 |
+| Dense 检索 | 已实现（在线分支） | `dense-baseline-v1` 使用 Qdrant 召回，并回查 MySQL 校验当前版本、发布状态和注释可见性；在线问答使用 `CHAT_DENSE_MIN_SCORE=0.60`，`poem`/`line` 主文本允许 `0.02` 容差、`note` 无容差，低于有效门槛的候选在检索层丢弃 |
 | 旧向量清理与 Qdrant 对账 | 未实现 | 尚未实现旧版本点清理、active index 切换和跨库全量对账 |
-| Hybrid RRF 检索 | 已实现（内部 Service） | `hybrid-rrf-v1` 融合词法与 Dense 候选，按排名去重融合；尚未暴露 HTTP，Dense 分支带 `min_score` 后同集 Top-5 为 `27/27`，平均延迟约 180 至 200 ms |
-| 查询改写与多查询 RRF | 已实现（内部 Service） | `expanded-lexical-v1` 用可审查词典扩展月亮、思乡和已知作者实体，保留原查询并用 RRF 融合多路召回；真实 MySQL 种子集 Top-5 为 `27/27`，平均延迟约 3.4 ms，公开 HTTP 未切换 |
-| 重排 | 未实现 | 已有 `lexical-baseline-v1`、`dense-baseline-v1`、`hybrid-rrf-v1` 和 `expanded-lexical-v1` 四条可比较路径 |
+| Hybrid RRF 检索 | 已实现（在线策略） | 加权 `hybrid-rrf-v1` 融合 `expanded-lexical-v1` 与 Dense 候选，按查询来源权重和排名去重融合；v1 回归集 Top-5 为 50/50、Recall@5 `1.0`、MRR `0.887698`；v2 独立 holdout 为 45/46、Recall@5 `1.0`、MRR `0.907895`；v3 独立 holdout 为 45/46、Recall@5 `1.0`、MRR `0.929825`。公开 HTTP 检索仍不暴露策略参数 |
+| 查询改写与多查询 RRF | 已实现（在线分支与降级策略） | `expanded-lexical-v1` 用可审查词典扩展月亮、思乡、元宵、怀人、白发夸张和已知作者实体，保留原查询并用加权 RRF 融合多路召回；显式标题会保留完整作品槽位，多标题查询优先完整作品块，结构化主题查询保留正文候选，多证据问题会限制单个作品占用的候选槽位；v2 独立 holdout Top-5 为 38/46，v3 为 44/46 |
+| 重排 | 未实现 | 已有 `lexical-baseline-v1`、`dense-baseline-v1`、`hybrid-rrf-v1` 和 `expanded-lexical-v1` 四条可比较路径；开放语料评估已暴露多证据覆盖和领域内拒答失败 |
 | 会话与消息持久化 | 已实现 | 会话、消息和引用快照写入 MySQL；按用户隔离会话所有权 |
 | DeepSeek Chat Provider | 已实现（Provider 层） | 支持 OpenAI-compatible 流式与非流式 JSON chat completions、超时、错误映射和空回答检测；真实 `deepseek-chat` 流式与 JSON 烟测、真实 MySQL + SSE 基础联调均已通过 |
-| LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；查询改写和检索使用 `expanded-lexical-v1`，命中作品追加诗词级父级上下文，`assess` 用 LLM 结构化判定可答性，无证据或判定不可答时走 `refuse` 且不调用生成模型；判定异常 fail-open |
+| LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；在线检索使用 `expanded-lexical-v1 + Dense + RRF`，基础设施故障时降级到 `expanded-lexical-v1`；命中作品追加诗词级父级上下文，长文本按作品轮转并受 40 chunks / 4800 字符预算约束；`assess` 用 LLM 结构化判定可答性，无证据或判定不可答时走 `refuse` 且不调用生成模型；判定异常 fail-open |
+| 在线 RAG 可观测性 | 已实现 | 图节点在 `finally` 中发出内部 `timing`，`ChatService` 聚合 `rewrite/retrieval/assess/generation/validate`、TTFT、候选数、策略和判定状态；流结束记录请求级日志。`timing` 不进入公开 SSE，`done` 仍为 `{finish_reason, latency_ms}`；`CHAT_QUERY_VARIANT_LIMIT` 默认 `8`、范围 `1-20` |
+| 在线检索资源复用与批量 Embedding | 已实现 | Embedding Provider 和 Qdrant 客户端在应用 `lifespan` 中创建并共享，流结束不再重复初始化；`BatchEvidenceRetriever` 协议让一次查询的全部变体合并为一次 Embedding 调用，跨变体向量 ID 回查合并为一次 MySQL 查询。Qdrant 搜索仍按变体串行，因为 `AsyncSession` 不能并发复用。同一 v2 回归集下检索仍为 45/46、MRR `0.907895`，平均延迟 `874.575 ms -> 483.760 ms`、P95 `2770.212 ms -> 1239.925 ms` |
 | SSE 引用问答 | 已实现 | `meta -> retrieval -> delta* -> citation* -> done/error`；持久化最终消息和引用，无证据时不调用模型 |
-| RAG 评估体系 | 已实现（检索层 + 生成层） | 检索层 v2 数据集 31 条，支持 Recall@k、MRR、Hit Rate、拒答 P/R/F1 和延迟；生成层 v1 数据集 12 条，直接运行在线 `RagChatGraph`，真实 `deepseek-chat` 基线 `12/12`，支持答案事实、引用精确率/召回率、拒答 P/R/F1 和延迟；忠实度和 LLM-as-judge 尚未实现 |
+| RAG 评估体系 | 已实现（检索层 + 生成层 + 离线 judge/校准） | v1 回归集 50 条中 `expanded-lexical-v1` 为 48/50、Hybrid 为 40/50、在线组合为 50/50；生成回归集 28 条为 `28/28`、拒答 `7/7`。v2 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、MRR `0.907895`，生成 26 条为 `26/26`、拒答 `10/10`、引用 P/R 均为 `1.0`。v3 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、MRR `0.929825`，生成 26 条为 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`。v3 的可答样本进一步由独立 LLM judge 复核：16/16 完成、0 错误、忠实度通过率 `0.8125`、相关性 `1.0`、claim 支撑率 `0.950920`；首次人工校准覆盖 3/16，`judge_stricter=3`。三批样本都已参与失败观察或修复，只能作为回归集 |
 | 云服务器部署 | 未实现 | 核心 RAG 闭环后再处理域名和 HTTPS |
 
 ## 9. 如何追踪一个功能
@@ -268,6 +272,26 @@ erDiagram
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --top-k 5
 ```
 
+固定来源 1000 首语料转换、导入与索引：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\convert_chinese_gushiwen.py `
+  --input-dir data\raw\aopao-chinese-gushiwen-c2345d0 `
+  --limit 1000 `
+  --publish
+.\.venv\Scripts\python.exe apps\api\scripts\import_corpus.py `
+  --input data\import\generated\chinese-gushiwen-1000-v2.json `
+  --report data\import\reports\chinese-gushiwen-1000-v2.import.json `
+  --rebuild-chunks
+.\.venv\Scripts\python.exe apps\api\scripts\index_chunks.py --all-pending
+```
+
+本次验证结果：902 首新建、98 首未变化、0 失败，新增 10346 个 chunks；真实库共
+1008 首已发布作品、12415 个 chunks，Qdrant 共 12415 points、1024 维且状态为
+`green`。`indexed_vectors_count=0` 仍不能单独判定为故障，当前查询正常，但需要在
+更大规模前单独验证 HNSW 参数。来源、10 分片筛选、评估与许可边界见
+`docs/features/20260923-chinese-gushiwen-1000-corpus.md`。
+
 真实 Qdrant 和 Qwen 已就绪，可执行内部 Dense 评估：
 
 ```powershell
@@ -284,31 +308,132 @@ erDiagram
 
 ```powershell
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
-  --json-output data\eval\reports\generation_rag_v1_20260920.json
+  --json-output data\eval\reports\generation_holdout_1000_v1_after_weighting_v2.json
 ```
 
-首版数据集 `data/eval/generation_rag_v1.json` 共 12 条，指标包括答案正确率、引用
-精确率/召回率、拒答 P/R/F1、平均延迟和 P95。每个样本使用独立 Session，单样本
-异常不会中断整份报告；评估结果仍不能替代人工忠实度复核。
+默认数据集 `data/eval/generation_holdout_1000_v1.json` 共 28 条，指标包括答案
+正确率、引用精确率/召回率、拒答 P/R/F1、平均延迟和 P95。每个样本使用独立 Session，
+单样本异常不会中断整份报告。该数据集当前回归结果为 `28/28`、拒答 `7/7`，
+有答案准确率 `1.0`、拒答 P/R/F1 `1.0`、引用精确率 `0.971429`、
+引用召回率 `1.0`，平均延迟 `5687.155 ms`、P95 `9481.742 ms`。多证据问题平均
+`8817.328 ms`、P95 `9940.227 ms`，是当前主要性能瓶颈。旧 12 条种子集仍可通过
+`--dataset data\eval\generation_rag_v1.json` 复现。评估结果仍不能替代人工忠实度
+复核。
+
+生成报告的离线质量 judge：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\judge_generation.py `
+  --json-output data\eval\reports\generation_holdout_1000_v3_judge.json `
+  --review-output data\eval\reports\generation_holdout_1000_v3_blind_review.md
+```
+
+judge 读取已有报告，不重新执行检索或生成。总体忠实度由事实声明的支撑状态确定性推导，
+引用 rank 按实际证据集合校验；拒答、空回答和生成错误直接跳过。每个可答样本增加一次
+`deepseek-chat` 调用，单样本失败会记录 `INVALID_JUDGE_RESPONSE` 等错误码并继续。当前
+v3 的 16 条可答样本为 `judge_errors=0`、忠实度通过率 `0.8125`、相关性 `1.0`、claim
+支撑率 `0.950920`；三条部分支撑样本已完成人工盲评校准。详细契约见
+[生成质量 LLM-as-judge](features/20260924-generation-judge.md)。
+
+人工校准与 judge 共用同一份离线报告，不重新调用模型：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\calibrate_generation_judge.py `
+  --export-template data\eval\reports\generation_holdout_1000_v3_calibration.csv `
+  --review-output data\eval\reports\generation_holdout_1000_v3_calibration_review.md
+
+.\.venv\Scripts\python.exe apps\api\scripts\calibrate_generation_judge.py `
+  --review-input data\eval\reports\generation_holdout_1000_v3_calibration.csv `
+  --json-output data\eval\reports\generation_holdout_1000_v3_calibration.json `
+  --summary-output data\eval\reports\generation_holdout_1000_v3_calibration_summary.md
+```
+
+第一条命令只导出人工盲评模板；第二条命令读取人工填写的 `relevance_0_2` 和
+`faithfulness_0_2`，自动计算相关性/忠实度精确一致率、严格通过一致率，以及
+`judge_stricter`、`judge_looser` 分歧数量。人工字段必须是裸数值 `0/1/2`。首次复核
+3/16 条 judge 成功样本，覆盖率 `0.187500`，相关性精确一致率 `1.0`、忠实度精确一致率
+`0.0`、严格通过一致率 `0.0`，`judge_stricter=3`、`judge_looser=0`。这组样本全部来自
+`judge_failure_case_ids`，只能支持“judge 对隐含文学解释偏保守”的定向结论，不能代表
+judge 的总体准确率。
 
 Dense 和 Hybrid 可额外传入余弦相似度下限，低于门槛的候选会被丢弃，用于验证拒答行为：
 
 ```powershell
-.\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --strategy hybrid --min-score 0.22 --json-output data\eval\reports\retrieval_hybrid_v1_min022_20260920.json
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py `
+  --strategy hybrid --min-score 0.60 --top-k 5
 ```
 
-评估报告保存在 `data/eval/reports/`；文件名中的 `min022` 表示该次运行使用了
-`min_score=0.22`，`v2` 表示使用的是 `data/eval/retrieval_lexical_v2.json`。
-现行默认数据集是 v2（31 条）；复现历史 v1 报告时显式传入 `--dataset`：
+`dense`、`hybrid` 和 `expanded-hybrid` 未显式传 `--min-score` 时，现在会读取线上
+`CHAT_DENSE_MIN_SCORE`，避免离线报告与在线口径分裂。命令中保留 `0.60` 是为了显式
+复现当前线上阈值；需要做阈值诊断时仍可传入其他值或 `0`。
+
+评估报告可保存到 `data/eval/reports/`。现行默认数据集是
+`data/eval/retrieval_open_corpus_v1.json`（`open-corpus-100-v1`，50 条）；
+复现历史种子集报告时显式传入 `--dataset`：
 
 ```powershell
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py `
-  --dataset data\eval\retrieval_lexical_v1.json --top-k 5
+  --dataset data\eval\retrieval_lexical_v2.json --top-k 5
 ```
 
-`min_score` 的实测结论：`0.22` 能拒绝全部跨域负样本且不损失召回，但领域内负样本
-（最高相似度 `0.3652`）与最弱可回答样本（`0.2647`）分数交错，因此阈值不能承担
-可答性判定。详见 `docs/features/20260920-answerability-evaluation-v2.md`。
+在 1000 首候选池上重跑旧 50 条集时，Hybrid + `0.60` 为 `43/50`、
+Recall@5 `0.952381`、MRR `0.888889`，无答案准确率只有 `0.5`；词法基线为
+`36/50`，`expanded-lexical-v1` 为 `34/50`。新增语料明显挤压多证据和领域内拒答，
+该集合不能继续承担阈值调参；完整历史指标见
+`docs/features/20260923-chinese-gushiwen-1000-corpus.md`。
+
+独立 holdout 的复现命令和同集结果见
+`docs/features/20260923-independent-1000-holdout.md`。当前在线组合为
+`expanded-lexical-v1 + Dense + RRF`，公开 HTTP 检索仍固定为词法基线。该批 50/28
+条样本已经参与失败诊断和修复，后续只能作为回归集，不能再作为未观察泛化证据。
+
+第二批独立 holdout 见 `docs/features/20260924-independent-1000-holdout-v2.md`。
+检索 46 条（38 有答案 + 8 无答案）、生成 26 条（16 有答案 + 10 拒答），问题与 v1
+完全不重叠。复现命令：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py `
+  --dataset data\eval\retrieval_holdout_1000_v2.json `
+  --strategy expanded-hybrid --top-k 5 --min-score 0.60 `
+  --json-output data\eval\reports\retrieval_holdout_1000_v2_expanded_hybrid_final.json
+
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
+  --dataset data\eval\generation_holdout_1000_v2.json `
+  --json-output data\eval\reports\generation_holdout_1000_v2_after_retrieval_fixes.json
+```
+
+同集结果：检索在线组合 45/46、Recall@5 `1.0`、MRR `0.907895`、无答案准确率
+`0.875`，唯一失败为领域内缺属性的 `no-answer-v2-xinqiji-office-08`；生成 `26/26`、
+拒答 `10/10`、引用 P/R 均为 `1.0`，平均延迟 `4699.931 ms`、P95 `8422.616 ms`。
+v2 样本同样已经参与失败诊断，只能作为回归集。
+
+第三批独立 holdout 见
+`docs/features/20260924-independent-1000-holdout-v3.md`。检索 46 条、生成 26 条，
+问题文本与 v1/v2 完全不重叠。复现命令：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py `
+  --dataset data\eval\retrieval_holdout_1000_v3.json `
+  --strategy expanded-hybrid --top-k 5 --min-score 0.60 `
+  --json-output data\eval\reports\retrieval_holdout_1000_v3_expanded_hybrid.json
+
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_generation.py `
+  --dataset data\eval\generation_holdout_1000_v3.json `
+  --json-output data\eval\reports\generation_holdout_1000_v3.json
+```
+
+同集结果：检索在线组合 45/46、Recall@5 `1.0`、MRR `0.929825`、无答案准确率
+`0.875`，唯一失败为领域内缺属性的 `no-answer-v3-dufu-death-year-08`；生成 `25/26`、
+有答案准确率 `0.9375`、拒答 `10/10`、引用 P/R `1.0 / 1.0`，唯一失败为
+`gen-v3-guazhou-homesick`，缺少距离铺垫事实。v3 已经完成真实观察，后续只能作为
+回归集，新的泛化结论必须使用 v4。
+
+完成在线 RAG 可观测性和变体上限后，同一 v2 回归集再次运行在线组合，检索为 45/46、
+平均延迟 `738.465 ms`、P95 `1970.978 ms`；生成为 `26/26`、拒答 `10/10`、引用
+P/R `1.0 / 1.0`、平均延迟 `4043.728 ms`、P95 `6566.794 ms`。报告见
+`data/eval/reports/retrieval_holdout_1000_v2_after_observability.json` 和
+`data/eval/reports/generation_holdout_1000_v2_after_observability.json`。本轮延迟
+变化只有单次复跑，不能作为正式 A/B 或因果结论；内部 `timing` 不进入公开 SSE。
 
 Qdrant 适配器真实烟测：
 
@@ -363,7 +488,7 @@ DeepSeek 流式烟测：
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --strategy expanded --top-k 5
 ```
 
-`expanded-lexical-v1` 只在内部 Service 和离线评估中使用；公开
+`expanded-lexical-v1` 同时是在线问答的降级检索分支；公开
 `GET /api/v1/search/evidence` 仍固定为 `lexical-baseline-v1`。
 
 前端：

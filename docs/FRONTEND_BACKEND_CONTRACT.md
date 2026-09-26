@@ -3,7 +3,7 @@
 > 项目：Poem RAG  
 > 文档版本：v0.4  
 > 创建日期：2026-09-19  
-> 最后更新：2026-09-20  
+> 最后更新：2026-09-24
 > 文档状态：前后端目标接口的唯一事实源  
 > 适用范围：Vue 3 前端、FastAPI 后端、诗词领域模型、API 响应和功能增量开发
 
@@ -1409,10 +1409,10 @@ GET /api/v1/search/evidence?q=明月&limit=10&granularity=line&author_id=12
 再从 Qdrant 召回候选，最后回查 MySQL 校验作品发布状态、当前版本、chunk 状态、
 注释可见性和请求过滤条件。
 
-内部还实现了 `hybrid-rrf-v1` Service：顺序调用词法与 Dense 分支，按
-`1 / (60 + rank)` 融合排名，以 `chunk_id` 去重并归一化输出分数。两条内部策略
-当前只供 Service 测试和离线评估脚本使用，尚未切换公开 HTTP，因此本节接口契约
-仍以 `lexical-baseline-v1` 为准。
+内部还实现了 `hybrid-rrf-v1` Service：顺序调用 `expanded-lexical-v1` 词法分支与
+Dense 分支，按 `1 / (60 + rank)` 融合排名，以 `chunk_id` 去重并归一化输出分数。
+它已作为在线问答的检索栈使用，但公开 HTTP 检索契约没有变化：本节接口仍以
+`lexical-baseline-v1` 为准，且不暴露 Dense、Hybrid 或 Rerank 参数。
 
 内部还实现了 `expanded-lexical-v1` Service：先由 `LexiconQueryRewriter` 识别
 月亮、思乡、作者和朝代等有限领域概念，再将原查询与改写变体分别召回，使用
@@ -1423,20 +1423,74 @@ Service、测试和离线评估使用，不改变公开接口契约。
 固定评估集 `lexical-baseline-seed-v1` 已在真实 MySQL 执行 Top-5 基线：27 条样本中
 24 条通过，Recall@5 和 MRR 均为 `0.869565`，拒答准确率为 `1.0`。精确引用、短语、
 标题、作者、朝代和多证据分类全部通过；3 条自然语言查询全部失败。内部 Dense Service
-和 Hybrid RRF 已经可以接入同一评估集；Qdrant 适配器真实烟测已通过，Qwen 联调尚未完成。
+和 Hybrid RRF 已接入同一评估框架；真实 Qdrant 适配器和 Qwen Embedding 联调均已完成。
 `expanded-lexical-v1` 在同一 6 首种子语料和 27 条样本上达到 `27/27`、Recall@5
 `1.0`、MRR `0.978261`，平均延迟从 `2.542 ms` 增至 `3.769 ms`；该结果不能外推为
 开放语料或生产准确率。
 后续 Sparse、Rerank 和公开策略切换必须使用同一组金标准证据与已有基线对比，
 不能只报告提升项。
 
-2026-09-20 起评估默认数据集为 `lexical-baseline-seed-v2`（31 条），把无答案样本
-拆成跨域、领域内缺实体和领域内缺属性三类，并补充拒答精确率、召回率和 F1。
-`lexical-baseline-seed-v1` 文件保持冻结，历史报告仍可复现。该变更只影响离线评估
-脚本和内部指标，不改变本文件第 8 至 10 节的公开接口、错误码和 SSE 事件结构。
-`min_score` 的实测结论是只能防跨域漂移，不能承担可答性判定；公开 HTTP 检索策略
-仍为 `lexical-baseline-v1`，在线问答仍为 `expanded-lexical-v1`。在线问答已在
-`assess` 节点接入 LLM 结构化可答性判定；判定异常 fail-open，引用校验继续兜底。
+2026-09-20 起评估默认数据集为 `open-corpus-100-v1`（50 条），与 100 首真实语料
+快照绑定，覆盖精确引用、短语、标题、作者、朝代、多证据、自然语言、长文本和三类
+无答案。`lexical-baseline-seed-v1` 与 `lexical-baseline-seed-v2` 文件保持冻结，
+历史报告仍可通过 `--dataset` 复现。
+
+扩库到 1000 首后，旧 50 条集只作为分布冲击回归。2026-09-23 新建独立
+`retrieval-holdout-1000-v1`，Top-5 同集结果为：
+
+| 策略 | 通过 | Recall@5 | MRR | 无答案准确率 | 平均延迟 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `expanded-lexical-v1` | 48/50 | 0.952381 | 0.880952 | 1.0 | 399.557 ms | 1082.055 ms |
+| `hybrid-rrf-v1` | 40/50 | 0.869048 | 0.735714 | 0.5 | 273.208 ms | 431.425 ms |
+| `expanded-lexical-v1 + Dense + RRF` | 50/50 | 1.000000 | 0.887698 | 1.0 | 1006.362 ms | 2944.838 ms |
+
+在线问答随后切换到 `expanded-lexical-v1 + Dense + RRF`，Dense 分支使用
+`CHAT_DENSE_MIN_SCORE=0.60`。该阈值按粒度生效：`poem` 和 `line` 主文本允许 `0.02`
+容差（有效下限 `0.58`），`note` 仍严格使用调用方阈值，避免短文本向量被长注释
+向量挤出候选。`min_score` 仍只负责过滤跨域漂移，不承担可答性判定；在线 `assess`
+节点继续用 LLM 结构化判定，异常时 fail-open，引用校验兜底。Qdrant 或 DashScope Key
+缺失、Embedding/Qdrant 构造失败时，检索栈降级到 `expanded-lexical-v1`；运行期仅对
+`EMBEDDING_PROVIDER_ERROR` 和 `VECTOR_STORE_ERROR` 降级，其他异常继续抛出。
+公开 HTTP 检索策略仍为 `lexical-baseline-v1`。
+
+第二批独立 holdout `retrieval-holdout-1000-v2`（46 条，38 有答案 + 8 无答案）
+Top-5 同集结果：
+
+| 策略 | 通过 | Recall@5 | MRR | 无答案准确率 | 平均延迟 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `expanded-lexical-v1` | 38/46 | 0.815789 | 0.763158 | 0.875 | 411.059 ms | 1222.852 ms |
+| `hybrid-rrf-v1` | 36/46 | 0.855263 | 0.761842 | 0.500 | 301.742 ms | 572.421 ms |
+| `expanded-lexical-v1 + Dense + RRF` | 45/46 | 1.000000 | 0.907895 | 0.875 | 874.575 ms | 2770.212 ms |
+
+唯一检索失败 `no-answer-v2-xinqiji-office-08` 属于领域内缺属性样本，检索层召回相关
+诗句是正确行为，拒答由在线 `assess` 负责，未增加样本特例。同批生成 holdout
+`generation-holdout-1000-v2`（26 条，16 有答案 + 10 拒答）为 `26/26`、拒答 `10/10`、
+引用 P/R 均为 `1.0`，平均延迟 `4699.931 ms`、P95 `8422.616 ms`。两批 v2 样本都已
+参与失败诊断，只能作为回归集。
+
+完成在线 RAG 可观测性和查询变体上限后，同一 v2 回归集再次运行在线组合：检索
+45/46、Recall@5 `1.0`、MRR `0.907895`、无答案准确率 `0.875`，平均延迟
+`738.465 ms`、P95 `1970.978 ms`；生成 `26/26`、拒答 `10/10`、引用 P/R
+`1.0 / 1.0`，平均延迟 `4043.728 ms`、P95 `6566.794 ms`。本轮延迟变化只有单次
+复跑，不能严格归因于变体裁剪。报告见
+`data/eval/reports/retrieval_holdout_1000_v2_after_observability.json` 和
+`data/eval/reports/generation_holdout_1000_v2_after_observability.json`。
+
+在线检索随后完成资源复用与批量 Embedding：Qwen Embedding Provider 和 Qdrant Client
+提升为应用进程级共享实例，一次查询的所有变体合并为一次 Embedding 请求，跨变体的
+向量 ID 回查合并为一次 MySQL 查询。该优化只改变后端内部调用方式，公开
+`GET /api/v1/search/evidence` 的请求参数、响应字段和排序语义不变，在线 SSE 的
+`retrieval` 事件结构和引用编号规则也不变。同一 v2 回归集下在线组合仍为 45/46、
+MRR `0.907895`，平均延迟从 `874.575 ms` 降至 `483.760 ms`、P95 从 `2770.212 ms`
+降至 `1239.925 ms`。离线 `evaluate_retrieval.py` 的 `--min-score` 默认改为读取
+线上 `CHAT_DENSE_MIN_SCORE`，使报告口径与在线一致；显式传参仍可覆盖。
+
+生成层独立 holdout 为 `generation-holdout-1000-v1`，共 28 条。加权 RRF v2 后，
+该数据集当前真实 `deepseek-chat` 结果为 `28/28`、拒答 `7/7`、有答案准确率 `1.0`、拒答
+P/R/F1 `1.0`、引用精确率 `0.971429`、引用召回率 `1.0`，平均延迟 `5687.155 ms`、
+P95 `9481.742 ms`；多证据问题平均 `8817.328 ms`、P95 `9940.227 ms`。该批样本
+已经参与失败诊断和修复，只能作为回归集；旧 12 条种子集仍可通过 `--dataset`
+复现。该结果不代表生产泛化。
 
 ---
 
@@ -1467,7 +1521,7 @@ event: meta
 data: {"message_id":301,"conversation_id":88}
 
 event: retrieval
-data: {"candidate_count":20,"selected_count":5,"strategy":"expanded-lexical-v1"}
+data: {"candidate_count":20,"selected_count":5,"strategy":"hybrid-rrf-v1"}
 
 event: delta
 data: {"text":"从检索到的诗句看，"}
@@ -1499,8 +1553,10 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
 8. `error` 后不再发送 `delta`，助手消息保存为 `failed` 并记录 `error_code`。
 9. 客户端断开时，后端停止无用生成，并尽力把助手消息保存为 `cancelled`。
 10. SSE 不套普通 JSON Envelope，但错误事件中的 `code` 与普通 API 错误码保持一致。
-11. 当前在线检索固定使用 `expanded-lexical-v1`，不读取公开 Dense、Hybrid 或 Rerank
-    参数。
+11. 当前在线检索默认使用 `expanded-lexical-v1 + Dense + RRF`，事件中的
+    `strategy` 通常为 `hybrid-rrf-v1`；基础设施故障降级时可能为
+    `expanded-lexical-v1`。客户端不得依赖固定策略名，也不读取公开 Dense、Hybrid
+    或 Rerank 参数。
 12. 检索结果为空时直接流式返回稳定拒答，不调用生成模型，也不创建引用记录。
 13. 生成提示要求模型用 `[1]`、`[2]` 形式标注实际使用的证据；系统解析这些标记，只把
     被引用的证据写入 `citation` 事件和 `message_citations`。
@@ -1514,13 +1570,16 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
     不创建引用记录；该分支仍经过 `validate`，但不要求引用。
 18. `assess` 的超时、网络错误、非法 JSON 或 Schema 校验失败采用 fail-open：继续
     调用生成模型，并由引用校验兜底。该策略不改变 SSE 事件顺序。
+19. `rewrite`、`retrieval`、`assess`、`generation` 和 `validate` 会生成内部
+    `timing` 事件，由 `ChatService` 聚合到服务端请求日志；该事件不转换为公开 SSE。
+    `done` 仍严格保持 `{finish_reason, latency_ms}`，前端不得依赖阶段耗时字段。
 
-在线检索在 `expanded-lexical-v1` 外再包一层父级上下文补全：命中的作品如果没有任何
-诗词级 chunk 入选，则追加该作品当前版本的诗词级 chunk（最多 3 条），`match_types`
-标记为 `parent_context`，`score` 沿用该作品入选证据的最高分。追加项排在原有排序
-结果之后，因此引用 `rank` 仍然连续，`[1]` 到 `[n]` 的语义不变。该行为只影响
-`retrieval` 事件的 `selected_count` 和模型可见上下文，不改变请求参数、事件顺序、
-引用编号规则和 `citation` 事件结构。
+在线检索在底层 Hybrid 或降级词法结果之外再包一层父级上下文补全：命中的作品如果
+没有任何诗词级 chunk 入选，则追加该作品当前版本的诗词级 chunk（最多 3 条），
+`match_types` 标记为 `parent_context`，`score` 沿用该作品入选证据的最高分。追加项
+排在原有排序结果之后，因此引用 `rank` 仍然连续，`[1]` 到 `[n]` 的语义不变。该行为
+只影响 `retrieval` 事件的 `selected_count` 和模型可见上下文，不改变请求参数、事件
+顺序、引用编号规则和 `citation` 事件结构。
 
 ---
 
@@ -1753,6 +1812,8 @@ Authorization: Bearer <DEEPSEEK_API_KEY>
 | `DEEPSEEK_MAX_OUTPUT_TOKENS` | 单次回答最大输出 Token，默认 `1200`，上限 `8192` |
 | `CHAT_ASSESS_MAX_OUTPUT_TOKENS` | `assess` 可答性判定最大输出 Token，默认 `200`，上限 `1000` |
 | `CHAT_RETRIEVAL_LIMIT` | 在线问答注入的证据数，默认 `5`，上限 `20` |
+| `CHAT_QUERY_VARIANT_LIMIT` | 查询扩展最多执行的检索变体数，默认 `8`，范围 `1-20`；按权重裁剪并保留原查询 |
+| `CHAT_DENSE_MIN_SCORE` | 在线 Dense 分支的余弦相似度下限，默认 `0.60`，范围 `0.0` 到 `1.0`；`poem`/`line` 主文本允许 `0.02` 容差，`note` 无容差 |
 | `CHAT_HISTORY_LIMIT` | 注入的最近完成消息数，默认 `8`，上限 `50` |
 
 行为约束：
@@ -1763,8 +1824,9 @@ Authorization: Bearer <DEEPSEEK_API_KEY>
 3. 超时映射为 `MODEL_TIMEOUT`；空回答映射为 `CHAT_EMPTY_RESPONSE`；其他供应商错误
    映射为 `MODEL_PROVIDER_ERROR`。
 4. 模型响应错误只保存受控错误码；流式错误事件中的消息不包含上游完整响应体或密钥。
-5. 在线问答先经过 `expanded-lexical-v1` 检索，再由 `assess` 使用非流式 JSON 判定
-   证据能否回答核心事实，最后把证据构造为上下文并生成带引用回答。
+5. 在线问答先经过 `expanded-lexical-v1 + Dense + RRF` 检索，再由 `assess` 使用
+   非流式 JSON 判定证据能否回答核心事实，最后把证据构造为上下文并生成带引用回答。
+   Qdrant 或 Embedding 基础设施故障时，检索栈降级到 `expanded-lexical-v1`。
 6. 检索结果为空或 `assess` 判定不可答时使用固定拒答文案，不调用生成模型。
 7. `assess` 调用失败时 fail-open 继续生成，不能把判定失败误报成用户不可答；引用
    缺失或越界仍由生成后的校验报错。
@@ -1799,7 +1861,7 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 3. 空向量、索引无效、数量不符和维度不一致均抛出 Provider 错误。
 4. API Key 不得写入日志、`poem_index_runs.config_snapshot` 或错误报告。
 5. 当前已实现 chunks -> Qwen Embedding -> Qdrant upsert 的最小索引闭环，并回写 `vector_id`、模型和维度。
-6. 当前已实现 `dense-baseline-v1` 内部检索 Service，支持 Qdrant 查询、元数据过滤和 MySQL 可见性回查；公开 HTTP 尚未切换。
+6. 当前已实现 `dense-baseline-v1` 内部检索 Service，支持 Qdrant 查询、元数据过滤和 MySQL 可见性回查；它作为在线 Hybrid 的 Dense 分支使用，公开 HTTP 尚未暴露策略参数。
 7. 当前仍未实现旧向量清理、active index 切换和跨库对账；Qdrant 与 DashScope
    真实烟测均已通过。
 
@@ -1856,3 +1918,10 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 | 2026-09-20 | 新增生成层离线评估 CLI、固定数据集和报告 Schema | 不修改 HTTP API、SSE 事件或数据库表结构 | 新增 4 条单元测试通过；Ruff 和 mypy 通过；真实 DeepSeek 基线待执行 |
 | 2026-09-20 | 运行真实生成层基线，修复种子语料漂移、评估数据集事实口径和单变体改写未截断的问题 | 不修改 HTTP API、SSE 事件或数据库表结构 | `117 passed`、Ruff 通过；真实 `deepseek-chat` 生成评估从 `5/12` 提升到 `11/12` |
 | 2026-09-20 | 在线检索追加诗词级父级上下文 chunk（`parent_context`） | SSE 事件结构不变；`retrieval.selected_count` 可大于公开检索 `limit` | `117 passed`、Ruff 和相关模块 mypy 通过；真实生成评估 `12/12` |
+| 2026-09-20 | 生成层默认评估集切换为 28 条开放语料 holdout，旧 12 条种子集冻结 | 不修改 HTTP API、SSE 事件或在线检索策略；仅改变离线 CLI 默认数据集 | 数据集契约测试 `5 passed`、Ruff 通过；真实 `deepseek-chat` `24/28`、拒答 `7/7` |
+| 2026-09-20 | 修复开放语料生成评估的领域词典、多证据槽位和长文本父级上下文 | 不修改 HTTP API、SSE 事件和公开检索契约；仅调整内部查询改写、候选选择和上下文预算 | 定向测试 `40 passed`、Ruff 通过；真实 `deepseek-chat` `28/28`、拒答 `7/7`、引用 P/R `1.0` |
+| 2026-09-23 | 新增独立 1000 首检索与生成 holdout，并完成在线检索策略切换 | 不修改公开 HTTP 接口、SSE 事件或数据库表结构；`retrieval.strategy` 变为 `hybrid-rrf-v1`，基础设施故障时可降级为 `expanded-lexical-v1` | 后端全量 `151 passed, 3 warnings`、Ruff 通过；检索 49/50、生成 `26/28`；真实 Qdrant/Qwen/DeepSeek 联调 |
+| 2026-09-23 | 引入加权 RRF、显式标题完整作品槽位和白发夸张受控规则，完成 holdout 回归复跑 | 不修改公开 HTTP 接口、SSE 事件或数据库表结构；生成评估 CLI 默认数据集切换为 1000 首独立 holdout | 后端全量 `160 passed, 3 warnings`、Ruff 通过；检索 50/50、生成 `28/28`；多证据生成 P95 `9940.227 ms`，性能优化仍未完成 |
+| 2026-09-24 | 新建第二批独立 holdout v2，修复结构化主题候选、多标题完整作品槽位和粒度感知 Dense 阈值 | 不修改公开 HTTP 接口、SSE 事件或数据库表结构；`poem`/`line` 主文本允许 `0.02` 容差，`note` 仍严格使用 `CHAT_DENSE_MIN_SCORE` | 后端全量 `173 passed, 3 warnings`、Ruff 通过；检索 45/46、生成 `26/26`；真实 Qdrant/Qwen/DeepSeek 联调 |
+| 2026-09-24 | 新增在线 RAG 阶段计时、请求级日志和 `CHAT_QUERY_VARIANT_LIMIT` | 不修改公开 HTTP 接口、SSE 事件或数据库表结构；`timing` 仅为内部事件，`done` 字段保持严格不变 | 后端全量 `176 passed, 3 warnings`、Ruff 通过；v2 检索 45/46、生成 `26/26`；真实 Qdrant/Qwen/DeepSeek 联调 |
+| 2026-09-24 | 在线检索完成资源复用与批量 Embedding，离线检索评估默认阈值口径对齐线上 | 不修改公开 HTTP、SSE 或数据库契约；Embedding Provider 与 Qdrant Client 进程级共享，检索仅内部批量化；`evaluate_retrieval.py --min-score` 默认读取 `CHAT_DENSE_MIN_SCORE` | 后端全量测试与 Ruff 通过；v2 检索 45/46、MRR `0.907895`，平均延迟 `483.760 ms`、P95 `1239.925 ms`；真实 Qdrant/Qwen/DeepSeek 联调 |

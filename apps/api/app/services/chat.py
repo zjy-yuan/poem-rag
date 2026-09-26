@@ -5,14 +5,23 @@ import logging
 import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, Protocol, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.graphs.rag import CitationDraft, RagChatGraph
 from app.ai.providers.chat import ChatMessage, ChatModelError, ChatModelPort, ChatRole
+from app.ai.providers.embedding import EmbeddingProvider
+from app.ai.providers.qdrant import VectorStoreError, create_qdrant_vector_store
+from app.ai.providers.qwen_embedding import (
+    EmbeddingProviderError,
+    create_qwen_embedding_provider,
+)
+from app.ai.providers.vector_store import VectorStorePort
 from app.core.config import Settings
 from app.core.errors import AppError, ErrorCode
+from app.core.request_context import get_request_id
+from app.models.chunk import ChunkGranularity
 from app.models.conversation import Conversation
 from app.models.message import (
     Message,
@@ -31,23 +40,182 @@ from app.schemas.chat import (
     MessageCitationRead,
     MessageRead,
 )
+from app.services.dense_retrieval import DenseRetrievalService
 from app.services.evidence_context import PoemContextRetrievalService
-from app.services.query_expansion import ExpandedRetrievalService, LexiconQueryRewriter
-from app.services.retrieval import RetrievalService
+from app.services.hybrid_retrieval import HybridRetrievalService
+from app.services.query_expansion import (
+    ExpandedRetrievalService,
+    LexiconQueryRewriter,
+    RepositoryQueryEntityResolver,
+)
+from app.services.retrieval import (
+    EvidenceRetriever,
+    RetrievalSearchResult,
+    RetrievalService,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def build_chat_retrieval(session: AsyncSession) -> PoemContextRetrievalService:
+class AsyncCloseable(Protocol):
+    async def aclose(self) -> None: ...
+
+
+@dataclass(slots=True)
+class ChatRetrievalResources:
+    """Long-lived external clients shared by online chat requests."""
+
+    embedding_provider: EmbeddingProvider | None = None
+    vector_store: VectorStorePort | None = None
+
+    @property
+    def configured(self) -> bool:
+        return (
+            self.embedding_provider is not None
+            and self.vector_store is not None
+        )
+
+    async def aclose(self) -> None:
+        await _close_resources(
+            [
+                cast(AsyncCloseable, resource)
+                for resource in (
+                    self.vector_store,
+                    self.embedding_provider,
+                )
+                if resource is not None
+            ]
+        )
+
+
+@dataclass(slots=True)
+class ChatRetrievalStack:
+    service: PoemContextRetrievalService
+    resources: tuple[AsyncCloseable, ...] = ()
+
+    async def search_evidence(
+        self,
+        *,
+        query: str,
+        limit: int,
+        granularities: list[ChunkGranularity] | None = None,
+        author_id: int | None = None,
+        dynasty_id: int | None = None,
+    ) -> RetrievalSearchResult:
+        return await self.service.search_evidence(
+            query=query,
+            limit=limit,
+            granularities=granularities,
+            author_id=author_id,
+            dynasty_id=dynasty_id,
+        )
+
+    async def aclose(self) -> None:
+        await _close_resources(list(self.resources))
+
+
+async def build_chat_retrieval(
+    session: AsyncSession,
+    settings: Settings,
+    *,
+    resources: ChatRetrievalResources | None = None,
+) -> ChatRetrievalStack:
     """Compose the online retrieval stack used by the chat graph."""
 
-    return PoemContextRetrievalService(
-        ExpandedRetrievalService(
-            RetrievalService(session),
-            LexiconQueryRewriter(),
-        ),
-        ChunkRepository(session),
+    lexical: EvidenceRetriever = RetrievalService(session)
+    owned_resources: list[AsyncCloseable] = []
+    retrieval: EvidenceRetriever = lexical
+
+    embedding_provider = (
+        resources.embedding_provider
+        if resources is not None and resources.configured
+        else None
     )
+    vector_store = (
+        resources.vector_store
+        if resources is not None and resources.configured
+        else None
+    )
+    if embedding_provider is None or vector_store is None:
+        created_resources = await create_chat_retrieval_resources(settings)
+        if created_resources is not None:
+            embedding_provider = created_resources.embedding_provider
+            vector_store = created_resources.vector_store
+            owned_resources.extend(
+                cast(AsyncCloseable, resource)
+                for resource in (
+                    embedding_provider,
+                    vector_store,
+                )
+                if resource is not None
+            )
+
+    if embedding_provider is not None and vector_store is not None:
+        retrieval = HybridRetrievalService(
+            lexical,
+            DenseRetrievalService(
+                session,
+                embedding_provider=embedding_provider,
+                vector_store=vector_store,
+                min_score=settings.chat_dense_min_score,
+            ),
+            fallback_on_dense_error=True,
+        )
+    retrieval = ExpandedRetrievalService(
+        retrieval,
+        LexiconQueryRewriter(),
+        strategy_name="expanded-hybrid-rrf-v1",
+        entity_resolver=RepositoryQueryEntityResolver(session),
+        max_variants=settings.chat_query_variant_limit,
+    )
+
+    return ChatRetrievalStack(
+        service=PoemContextRetrievalService(
+            retrieval,
+            ChunkRepository(session),
+        ),
+        resources=tuple(owned_resources),
+    )
+
+
+async def create_chat_retrieval_resources(
+    settings: Settings,
+) -> ChatRetrievalResources | None:
+    """Create shared retrieval clients, or return None when unconfigured."""
+
+    if not settings.qdrant_url or settings.dashscope_api_key is None:
+        return None
+
+    created: list[AsyncCloseable] = []
+    try:
+        embedding_provider = create_qwen_embedding_provider(settings)
+        created.append(embedding_provider)
+        vector_store = create_qdrant_vector_store(settings)
+        created.append(vector_store)
+    except (EmbeddingProviderError, VectorStoreError) as exc:
+        logger.warning(
+            "Dense retrieval configuration is unavailable; "
+            "falling back to expanded lexical retrieval (%s)",
+            type(exc).__name__,
+        )
+        await _close_resources(created)
+        return None
+
+    return ChatRetrievalResources(
+        embedding_provider=embedding_provider,
+        vector_store=vector_store,
+    )
+
+
+async def _close_resources(resources: list[AsyncCloseable]) -> None:
+    for resource in reversed(resources):
+        try:
+            await resource.aclose()
+        except Exception:
+            logger.warning(
+                "Failed to close chat retrieval resource",
+                exc_info=True,
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,9 +225,16 @@ class ChatStreamEvent:
 
 
 class ChatService:
-    def __init__(self, session: AsyncSession, settings: Settings) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        settings: Settings,
+        *,
+        retrieval_resources: ChatRetrievalResources | None = None,
+    ) -> None:
         self.session = session
         self.settings = settings
+        self.retrieval_resources = retrieval_resources
         self.conversations = ConversationRepository(session)
         self.messages = MessageRepository(session)
 
@@ -148,6 +323,7 @@ class ChatService:
         payload: ChatStreamRequest,
         provider: ChatModelPort | None,
     ) -> AsyncIterator[ChatStreamEvent]:
+        request_id = get_request_id()
         conversation = await self._require_conversation(
             user_id=user_id,
             conversation_id=conversation_id,
@@ -181,6 +357,7 @@ class ChatService:
             assistant_message=assistant_message,
             history=history,
             provider=provider,
+            request_id=request_id,
         )
 
     async def _stream_events(
@@ -191,12 +368,22 @@ class ChatService:
         assistant_message: Message,
         history: list[ChatMessage],
         provider: ChatModelPort | None,
+        request_id: str,
     ) -> AsyncIterator[ChatStreamEvent]:
         started_at = time.perf_counter()
         content_parts: list[str] = []
         final_answer = ""
         citations: list[CitationDraft] = []
         finish_reason = "stop"
+        status = "failed"
+        error_code: str | None = None
+        timings: dict[str, float] = {}
+        ttft_ms: int | None = None
+        candidate_count = 0
+        selected_count = 0
+        strategy = ""
+        assessment_status: str | None = None
+        assessment_reason_code: str | None = None
         try:
             yield ChatStreamEvent(
                 event="meta",
@@ -205,8 +392,13 @@ class ChatService:
                     "conversation_id": conversation.id,
                 },
             )
+            retrieval = await build_chat_retrieval(
+                self.session,
+                self.settings,
+                resources=self.retrieval_resources,
+            )
             graph = RagChatGraph(
-                retrieval=build_chat_retrieval(self.session),
+                retrieval=retrieval,
                 rewriter=LexiconQueryRewriter(),
                 provider=provider,
                 settings=self.settings,
@@ -217,17 +409,39 @@ class ChatService:
             ):
                 kind = event.get("kind")
                 if kind == "retrieval":
+                    candidate_count = int(event.get("candidate_count", 0))
+                    selected_count = int(event.get("selected_count", 0))
+                    strategy = str(event.get("strategy", ""))
                     yield ChatStreamEvent(
                         event="retrieval",
                         data={
-                            "candidate_count": int(event.get("candidate_count", 0)),
-                            "selected_count": int(event.get("selected_count", 0)),
-                            "strategy": str(event.get("strategy", "")),
+                            "candidate_count": candidate_count,
+                            "selected_count": selected_count,
+                            "strategy": strategy,
                         },
                     )
+                elif kind == "timing":
+                    stage = event.get("stage")
+                    duration_ms = event.get("duration_ms")
+                    if (
+                        isinstance(stage, str)
+                        and stage
+                        and isinstance(duration_ms, (int, float))
+                        and not isinstance(duration_ms, bool)
+                    ):
+                        timings[stage] = max(0.0, float(duration_ms))
+                elif kind == "assessment":
+                    raw_status = event.get("status")
+                    if isinstance(raw_status, str) and raw_status:
+                        assessment_status = raw_status
+                    raw_reason_code = event.get("reason_code")
+                    if isinstance(raw_reason_code, str) and raw_reason_code:
+                        assessment_reason_code = raw_reason_code
                 elif kind == "delta":
                     text = event.get("text")
                     if isinstance(text, str) and text:
+                        if ttft_ms is None:
+                            ttft_ms = _elapsed_ms(started_at)
                         content_parts.append(text)
                         yield ChatStreamEvent(event="delta", data={"text": text})
                 elif kind == "citation":
@@ -270,6 +484,7 @@ class ChatService:
             )
             await self.conversations.touch(conversation)
             await self.session.commit()
+            status = "completed"
             yield ChatStreamEvent(
                 event="done",
                 data={
@@ -278,6 +493,7 @@ class ChatService:
                 },
             )
         except asyncio.CancelledError:
+            status = "cancelled"
             await self._mark_cancelled(
                 assistant_message=assistant_message,
                 content="".join(content_parts),
@@ -285,6 +501,7 @@ class ChatService:
             )
             raise
         except GeneratorExit:
+            status = "cancelled"
             await self._mark_cancelled(
                 assistant_message=assistant_message,
                 content="".join(content_parts),
@@ -292,28 +509,34 @@ class ChatService:
             )
             raise
         except ChatModelError as exc:
+            status = "failed"
+            error_code = str(exc.code)
             await self._mark_failed(
                 assistant_message=assistant_message,
                 content="".join(content_parts),
                 started_at=started_at,
-                error_code=str(exc.code),
+                error_code=error_code,
             )
             yield ChatStreamEvent(
                 event="error",
-                data={"code": str(exc.code), "message": str(exc)},
+                data={"code": error_code, "message": str(exc)},
             )
         except AppError as exc:
+            status = "failed"
+            error_code = str(exc.code)
             await self._mark_failed(
                 assistant_message=assistant_message,
                 content="".join(content_parts),
                 started_at=started_at,
-                error_code=str(exc.code),
+                error_code=error_code,
             )
             yield ChatStreamEvent(
                 event="error",
-                data={"code": str(exc.code), "message": exc.message},
+                data={"code": error_code, "message": exc.message},
             )
         except Exception:
+            status = "failed"
+            error_code = ErrorCode.INTERNAL_ERROR.value
             logger.exception(
                 "Chat stream failed",
                 extra={"conversation_id": conversation.id, "message_id": assistant_message.id},
@@ -322,16 +545,19 @@ class ChatService:
                 assistant_message=assistant_message,
                 content="".join(content_parts),
                 started_at=started_at,
-                error_code=ErrorCode.INTERNAL_ERROR.value,
+                error_code=error_code,
             )
             yield ChatStreamEvent(
                 event="error",
                 data={
-                    "code": ErrorCode.INTERNAL_ERROR.value,
+                    "code": error_code,
                     "message": "问答服务暂时不可用",
                 },
             )
         finally:
+            total_ms = _elapsed_ms(started_at)
+            if "retrieval" in locals():
+                await retrieval.aclose()
             if provider is not None:
                 try:
                     await provider.aclose()
@@ -341,6 +567,66 @@ class ChatService:
                         exc_info=True,
                         extra={"conversation_id": conversation.id},
                     )
+            self._log_stream_metrics(
+                request_id=request_id,
+                conversation=conversation,
+                assistant_message=assistant_message,
+                status=status,
+                error_code=error_code,
+                finish_reason=finish_reason,
+                candidate_count=candidate_count,
+                selected_count=selected_count,
+                strategy=strategy,
+                assessment_status=assessment_status,
+                assessment_reason_code=assessment_reason_code,
+                timings=timings,
+                ttft_ms=ttft_ms,
+                total_ms=total_ms,
+            )
+
+    def _log_stream_metrics(
+        self,
+        *,
+        request_id: str,
+        conversation: Conversation,
+        assistant_message: Message,
+        status: str,
+        error_code: str | None,
+        finish_reason: str,
+        candidate_count: int,
+        selected_count: int,
+        strategy: str,
+        assessment_status: str | None,
+        assessment_reason_code: str | None,
+        timings: dict[str, float],
+        ttft_ms: int | None,
+        total_ms: int,
+    ) -> None:
+        log = logger.warning if status == "failed" else logger.info
+        log(
+            "Chat stream completed",
+            extra={
+                "request_id": request_id,
+                "conversation_id": conversation.id,
+                "assistant_message_id": assistant_message.id,
+                "status": status,
+                "error_code": error_code,
+                "finish_reason": finish_reason,
+                "candidate_count": candidate_count,
+                "selected_count": selected_count,
+                "strategy": strategy,
+                "assessment_status": assessment_status,
+                "assessment_reason_code": assessment_reason_code,
+                "query_variant_limit": self.settings.chat_query_variant_limit,
+                "rewrite_ms": timings.get("rewrite"),
+                "retrieval_ms": timings.get("retrieval"),
+                "assess_ms": timings.get("assess"),
+                "generation_ms": timings.get("generation"),
+                "validate_ms": timings.get("validate"),
+                "ttft_ms": ttft_ms,
+                "total_ms": total_ms,
+            },
+        )
 
     async def _load_history(self, conversation_id: int) -> list[ChatMessage]:
         if self.settings.chat_history_limit <= 0:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,11 +14,12 @@ from app.models.chunk import ChunkGranularity
 from app.repositories.chunks import ChunkRepository, ChunkSearchCandidate
 from app.schemas.retrieval import RetrievalEvidence
 from app.services.chunking import CHUNK_STRATEGY
-from app.services.retrieval import RetrievalSearchResult
+from app.services.retrieval import RetrievalRequest, RetrievalSearchResult
 
 DENSE_RETRIEVAL_STRATEGY = "dense-baseline-v1"
 _CANDIDATE_MULTIPLIER = 5
 _MAX_CANDIDATE_LIMIT = 200
+_PRIMARY_TEXT_SCORE_TOLERANCE = 0.02
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +33,9 @@ class DenseRetrievalService:
 
     ``min_score`` is a cosine-similarity floor: weaker candidates are dropped at
     the retrieval layer so callers can refuse instead of handing low-relevance
-    text to the generation model.
+    text to the generation model. Primary text chunks use a small tolerance
+    because short poem and line vectors can score lower than long note vectors
+    even when they contain the requested evidence.
     """
 
     def __init__(
@@ -59,31 +63,69 @@ class DenseRetrievalService:
         author_id: int | None = None,
         dynasty_id: int | None = None,
     ) -> RetrievalSearchResult:
-        normalized_query = query.strip()
-        if not normalized_query:
-            raise AppError(
-                status_code=422,
-                code=ErrorCode.VALIDATION_ERROR,
-                message="查询内容不能为空",
-            )
-
-        granularity_values = tuple(
-            granularity.value for granularity in granularities
-        ) if granularities else ()
-        try:
-            query_vector = await self.embedding_provider.embed_query(normalized_query)
-            if not query_vector:
-                raise EmbeddingProviderError("Embedding 返回空查询向量")
-            hits = await self.vector_store.search(
-                VectorSearchRequest(
-                    vector=query_vector,
-                    limit=_candidate_limit(limit),
-                    granularities=granularity_values,
+        results = await self.search_evidence_batch(
+            [
+                RetrievalRequest(
+                    query=query,
+                    limit=limit,
+                    granularities=tuple(granularities or ()),
                     author_id=author_id,
                     dynasty_id=dynasty_id,
-                    chunk_strategy=self.chunk_strategy,
                 )
+            ]
+        )
+        return results[0]
+
+    async def search_evidence_batch(
+        self,
+        requests: Sequence[RetrievalRequest],
+    ) -> list[RetrievalSearchResult]:
+        if not requests:
+            return []
+
+        normalized_queries: list[str] = []
+        for request in requests:
+            normalized_query = request.query.strip()
+            if not normalized_query:
+                raise AppError(
+                    status_code=422,
+                    code=ErrorCode.VALIDATION_ERROR,
+                    message="查询内容不能为空",
+                )
+            normalized_queries.append(normalized_query)
+
+        try:
+            query_vectors = await self.embedding_provider.embed_documents(
+                normalized_queries
             )
+            if len(query_vectors) != len(requests) or any(
+                not vector for vector in query_vectors
+            ):
+                raise EmbeddingProviderError(
+                    "Embedding 返回的查询向量数量或内容无效"
+                )
+
+            hits_by_request = []
+            for request, query_vector in zip(
+                requests,
+                query_vectors,
+                strict=True,
+            ):
+                granularity_values = tuple(
+                    granularity.value for granularity in request.granularities
+                )
+                hits_by_request.append(
+                    await self.vector_store.search(
+                        VectorSearchRequest(
+                            vector=query_vector,
+                            limit=_candidate_limit(request.limit),
+                            granularities=granularity_values,
+                            author_id=request.author_id,
+                            dynasty_id=request.dynasty_id,
+                            chunk_strategy=self.chunk_strategy,
+                        )
+                    )
+                )
         except EmbeddingProviderError as exc:
             raise AppError(
                 status_code=503,
@@ -97,40 +139,62 @@ class DenseRetrievalService:
                 message="向量存储操作失败",
             ) from exc
 
+        vector_ids = list(
+            dict.fromkeys(
+                hit.id
+                for hits in hits_by_request
+                for hit in hits
+            )
+        )
         candidates = await self.chunks.list_public_by_vector_ids(
-            vector_ids=[hit.id for hit in hits],
-            granularities=list(granularity_values) or None,
-            author_id=author_id,
-            dynasty_id=dynasty_id,
-            chunk_strategy=self.chunk_strategy,
+            vector_ids=vector_ids,
         )
         by_vector_id = {
             candidate.vector_id: candidate
             for candidate in candidates
             if candidate.vector_id is not None
         }
-        ranked: list[_RankedCandidate] = []
-        for hit in hits:
-            candidate = by_vector_id.get(hit.id)
-            if candidate is None:
-                continue
-            ranked.append(
-                _RankedCandidate(
-                    candidate=candidate,
-                    score=_clamp_similarity(hit.score),
+
+        results: list[RetrievalSearchResult] = []
+        for request, normalized_query, hits in zip(
+            requests,
+            normalized_queries,
+            hits_by_request,
+            strict=True,
+        ):
+            ranked: list[_RankedCandidate] = []
+            for hit in hits:
+                candidate = by_vector_id.get(hit.id)
+                if candidate is None or not _candidate_matches_request(
+                    candidate,
+                    request,
+                    chunk_strategy=self.chunk_strategy,
+                ):
+                    continue
+                ranked.append(
+                    _RankedCandidate(
+                        candidate=candidate,
+                        score=_clamp_similarity(hit.score),
+                    )
+                )
+
+            relevant = [
+                item
+                for item in ranked
+                if item.score >= _effective_min_score(item, self.min_score)
+            ]
+            results.append(
+                RetrievalSearchResult(
+                    items=[
+                        _serialize(item.candidate, item.score)
+                        for item in relevant[: request.limit]
+                    ],
+                    strategy=DENSE_RETRIEVAL_STRATEGY,
+                    normalized_query=normalized_query,
+                    candidate_count=len(relevant),
                 )
             )
-
-        relevant = [item for item in ranked if item.score >= self.min_score]
-        return RetrievalSearchResult(
-            items=[
-                _serialize(item.candidate, item.score)
-                for item in relevant[:limit]
-            ],
-            strategy=DENSE_RETRIEVAL_STRATEGY,
-            normalized_query=normalized_query,
-            candidate_count=len(relevant),
-        )
+        return results
 
 
 def _candidate_limit(limit: int) -> int:
@@ -139,6 +203,37 @@ def _candidate_limit(limit: int) -> int:
 
 def _clamp_similarity(score: float) -> float:
     return round(max(0.0, min(1.0, score)), 6)
+
+
+def _effective_min_score(
+    item: _RankedCandidate,
+    min_score: float,
+) -> float:
+    if item.candidate.granularity in (
+        ChunkGranularity.POEM.value,
+        ChunkGranularity.LINE.value,
+    ):
+        return max(0.0, min_score - _PRIMARY_TEXT_SCORE_TOLERANCE)
+    return min_score
+
+
+def _candidate_matches_request(
+    candidate: ChunkSearchCandidate,
+    request: RetrievalRequest,
+    *,
+    chunk_strategy: str,
+) -> bool:
+    if candidate.chunk_strategy != chunk_strategy:
+        return False
+    if request.granularities and candidate.granularity not in {
+        granularity.value for granularity in request.granularities
+    }:
+        return False
+    if request.author_id is not None and candidate.author_id != request.author_id:
+        return False
+    if request.dynasty_id is not None and candidate.dynasty_id != request.dynasty_id:
+        return False
+    return True
 
 
 def _serialize(

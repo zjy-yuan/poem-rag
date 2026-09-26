@@ -11,7 +11,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(APP_ROOT) not in sys.path:
     sys.path.insert(0, str(APP_ROOT))
 
-DEFAULT_DATASET = PROJECT_ROOT / "data" / "eval" / "retrieval_lexical_v2.json"
+DEFAULT_DATASET = (
+    PROJECT_ROOT / "data" / "eval" / "retrieval_open_corpus_v1.json"
+)
+DENSE_STRATEGIES = frozenset({"dense", "hybrid", "expanded-hybrid"})
 
 if TYPE_CHECKING:
     from app.schemas.evaluation import RetrievalEvaluationReport
@@ -22,7 +25,7 @@ async def run_evaluation(
     top_k: int,
     *,
     strategy: str,
-    min_score: float = 0.0,
+    min_score: float | None = None,
 ) -> RetrievalEvaluationReport:
     from app.ai.providers.qdrant import create_qdrant_vector_store
     from app.ai.providers.qwen_embedding import create_qwen_embedding_provider
@@ -38,11 +41,17 @@ async def run_evaluation(
     from app.services.query_expansion import (
         ExpandedRetrievalService,
         LexiconQueryRewriter,
+        RepositoryQueryEntityResolver,
     )
     from app.services.retrieval import RetrievalService
 
     dataset = load_evaluation_dataset(dataset_path)
     settings = get_settings()
+    effective_min_score = resolve_min_score(
+        strategy=strategy,
+        min_score=min_score,
+        configured_min_score=settings.chat_dense_min_score,
+    )
     engine = create_database_engine(settings)
     session_factory = create_session_factory(engine)
     vector_store = None
@@ -59,12 +68,32 @@ async def run_evaluation(
                     session,
                     embedding_provider=embedding_provider,
                     vector_store=vector_store,
-                    min_score=min_score,
+                    min_score=effective_min_score,
                 )
             elif strategy == "expanded":
                 retrieval = ExpandedRetrievalService(
                     RetrievalService(session),
                     LexiconQueryRewriter(),
+                    entity_resolver=RepositoryQueryEntityResolver(session),
+                    max_variants=settings.chat_query_variant_limit,
+                )
+            elif strategy == "expanded-hybrid":
+                embedding_provider = create_qwen_embedding_provider(settings)
+                vector_store = create_qdrant_vector_store(settings)
+                retrieval = ExpandedRetrievalService(
+                    HybridRetrievalService(
+                        RetrievalService(session),
+                        DenseRetrievalService(
+                            session,
+                            embedding_provider=embedding_provider,
+                            vector_store=vector_store,
+                            min_score=effective_min_score,
+                        ),
+                    ),
+                    LexiconQueryRewriter(),
+                    strategy_name="expanded-hybrid-rrf-v1",
+                    entity_resolver=RepositoryQueryEntityResolver(session),
+                    max_variants=settings.chat_query_variant_limit,
                 )
             else:
                 embedding_provider = create_qwen_embedding_provider(settings)
@@ -75,7 +104,7 @@ async def run_evaluation(
                         session,
                         embedding_provider=embedding_provider,
                         vector_store=vector_store,
-                        min_score=min_score,
+                        min_score=effective_min_score,
                     ),
                 )
             evaluator = RetrievalEvaluator(retrieval)
@@ -88,6 +117,17 @@ async def run_evaluation(
         await engine.dispose()
 
     return report
+
+
+def resolve_min_score(
+    *,
+    strategy: str,
+    min_score: float | None,
+    configured_min_score: float,
+) -> float:
+    if strategy not in DENSE_STRATEGIES:
+        return 0.0
+    return configured_min_score if min_score is None else min_score
 
 
 def main() -> None:
@@ -108,17 +148,18 @@ def main() -> None:
     )
     parser.add_argument(
         "--strategy",
-        choices=("lexical", "dense", "hybrid", "expanded"),
+        choices=("lexical", "dense", "hybrid", "expanded", "expanded-hybrid"),
         default="lexical",
         help="Retrieval strategy to evaluate. Default: lexical",
     )
     parser.add_argument(
         "--min-score",
         type=float,
-        default=0.0,
+        default=None,
         help=(
             "Dense 余弦相似度下限，低于该值的候选在检索层丢弃。"
-            "只对 dense 和 hybrid 生效，默认 0 表示不过滤"
+            "只对 dense、hybrid 和 expanded-hybrid 生效；"
+            "默认读取 CHAT_DENSE_MIN_SCORE"
         ),
     )
     parser.add_argument(
@@ -130,8 +171,15 @@ def main() -> None:
     args = parser.parse_args()
     if args.top_k < 1:
         parser.error("--top-k must be at least 1")
-    if not 0.0 <= args.min_score <= 1.0:
+    if args.min_score is not None and not 0.0 <= args.min_score <= 1.0:
         parser.error("--min-score must be between 0 and 1")
+    from app.core.config import get_settings
+
+    effective_min_score = resolve_min_score(
+        strategy=args.strategy,
+        min_score=args.min_score,
+        configured_min_score=get_settings().chat_dense_min_score,
+    )
     report = asyncio.run(
         run_evaluation(
             args.dataset,
@@ -142,7 +190,10 @@ def main() -> None:
     )
     from app.evaluation.retrieval import format_evaluation_report
 
-    print(f"min_score={args.min_score:g}")
+    if args.strategy in DENSE_STRATEGIES:
+        print(f"min_score={effective_min_score:g}")
+    else:
+        print("min_score=not-applicable")
     print(format_evaluation_report(report))
     if args.json_output is not None:
         args.json_output.parent.mkdir(parents=True, exist_ok=True)

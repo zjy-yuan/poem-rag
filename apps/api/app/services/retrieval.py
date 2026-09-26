@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,6 +33,16 @@ class RetrievalSearchResult:
     strategy: str
     normalized_query: str
     candidate_count: int
+    hard_filtered: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class RetrievalRequest:
+    query: str
+    limit: int
+    granularities: tuple[ChunkGranularity, ...] = ()
+    author_id: int | None = None
+    dynasty_id: int | None = None
 
 
 class EvidenceRetriever(Protocol):
@@ -46,6 +57,16 @@ class EvidenceRetriever(Protocol):
         author_id: int | None = None,
         dynasty_id: int | None = None,
     ) -> RetrievalSearchResult: ...
+
+
+@runtime_checkable
+class BatchEvidenceRetriever(Protocol):
+    """Optional retrieval capability for batching independent query branches."""
+
+    async def search_evidence_batch(
+        self,
+        requests: Sequence[RetrievalRequest],
+    ) -> list[RetrievalSearchResult]: ...
 
 
 class RetrievalService:
@@ -127,25 +148,32 @@ class RetrievalService:
             score = max(score, 0.7 + (0.25 * ratio))
             match_types.append(_MATCH_CHUNK_PHRASE)
 
-        if normalized_lookup_query and normalized_lookup_query in normalize_lookup(
-            candidate.title
-        ):
-            score = max(score, 0.6)
-            match_types.append(_MATCH_TITLE_PHRASE)
-        if (
-            normalized_lookup_query
-            and candidate.author_name
-            and normalized_lookup_query in normalize_lookup(candidate.author_name)
-        ):
-            score = max(score, 0.55)
-            match_types.append(_MATCH_AUTHOR_PHRASE)
-        if (
-            normalized_lookup_query
-            and candidate.dynasty_name
-            and normalized_lookup_query in normalize_lookup(candidate.dynasty_name)
-        ):
-            score = max(score, 0.5)
-            match_types.append(_MATCH_DYNASTY_PHRASE)
+        if normalized_lookup_query:
+            normalized_title = normalize_lookup(candidate.title)
+            if normalized_title == normalized_lookup_query:
+                score = max(score, 1.0)
+                match_types.append(_MATCH_TITLE_PHRASE)
+            elif normalized_lookup_query in normalized_title:
+                score = max(score, 0.8)
+                match_types.append(_MATCH_TITLE_PHRASE)
+
+            if candidate.author_name:
+                normalized_author = normalize_lookup(candidate.author_name)
+                if normalized_author == normalized_lookup_query:
+                    score = max(score, 0.95)
+                    match_types.append(_MATCH_AUTHOR_PHRASE)
+                elif normalized_lookup_query in normalized_author:
+                    score = max(score, 0.6)
+                    match_types.append(_MATCH_AUTHOR_PHRASE)
+
+            if candidate.dynasty_name:
+                normalized_dynasty = normalize_lookup(candidate.dynasty_name)
+                if normalized_dynasty == normalized_lookup_query:
+                    score = max(score, 0.9)
+                    match_types.append(_MATCH_DYNASTY_PHRASE)
+                elif normalized_lookup_query in normalized_dynasty:
+                    score = max(score, 0.55)
+                    match_types.append(_MATCH_DYNASTY_PHRASE)
 
         return round(min(score, 1.0), 6), match_types
 

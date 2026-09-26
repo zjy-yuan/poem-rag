@@ -79,6 +79,8 @@ class Settings(BaseSettings):
     deepseek_max_output_tokens: int = Field(default=1200, gt=0, le=8192)
     chat_assess_max_output_tokens: int = Field(default=200, gt=0, le=1000)
     chat_retrieval_limit: int = Field(default=5, ge=1, le=20)
+    chat_dense_min_score: float = Field(default=0.60, ge=0.0, le=1.0)
+    chat_query_variant_limit: int = Field(default=8, ge=1, le=20)
     chat_history_limit: int = Field(default=8, ge=0, le=50)
     dashscope_api_key: SecretStr | None = None
     dashscope_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"

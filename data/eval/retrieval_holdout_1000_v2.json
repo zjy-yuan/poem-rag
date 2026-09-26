@@ -1,0 +1,570 @@
+{
+  "version": "retrieval-holdout-1000-v2",
+  "description": "基于 chinese-gushiwen 1000 首开放语料的新一代未观察检索 holdout。作品正文与作者先经转换后语料核对；覆盖长诗尾部、标题与作者歧义、多证据、自然语言、结构化条件、跨域拒答、领域内缺实体和缺属性。该集创建后冻结，禁止用于样本级修复；调参后必须另建 v3 复核。",
+  "cases": [
+    {
+      "id": "exact-v2-chunwang-ruin-01",
+      "category": "exact_quote",
+      "question": "国破山河在，城春草木深。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春望",
+          "author_name": "杜甫",
+          "granularity": "line",
+          "text_contains": "国破山河在，城春草木深"
+        }
+      ]
+    },
+    {
+      "id": "exact-v2-changhen-wish-02",
+      "category": "exact_quote",
+      "question": "在天愿作比翼鸟，在地愿为连理枝。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "长恨歌",
+          "author_name": "白居易",
+          "granularity": "line",
+          "text_contains": "在天愿作比翼鸟，在地愿为连理枝"
+        }
+      ]
+    },
+    {
+      "id": "exact-v2-pipaxing-fate-03",
+      "category": "exact_quote",
+      "question": "同是天涯沦落人，相逢何必曾相识。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "琵琶行 / 琵琶引",
+          "author_name": "白居易",
+          "granularity": "line",
+          "text_contains": "同是天涯沦落人"
+        }
+      ]
+    },
+    {
+      "id": "exact-v2-tianmu-bow-04",
+      "category": "exact_quote",
+      "question": "安能摧眉折腰事权贵，使我不得开心颜！",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "梦游天姥吟留别 / 梦游天姥山别东鲁诸公",
+          "author_name": "李白",
+          "granularity": "line",
+          "text_contains": "安能摧眉折腰事权贵"
+        }
+      ]
+    },
+    {
+      "id": "exact-v2-shudao-gate-05",
+      "category": "exact_quote",
+      "question": "剑阁峥嵘而崔嵬，一夫当关，万夫莫开。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "蜀道难",
+          "author_name": "李白",
+          "granularity": "line",
+          "text_contains": "一夫当关，万夫莫开"
+        }
+      ]
+    },
+    {
+      "id": "exact-v2-maowu-hope-06",
+      "category": "exact_quote",
+      "question": "安得广厦千万间，大庇天下寒士俱欢颜。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "茅屋为秋风所破歌",
+          "author_name": "杜甫",
+          "granularity": "line",
+          "text_contains": "安得广厦千万间"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v2-spring-river-return-01",
+      "category": "phrase",
+      "question": "不知乘月几人归",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春江花月夜",
+          "author_name": "张若虚",
+          "granularity": "line",
+          "text_contains": "不知乘月几人归"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v2-red-cliff-rocks-02",
+      "category": "phrase",
+      "question": "乱石穿空，惊涛拍岸",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "念奴娇·赤壁怀古",
+          "author_name": "苏轼",
+          "granularity": "line",
+          "text_contains": "乱石穿空"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v2-shengsheng-search-03",
+      "category": "phrase",
+      "question": "寻寻觅觅，冷冷清清，凄凄惨惨戚戚",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "声声慢·寻寻觅觅",
+          "author_name": "李清照",
+          "granularity": "line",
+          "text_contains": "寻寻觅觅"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v2-qingyuan-search-04",
+      "category": "phrase",
+      "question": "众里寻他千百度",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "青玉案·元夕",
+          "author_name": "辛弃疾",
+          "granularity": "line",
+          "text_contains": "众里寻他千百度"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v2-yulinling-willow-05",
+      "category": "phrase",
+      "question": "杨柳岸，晓风残月",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "雨霖铃·寒蝉凄切",
+          "author_name": "柳永",
+          "granularity": "line",
+          "text_contains": "杨柳岸，晓风残月"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v2-lingding-loyalty-06",
+      "category": "phrase",
+      "question": "人生自古谁无死？留取丹心照汗青。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "过零丁洋",
+          "author_name": "文天祥",
+          "granularity": "line",
+          "text_contains": "留取丹心照汗青"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v2-guishui-old-horse-07",
+      "category": "phrase",
+      "question": "老骥伏枥，志在千里",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "龟虽寿",
+          "author_name": "曹操",
+          "granularity": "line",
+          "text_contains": "老骥伏枥"
+        }
+      ]
+    },
+    {
+      "id": "title-v2-chunwang-01",
+      "category": "title",
+      "question": "春望",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春望",
+          "author_name": "杜甫"
+        }
+      ]
+    },
+    {
+      "id": "title-v2-changhenge-02",
+      "category": "title",
+      "question": "长恨歌",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "长恨歌",
+          "author_name": "白居易"
+        }
+      ]
+    },
+    {
+      "id": "title-v2-niannujiao-03",
+      "category": "title",
+      "question": "念奴娇·赤壁怀古",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "念奴娇·赤壁怀古",
+          "author_name": "苏轼"
+        }
+      ]
+    },
+    {
+      "id": "title-v2-shengshengman-04",
+      "category": "title",
+      "question": "声声慢·寻寻觅觅",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "声声慢·寻寻觅觅",
+          "author_name": "李清照"
+        }
+      ]
+    },
+    {
+      "id": "author-v2-caocao-01",
+      "category": "author",
+      "question": "曹操",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "曹操"
+        }
+      ]
+    },
+    {
+      "id": "author-v2-baijuyi-02",
+      "category": "author",
+      "question": "白居易",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "白居易"
+        }
+      ]
+    },
+    {
+      "id": "author-v2-xinqiji-03",
+      "category": "author",
+      "question": "辛弃疾",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "辛弃疾"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-v2-han-01",
+      "category": "dynasty",
+      "question": "汉代诗歌",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "汉"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-v2-tang-02",
+      "category": "dynasty",
+      "question": "唐代诗歌",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "唐"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-v2-song-03",
+      "category": "dynasty",
+      "question": "宋代诗词",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "宋"
+        }
+      ]
+    },
+    {
+      "id": "multi-v2-changhen-yulin-01",
+      "category": "multi_evidence",
+      "question": "《长恨歌》的长生殿誓言和《雨霖铃》的杨柳残月分别怎样写离别",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "长恨歌",
+          "author_name": "白居易",
+          "text_contains": "在天愿作比翼鸟"
+        },
+        {
+          "poem_title": "雨霖铃·寒蝉凄切",
+          "author_name": "柳永",
+          "text_contains": "杨柳岸，晓风残月"
+        }
+      ]
+    },
+    {
+      "id": "multi-v2-chunwang-maowu-02",
+      "category": "multi_evidence",
+      "question": "《春望》的战乱景象和《茅屋为秋风所破歌》的寒士愿望",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春望",
+          "author_name": "杜甫",
+          "text_contains": "国破山河在"
+        },
+        {
+          "poem_title": "茅屋为秋风所破歌",
+          "author_name": "杜甫",
+          "text_contains": "安得广厦千万间"
+        }
+      ]
+    },
+    {
+      "id": "multi-v2-shengsheng-qingyuan-03",
+      "category": "multi_evidence",
+      "question": "《声声慢》的孤寂愁绪和《青玉案·元夕》的灯火寻觅",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "声声慢·寻寻觅觅",
+          "author_name": "李清照",
+          "text_contains": "寻寻觅觅"
+        },
+        {
+          "poem_title": "青玉案·元夕",
+          "author_name": "辛弃疾",
+          "text_contains": "蓦然回首"
+        }
+      ]
+    },
+    {
+      "id": "natural-v2-chunwang-war-01",
+      "category": "natural_language",
+      "question": "杜甫怎样在《春望》中写战乱中的长安与家书",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春望",
+          "author_name": "杜甫",
+          "text_contains": "烽火连三月，家书抵万金"
+        }
+      ]
+    },
+    {
+      "id": "natural-v2-changhen-love-02",
+      "category": "natural_language",
+      "question": "白居易在《长恨歌》结尾怎样写生死不渝的爱情",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "长恨歌",
+          "author_name": "白居易",
+          "text_contains": "此恨绵绵无绝期"
+        }
+      ]
+    },
+    {
+      "id": "natural-v2-shengsheng-lonely-03",
+      "category": "natural_language",
+      "question": "李清照《声声慢·寻寻觅觅》如何写孤独与愁绪",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "声声慢·寻寻觅觅",
+          "author_name": "李清照",
+          "text_contains": "怎一个愁字了得"
+        }
+      ]
+    },
+    {
+      "id": "natural-v2-qingyuan-search-04",
+      "category": "natural_language",
+      "question": "辛弃疾《青玉案·元夕》中反复寻找意中人的词句",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "青玉案·元夕",
+          "author_name": "辛弃疾",
+          "text_contains": "那人却在，灯火阑珊处"
+        }
+      ]
+    },
+    {
+      "id": "natural-v2-guishui-aging-05",
+      "category": "natural_language",
+      "question": "曹操《龟虽寿》怎样表达年老仍有雄心",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "龟虽寿",
+          "author_name": "曹操",
+          "text_contains": "烈士暮年，壮心不已"
+        }
+      ]
+    },
+    {
+      "id": "long-v2-changhen-tail-01",
+      "category": "long_form",
+      "question": "《长恨歌》最后两句怎样写遗恨",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "长恨歌",
+          "author_name": "白居易",
+          "text_contains": "天长地久有时尽，此恨绵绵无绝期"
+        }
+      ]
+    },
+    {
+      "id": "long-v2-pipaxing-tail-02",
+      "category": "long_form",
+      "question": "《琵琶行》结尾怎样写听众再次落泪",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "琵琶行 / 琵琶引",
+          "author_name": "白居易",
+          "text_contains": "座中泣下谁最多"
+        }
+      ]
+    },
+    {
+      "id": "long-v2-tianmu-tail-03",
+      "category": "long_form",
+      "question": "《梦游天姥吟留别》结尾怎样表现不向权贵低头",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "梦游天姥吟留别 / 梦游天姥山别东鲁诸公",
+          "author_name": "李白",
+          "text_contains": "安能摧眉折腰事权贵"
+        }
+      ]
+    },
+    {
+      "id": "long-v2-shudao-tail-04",
+      "category": "long_form",
+      "question": "《蜀道难》中描写剑阁险要和守关的句子",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "蜀道难",
+          "author_name": "李白",
+          "text_contains": "一夫当关，万夫莫开"
+        }
+      ]
+    },
+    {
+      "id": "long-v2-maowu-tail-05",
+      "category": "long_form",
+      "question": "《茅屋为秋风所破歌》结尾怎样表达对天下寒士的祝愿",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "茅屋为秋风所破歌",
+          "author_name": "杜甫",
+          "text_contains": "安得广厦千万间"
+        }
+      ]
+    },
+    {
+      "id": "structured-v2-baijuyi-tang-long-01",
+      "category": "structured_filter",
+      "question": "唐代白居易写爱情悲剧的长诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "长恨歌",
+          "author_name": "白居易",
+          "dynasty_name": "唐",
+          "text_contains": "此恨绵绵无绝期"
+        }
+      ]
+    },
+    {
+      "id": "structured-v2-song-ci-sorrow-02",
+      "category": "structured_filter",
+      "question": "宋代李清照写孤独愁绪的词",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "声声慢·寻寻觅觅",
+          "author_name": "李清照",
+          "dynasty_name": "宋",
+          "text_contains": "怎一个愁字了得"
+        }
+      ]
+    },
+    {
+      "id": "no-answer-v2-kubernetes-01",
+      "category": "no_answer_cross_domain",
+      "question": "Kubernetes 的 Pod 调度器如何选择节点",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v2-graphql-02",
+      "category": "no_answer_cross_domain",
+      "question": "GraphQL 和 REST 的查询方式有什么区别",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v2-react-hooks-03",
+      "category": "no_answer_cross_domain",
+      "question": "React Hooks 的 useEffect 依赖数组有什么作用",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v2-tidu-nancheng-entity-04",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "崔护《题都城南庄》的译文是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v2-xunyinzhe-entity-05",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "贾岛《寻隐者不遇》的赏析是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v2-chunwang-year-06",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "《春望》写于哪一年",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v2-baijuyi-birthplace-07",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "白居易的出生地在哪里",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v2-xinqiji-office-08",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "辛弃疾担任过哪些具体官职",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 
 import pytest
@@ -11,16 +12,45 @@ from app.evaluation.retrieval import (
 from app.models.chunk import ChunkGranularity
 from app.schemas.evaluation import (
     EvidenceSelector,
+    RetrievalEvaluationCase,
     RetrievalEvaluationDataset,
 )
 from app.schemas.retrieval import RetrievalEvidence
 from app.services.retrieval import RetrievalSearchResult
+from pydantic import ValidationError
 
 DATASET_PATH = (
     Path(__file__).resolve().parents[3]
     / "data"
     / "eval"
     / "retrieval_lexical_v2.json"
+)
+OPEN_CORPUS_DATASET_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "data"
+    / "eval"
+    / "retrieval_open_corpus_v1.json"
+)
+HOLDOUT_1000_DATASET_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "data"
+    / "eval"
+    / "retrieval_holdout_1000_v1.json"
+)
+HOLDOUT_1000_V2_DATASET_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "data"
+    / "eval"
+    / "retrieval_holdout_1000_v2.json"
+)
+HOLDOUT_1000_V3_DATASET_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "data"
+    / "eval"
+    / "retrieval_holdout_1000_v3.json"
+)
+EVALUATE_RETRIEVAL_SCRIPT_PATH = (
+    Path(__file__).resolve().parents[1] / "scripts" / "evaluate_retrieval.py"
 )
 
 
@@ -190,3 +220,257 @@ def test_v2_dataset_separates_answerability_categories() -> None:
         "no_answer_in_domain_missing_entity",
         "no_answer_in_domain_missing_attribute",
     } <= categories
+
+
+def test_open_corpus_dataset_has_expected_coverage() -> None:
+    dataset = load_evaluation_dataset(OPEN_CORPUS_DATASET_PATH)
+    answerable = [case for case in dataset.cases if case.expected == "evidence"]
+    unanswerable = [
+        case for case in dataset.cases if case.expected == "no_evidence"
+    ]
+
+    assert dataset.version == "open-corpus-100-v1"
+    assert len(dataset.cases) == 50
+    assert len(answerable) == 42
+    assert len(unanswerable) == 8
+    assert len({case.id for case in dataset.cases}) == len(dataset.cases)
+    assert len({case.question for case in dataset.cases}) == len(dataset.cases)
+
+    categories = {case.category for case in dataset.cases}
+    assert {
+        "exact_quote",
+        "phrase",
+        "title",
+        "author",
+        "dynasty",
+        "multi_evidence",
+        "natural_language",
+        "long_form",
+        "no_answer_cross_domain",
+        "no_answer_in_domain_missing_entity",
+        "no_answer_in_domain_missing_attribute",
+    } <= categories
+
+
+def test_holdout_1000_dataset_has_expected_coverage() -> None:
+    dataset = load_evaluation_dataset(HOLDOUT_1000_DATASET_PATH)
+    answerable = [case for case in dataset.cases if case.expected == "evidence"]
+    unanswerable = [
+        case for case in dataset.cases if case.expected == "no_evidence"
+    ]
+
+    assert dataset.version == "retrieval-holdout-1000-v1"
+    assert len(dataset.cases) == 50
+    assert len(answerable) == 42
+    assert len(unanswerable) == 8
+    assert len({case.id for case in dataset.cases}) == len(dataset.cases)
+    assert len({case.question for case in dataset.cases}) == len(dataset.cases)
+
+    categories = {case.category for case in dataset.cases}
+    assert {
+        "exact_quote",
+        "phrase",
+        "title",
+        "author",
+        "dynasty",
+        "multi_evidence",
+        "natural_language",
+        "long_form",
+        "no_answer_cross_domain",
+        "no_answer_in_domain_missing_entity",
+        "no_answer_in_domain_missing_attribute",
+    } <= categories
+
+
+def test_holdout_1000_v2_dataset_has_expected_coverage() -> None:
+    dataset = load_evaluation_dataset(HOLDOUT_1000_V2_DATASET_PATH)
+    previous_dataset = load_evaluation_dataset(HOLDOUT_1000_DATASET_PATH)
+    answerable = [case for case in dataset.cases if case.expected == "evidence"]
+    unanswerable = [
+        case for case in dataset.cases if case.expected == "no_evidence"
+    ]
+
+    assert dataset.version == "retrieval-holdout-1000-v2"
+    assert len(dataset.cases) == 46
+    assert len(answerable) == 38
+    assert len(unanswerable) == 8
+    assert len({case.id for case in dataset.cases}) == len(dataset.cases)
+    assert len({case.question for case in dataset.cases}) == len(dataset.cases)
+    assert {case.question for case in dataset.cases}.isdisjoint(
+        {case.question for case in previous_dataset.cases}
+    )
+
+    categories = {case.category for case in dataset.cases}
+    assert {
+        "exact_quote",
+        "phrase",
+        "title",
+        "author",
+        "dynasty",
+        "multi_evidence",
+        "natural_language",
+        "long_form",
+        "structured_filter",
+        "no_answer_cross_domain",
+        "no_answer_in_domain_missing_entity",
+        "no_answer_in_domain_missing_attribute",
+    } <= categories
+
+
+def test_holdout_1000_v2_gold_evidence_exists_in_converted_corpus(
+    converted_corpus_records: list[dict[str, object]],
+) -> None:
+    dataset = load_evaluation_dataset(HOLDOUT_1000_V2_DATASET_PATH)
+    records = converted_corpus_records
+
+    for case in dataset.cases:
+        for selector in case.gold_evidence:
+            matches = [
+                record
+                for record in records
+                if selector.poem_title is None
+                or record["title"] == selector.poem_title
+            ]
+            if selector.author_name is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if record["author_name"] == selector.author_name
+                ]
+            if selector.dynasty_name is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if record["dynasty_name"] == selector.dynasty_name
+                ]
+            if selector.text_contains is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if selector.text_contains in record["content"]
+                ]
+            assert matches, f"{case.id} 的金标准无法在当前转换后语料中定位"
+
+
+def test_holdout_1000_v3_dataset_has_expected_coverage() -> None:
+    dataset = load_evaluation_dataset(HOLDOUT_1000_V3_DATASET_PATH)
+    previous_datasets = [
+        load_evaluation_dataset(HOLDOUT_1000_DATASET_PATH),
+        load_evaluation_dataset(HOLDOUT_1000_V2_DATASET_PATH),
+    ]
+    answerable = [case for case in dataset.cases if case.expected == "evidence"]
+    unanswerable = [
+        case for case in dataset.cases if case.expected == "no_evidence"
+    ]
+
+    assert dataset.version == "retrieval-holdout-1000-v3"
+    assert len(dataset.cases) == 46
+    assert len(answerable) == 38
+    assert len(unanswerable) == 8
+    assert len({case.id for case in dataset.cases}) == len(dataset.cases)
+    assert len({case.question for case in dataset.cases}) == len(dataset.cases)
+    assert {case.question for case in dataset.cases}.isdisjoint(
+        {
+            case.question
+            for previous_dataset in previous_datasets
+            for case in previous_dataset.cases
+        }
+    )
+
+    categories = {case.category for case in dataset.cases}
+    assert {
+        "exact_quote",
+        "phrase",
+        "title",
+        "author",
+        "dynasty",
+        "multi_evidence",
+        "natural_language",
+        "long_form",
+        "structured_filter",
+        "no_answer_cross_domain",
+        "no_answer_in_domain_missing_entity",
+        "no_answer_in_domain_missing_attribute",
+    } <= categories
+
+
+def test_holdout_1000_v3_gold_evidence_exists_in_converted_corpus(
+    converted_corpus_records: list[dict[str, object]],
+) -> None:
+    dataset = load_evaluation_dataset(HOLDOUT_1000_V3_DATASET_PATH)
+    records = converted_corpus_records
+
+    for case in dataset.cases:
+        for selector in case.gold_evidence:
+            matches = [
+                record
+                for record in records
+                if selector.poem_title is None
+                or record["title"] == selector.poem_title
+            ]
+            if selector.author_name is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if record["author_name"] == selector.author_name
+                ]
+            if selector.dynasty_name is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if record["dynasty_name"] == selector.dynasty_name
+                ]
+            if selector.text_contains is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if selector.text_contains in record["content"]
+                ]
+            assert matches, f"{case.id} 的金标准无法在当前转换后语料中定位"
+
+
+def test_retrieval_dataset_rejects_duplicate_questions() -> None:
+    case = RetrievalEvaluationCase(
+        id="holdout-duplicate-01",
+        category="phrase",
+        question="明月",
+        expected="evidence",
+        gold_evidence=[EvidenceSelector(poem_title="静夜思")],
+    )
+
+    with pytest.raises(ValidationError, match="question 必须唯一"):
+        RetrievalEvaluationDataset(
+            version="duplicate-test-v1",
+            description="Duplicate questions must fail validation.",
+            cases=[
+                case,
+                case.model_copy(update={"id": "holdout-duplicate-02"}),
+            ],
+        )
+
+
+def test_retrieval_evaluation_uses_configured_dense_min_score() -> None:
+    spec = importlib.util.spec_from_file_location(
+        "evaluate_retrieval_script",
+        EVALUATE_RETRIEVAL_SCRIPT_PATH,
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module.resolve_min_score(
+        strategy="dense",
+        min_score=None,
+        configured_min_score=0.6,
+    ) == 0.6
+    assert module.resolve_min_score(
+        strategy="expanded-hybrid",
+        min_score=0.42,
+        configured_min_score=0.6,
+    ) == 0.42
+    assert module.resolve_min_score(
+        strategy="expanded",
+        min_score=None,
+        configured_min_score=0.6,
+    ) == 0.0

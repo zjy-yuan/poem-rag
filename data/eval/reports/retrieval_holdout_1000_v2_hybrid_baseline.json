@@ -1,0 +1,4129 @@
+{
+  "dataset_version": "retrieval-holdout-1000-v2",
+  "strategy": "hybrid-rrf-v1",
+  "top_k": 5,
+  "generated_at": "2026-09-23T14:44:56.342855Z",
+  "summary": {
+    "total_cases": 46,
+    "answerable_cases": 38,
+    "unanswerable_cases": 8,
+    "passed_cases": 36,
+    "pass_rate": 0.782609,
+    "recall_at_k": 0.855263,
+    "mrr": 0.761842,
+    "hit_rate_at_k": 0.868421,
+    "answerable_no_result_rate": 0.026316,
+    "unanswerable_accuracy": 0.5,
+    "refusal_precision": 0.8,
+    "refusal_recall": 0.5,
+    "refusal_f1": 0.615385,
+    "average_latency_ms": 301.742,
+    "p95_latency_ms": 572.421
+  },
+  "categories": {
+    "exact_quote": {
+      "total_cases": 6,
+      "answerable_cases": 6,
+      "unanswerable_cases": 0,
+      "passed_cases": 6,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 422.797,
+      "p95_latency_ms": 820.946
+    },
+    "phrase": {
+      "total_cases": 7,
+      "answerable_cases": 7,
+      "unanswerable_cases": 0,
+      "passed_cases": 7,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 304.238,
+      "p95_latency_ms": 539.557
+    },
+    "title": {
+      "total_cases": 4,
+      "answerable_cases": 4,
+      "unanswerable_cases": 0,
+      "passed_cases": 4,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 245.134,
+      "p95_latency_ms": 258.051
+    },
+    "author": {
+      "total_cases": 3,
+      "answerable_cases": 3,
+      "unanswerable_cases": 0,
+      "passed_cases": 3,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 552.195,
+      "p95_latency_ms": 1102.54
+    },
+    "dynasty": {
+      "total_cases": 3,
+      "answerable_cases": 3,
+      "unanswerable_cases": 0,
+      "passed_cases": 2,
+      "pass_rate": 0.666667,
+      "recall_at_k": 0.666667,
+      "mrr": 0.666667,
+      "hit_rate_at_k": 0.666667,
+      "answerable_no_result_rate": 0.333333,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 263.646,
+      "p95_latency_ms": 283.241
+    },
+    "multi_evidence": {
+      "total_cases": 3,
+      "answerable_cases": 3,
+      "unanswerable_cases": 0,
+      "passed_cases": 1,
+      "pass_rate": 0.333333,
+      "recall_at_k": 0.5,
+      "mrr": 0.416667,
+      "hit_rate_at_k": 0.666667,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 280.471,
+      "p95_latency_ms": 304.285
+    },
+    "natural_language": {
+      "total_cases": 5,
+      "answerable_cases": 5,
+      "unanswerable_cases": 0,
+      "passed_cases": 5,
+      "pass_rate": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 0.44,
+      "hit_rate_at_k": 1.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 259.577,
+      "p95_latency_ms": 292.562
+    },
+    "long_form": {
+      "total_cases": 5,
+      "answerable_cases": 5,
+      "unanswerable_cases": 0,
+      "passed_cases": 4,
+      "pass_rate": 0.8,
+      "recall_at_k": 0.8,
+      "mrr": 0.7,
+      "hit_rate_at_k": 0.8,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 287.81,
+      "p95_latency_ms": 458.666
+    },
+    "structured_filter": {
+      "total_cases": 2,
+      "answerable_cases": 2,
+      "unanswerable_cases": 0,
+      "passed_cases": 0,
+      "pass_rate": 0.0,
+      "recall_at_k": 0.0,
+      "mrr": 0.0,
+      "hit_rate_at_k": 0.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 211.764,
+      "p95_latency_ms": 214.009
+    },
+    "no_answer_cross_domain": {
+      "total_cases": 3,
+      "answerable_cases": 0,
+      "unanswerable_cases": 3,
+      "passed_cases": 3,
+      "pass_rate": 1.0,
+      "recall_at_k": null,
+      "mrr": null,
+      "hit_rate_at_k": 0.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 1.0,
+      "refusal_precision": 1.0,
+      "refusal_recall": 1.0,
+      "refusal_f1": 1.0,
+      "average_latency_ms": 249.461,
+      "p95_latency_ms": 278.976
+    },
+    "no_answer_in_domain_missing_entity": {
+      "total_cases": 2,
+      "answerable_cases": 0,
+      "unanswerable_cases": 2,
+      "passed_cases": 0,
+      "pass_rate": 0.0,
+      "recall_at_k": null,
+      "mrr": null,
+      "hit_rate_at_k": 0.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.0,
+      "refusal_precision": 0.0,
+      "refusal_recall": 0.0,
+      "refusal_f1": 0.0,
+      "average_latency_ms": 205.719,
+      "p95_latency_ms": 206.425
+    },
+    "no_answer_in_domain_missing_attribute": {
+      "total_cases": 3,
+      "answerable_cases": 0,
+      "unanswerable_cases": 3,
+      "passed_cases": 1,
+      "pass_rate": 0.333333,
+      "recall_at_k": null,
+      "mrr": null,
+      "hit_rate_at_k": 0.0,
+      "answerable_no_result_rate": 0.0,
+      "unanswerable_accuracy": 0.333333,
+      "refusal_precision": 1.0,
+      "refusal_recall": 0.333333,
+      "refusal_f1": 0.5,
+      "average_latency_ms": 207.981,
+      "p95_latency_ms": 228.481
+    }
+  },
+  "failure_case_ids": [
+    "dynasty-v2-han-01",
+    "multi-v2-changhen-yulin-01",
+    "multi-v2-shengsheng-qingyuan-03",
+    "long-v2-pipaxing-tail-02",
+    "structured-v2-baijuyi-tang-long-01",
+    "structured-v2-song-ci-sorrow-02",
+    "no-answer-v2-tidu-nancheng-entity-04",
+    "no-answer-v2-xunyinzhe-entity-05",
+    "no-answer-v2-chunwang-year-06",
+    "no-answer-v2-baijuyi-birthplace-07"
+  ],
+  "results": [
+    {
+      "case_id": "exact-v2-chunwang-ruin-01",
+      "category": "exact_quote",
+      "question": "国破山河在，城春草木深。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 572.421,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 161,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "国破山河在，城春草木深。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 160,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "国破山河在，城春草木深。\n感时花溅泪，恨别鸟惊心。\n烽火连三月，家书抵万金。\n白头搔更短，浑欲不胜簪。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 167,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "“国破山河在，城春草木深。”诗篇一开头描写了春望所见：山河依旧，可是国都已经沦陷，城池也在战火中残破不堪了，乱草丛生，林木荒芜。诗人记忆中昔日长安的春天是何等的繁华，鸟语花香，飞絮弥漫，烟柳明媚，游人迤逦，可是那种景象今日已经荡然无存了。一个“破”字使人怵目惊心，继而一个“深”字又令人满目凄然。诗人写今日景物，实为抒发人去物非的历史感，将感情寄寓于物，借助景物反托情感，为全诗创造了一片荒凉凄惨的气氛。“国破”和“城春”两个截然相反的意象，同时存在并形成强烈的反差。“城春”当指春天花草树木繁盛茂密，烟景明丽的季节，可是由于“国破”，国家衰败，国都沦陷而失去了春天的光彩，留下的只是颓垣残壁，只是“草木深”。“草木深”三字意味深沉，表示长安城里已不是市容整洁、井然有序，而是荒芜破败，人烟稀少，草木杂生。这里，诗人睹物伤感，表现了强烈的黍离之悲。",
+          "score": 0.968254,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 162,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "感时花溅泪，恨别鸟惊心。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2679,
+          "poem_id": 153,
+          "poem_version_id": 153,
+          "title": "凉州词二首·其一",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "黄河远上白云间，一片孤城万仞山。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-v2-changhen-wish-02",
+      "category": "exact_quote",
+      "question": "在天愿作比翼鸟，在地愿为连理枝。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 254.882,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 238,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 58,
+          "line_start": 66,
+          "line_end": 66,
+          "text": "在天愿作比翼鸟，在地愿为连理枝。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 179,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "poem",
+          "chunk_index": 7,
+          "line_start": 64,
+          "line_end": 67,
+          "text": "临别殷勤重寄词，词中有誓两心知。\n七月七日长生殿，夜半无人私语时。\n在天愿作比翼鸟，在地愿为连理枝。\n天长地久有时尽，此恨绵绵无绝期。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 12083,
+          "poem_id": 990,
+          "poem_version_id": 990,
+          "title": "我质本瑚琏，宗庙供频蘩。一朝婴祸难，失身",
+          "granularity": "line",
+          "chunk_index": 26,
+          "line_start": 27,
+          "line_end": 27,
+          "text": "鸳鸯会双飞，比目愿长并。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2372,
+          "poem_id": 125,
+          "poem_version_id": 125,
+          "title": "木兰花·拟古决绝词柬友",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "何如薄幸锦衣郎，比翼连枝当日愿。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 246,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "临别殷勤托方士，寄语君王表情思，语中誓言只有君王与我知。\n当年七月七日长生殿中，夜半无人，我们共起山盟海誓。\n在天愿为比翼双飞鸟，在地愿为并生连理枝。\n即使是天长地久，也总会有尽头，但这生死遗恨，却永远没有尽期。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-v2-pipaxing-fate-03",
+      "category": "exact_quote",
+      "question": "同是天涯沦落人，相逢何必曾相识。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 258.953,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 1325,
+          "poem_id": 73,
+          "poem_version_id": 73,
+          "title": "琵琶行 / 琵琶引",
+          "granularity": "line",
+          "chunk_index": 33,
+          "line_start": 35,
+          "line_end": 35,
+          "text": "同是天涯沦落人，相逢何必曾相识！",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1352,
+          "poem_id": 73,
+          "poem_version_id": 73,
+          "title": "琵琶行 / 琵琶引",
+          "granularity": "note",
+          "chunk_index": 15,
+          "line_start": null,
+          "line_end": null,
+          "text": "作者在被琵琶女的命运激起的情感波涛中坦露了自我形象。“我从去年辞帝京，谪居卧病浔阳城”的那个“我”，是作者自己。作者由于要求革除暴政、实行仁政而遭受打击，从长安贬到九江，心情很痛苦。当琵琶女第一次弹出哀怨的乐曲、表达心事的时候，就已经拨动了他的心弦，发出了深长的叹息声。当琵琶女自诉身世、讲到“夜深忽梦少年事，梦啼妆泪红阑干”的时候，就更激起他的情感的共鸣：“同是天涯沦落人，相逢何必曾相识”。同病相怜，同声相应，忍不住说出了自己的遭遇。",
+          "score": 0.491935,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 8028,
+          "poem_id": 609,
+          "poem_version_id": 609,
+          "title": "长安古意",
+          "granularity": "line",
+          "chunk_index": 7,
+          "line_start": 8,
+          "line_end": 8,
+          "text": "楼前相望不相知，陌上相逢讵相识。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 602,
+          "poem_id": 38,
+          "poem_version_id": 38,
+          "title": "无题·相见时难别亦难",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "相见时难别亦难，东风无力百花残。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1291,
+          "poem_id": 73,
+          "poem_version_id": 73,
+          "title": "琵琶行 / 琵琶引",
+          "granularity": "poem",
+          "chunk_index": 2,
+          "line_start": 28,
+          "line_end": 46,
+          "text": "今年欢笑复明年，秋月春风等闲度。\n弟走从军阿姨死，暮去朝来颜色故。\n门前冷落鞍马稀，老大嫁作商人妇。\n商人重利轻别离，前月浮梁买茶去。\n去来江口守空船，绕船月明江水寒。\n夜深忽梦少年事，梦啼妆泪红阑干。\n我闻琵琶已叹息，又闻此语重唧唧。\n同是天涯沦落人，相逢何必曾相识！\n我从去年辞帝京，谪居卧病浔阳城。\n浔阳地僻无音乐，终岁不闻丝竹声。\n住近湓江地低湿，黄芦苦竹绕宅生。\n其间旦暮闻何物？杜鹃啼血猿哀鸣。\n春江花朝秋月夜，往往取酒还独倾。\n岂无山歌与村笛？呕哑嘲哳难为听。\n今夜闻君琵琶语，如听仙乐耳暂明。\n莫辞更坐弹一曲，为君翻作《琵琶行》。\n感我此言良久立，却坐促弦弦转急。\n凄凄不似向前声，满座重闻皆掩泣。\n座中泣下谁最多？江州司马青衫湿。",
+          "score": 0.484127,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-v2-tianmu-bow-04",
+      "category": "exact_quote",
+      "question": "安能摧眉折腰事权贵，使我不得开心颜！",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 259.207,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 1830,
+          "poem_id": 99,
+          "poem_version_id": 99,
+          "title": "梦游天姥吟留别 / 梦游天姥山别东鲁诸公",
+          "granularity": "line",
+          "chunk_index": 21,
+          "line_start": 22,
+          "line_end": 22,
+          "text": "安能摧眉折腰事权贵，使我不得开心颜!",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1808,
+          "poem_id": 99,
+          "poem_version_id": 99,
+          "title": "梦游天姥吟留别 / 梦游天姥山别东鲁诸公",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 22,
+          "text": "海客谈瀛洲，烟涛微茫信难求；\n越人语天姥，云霞明灭或可睹。\n天姥连天向天横，势拔五岳掩赤城。\n天台四万八千丈，对此欲倒东南倾。(四万 一作：一万)\n我欲因之梦吴越，一夜飞度镜湖月。(度 通：渡)\n湖月照我影，送我至剡溪。\n谢公宿处今尚在，渌水荡漾清猿啼。\n脚著谢公屐，身登青云梯。\n半壁见海日，空中闻天鸡。\n千岩万转路不定，迷花倚石忽已暝。\n熊咆龙吟殷岩泉，栗深林兮惊层巅。\n云青青兮欲雨，水澹澹兮生烟。\n列缺霹雳，丘峦崩摧。\n洞天石扉，訇然中开。\n青冥浩荡不见底，日月照耀金银台。\n霓为衣兮风为马，云之君兮纷纷而来下。\n虎鼓瑟兮鸾回车，仙之人兮列如麻。\n忽魂悸以魄动，恍惊起而长嗟。\n惟觉时之枕席，失向来之烟霞。\n世间行乐亦如此，古来万事东流水。\n别君去兮何时还？且放白鹿青崖间，须行即骑访名山。\n安能摧眉折腰事权贵，使我不得开心颜!",
+          "score": 0.491935,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 6334,
+          "poem_id": 462,
+          "poem_version_id": 462,
+          "title": "行路难·其二",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "大道如青天，我独不得出。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1842,
+          "poem_id": 99,
+          "poem_version_id": 99,
+          "title": "梦游天姥吟留别 / 梦游天姥山别东鲁诸公",
+          "granularity": "note",
+          "chunk_index": 11,
+          "line_start": null,
+          "line_end": null,
+          "text": "仙境倏忽消失，梦境旋亦破灭，诗人终于在惊悸中返回现实。梦境破灭后，人，不是随心所欲地轻飘飘地在梦幻中翱翔了，而是沉甸甸地躺在枕席之上。“古来万事东流水”，其中包含着诗人对人生的几多失意和深沉的感慨。此时此刻诗人感到最能抚慰心灵的是“且放白鹿青崖间，须行即骑访名山”。徜徉山水的乐趣，才是最快意的，也就是在《春夜宴从弟桃花园序》中所说：“古人秉烛夜游，良有以也。”本来诗意到此似乎已尽，可是最后却愤愤然加添了两句“安能摧眉折腰事权贵，使我不得开心颜！”一吐长安三年的郁闷之气。天外飞来之笔，点亮了全诗的主题：对于名山仙境的向往，是出之于对权贵的抗争，它唱出封建社会中多少怀才不遇的人的心声。在等级森严的封建社会中，多少人屈身权贵，多少人埋没无闻！唐朝比之其他朝代是比较开明的，较为重视人才，但也只是比较而言。人才在当时仍然摆脱不了“臣妾气态间”的屈辱地位。“折腰”一词出之于东晋的陶渊明，他由于不愿忍辱而赋“归去来”。李白虽然受帝王优宠，也不过是个词臣，在宫廷中所受到的屈辱，大约可以从这两句诗中得到一些消息。封建君主把自己称“天子”，君临天下，把自己升高到至高无上的地位，却抹煞了一切人的尊严。李白在这里所表示的决绝态度，是向封建统治者所投过去的一瞥蔑视。在封建社会，敢于这样想、敢于这样说的人并不多。李白说了，也做了，这是他异乎常人的伟大之处。",
+          "score": 0.484127,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 4471,
+          "poem_id": 312,
+          "poem_version_id": 312,
+          "title": "行路难三首",
+          "granularity": "line",
+          "chunk_index": 6,
+          "line_start": 8,
+          "line_end": 8,
+          "text": "大道如青天，我独不得出。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-v2-shudao-gate-05",
+      "category": "exact_quote",
+      "question": "剑阁峥嵘而崔嵬，一夫当关，万夫莫开。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 820.946,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 944,
+          "poem_id": 64,
+          "poem_version_id": 64,
+          "title": "蜀道难",
+          "granularity": "line",
+          "chunk_index": 16,
+          "line_start": 17,
+          "line_end": 17,
+          "text": "剑阁峥嵘而崔嵬，一夫当关，万夫莫开。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 927,
+          "poem_id": 64,
+          "poem_version_id": 64,
+          "title": "蜀道难",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 21,
+          "text": "噫吁嚱，危乎高哉！蜀道之难，难于上青天！\n蚕丛及鱼凫，开国何茫然！\n尔来四万八千岁，不与秦塞通人烟。\n西当太白有鸟道，可以横绝峨眉巅。\n地崩山摧壮士死，然后天梯石栈相钩连。\n上有六龙回日之高标，下有冲波逆折之回川。\n黄鹤之飞尚不得过，猿猱欲度愁攀援。(攀援 一作：攀缘)\n青泥何盘盘，百步九折萦岩峦。\n扪参历井仰胁息，以手抚膺坐长叹。\n问君西游何时还？畏途巉岩不可攀。\n但见悲鸟号古木，雄飞雌从绕林间。\n又闻子规啼夜月，愁空山。\n蜀道之难,难于上青天，使人听此凋朱颜！\n连峰去天不盈尺，枯松倒挂倚绝壁。\n飞湍瀑流争喧豗，砯崖转石万壑雷。\n其险也如此，嗟尔远道之人胡为乎来哉！(也如此 一作：也若此)\n剑阁峥嵘而崔嵬，一夫当关，万夫莫开。\n所守或匪亲，化为狼与豺。\n朝避猛虎，夕避长蛇；磨牙吮血，杀人如麻。\n锦城虽云乐，不如早还家。\n蜀道之难,难于上青天，侧身西望长咨嗟！",
+          "score": 0.940465,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 928,
+          "poem_id": 64,
+          "poem_version_id": 64,
+          "title": "蜀道难",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "噫吁嚱，危乎高哉！蜀道之难，难于上青天！",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 201,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 21,
+          "line_start": 24,
+          "line_end": 24,
+          "text": "黄埃散漫风萧索，云栈萦纡登剑阁。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 950,
+          "poem_id": 64,
+          "poem_version_id": 64,
+          "title": "蜀道难",
+          "granularity": "note",
+          "chunk_index": 1,
+          "line_start": null,
+          "line_end": null,
+          "text": "飞湍（tuān）：飞奔而下的急流。喧豗（huī）：喧闹声，这里指急流和瀑布发出的巨大响声。砯（pīng）崖：水撞石之声。砯，水冲击石壁发出的响声，这里作动词用，冲击的意思。转，使滚动。 壑：山谷。\n嗟：感叹声。尔：你。胡为：为什么。来：指入蜀。\n剑阁：又名剑门关，在四川剑阁县北，是大、小剑山之间的一条栈道，长约三十余里。峥嵘、崔嵬，都是形容山势高大雄峻的样子。一夫：一人。当关：守关。莫开：不能打开。\n所守：指把守关口的人。或匪亲：倘若不是可信赖的人。匪，同“非”。\n朝：早上。吮：吸。\n锦城：成都古代以产棉闻名，朝廷曾经设官于此，专收棉织品，故称锦城或锦官城。今四川成都市。\n咨嗟：叹息。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "exact-v2-maowu-hope-06",
+      "category": "exact_quote",
+      "question": "安得广厦千万间，大庇天下寒士俱欢颜。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 370.374,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 2221,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "安得广厦千万间，大庇天下寒士俱欢颜，风雨不动安如山。呜呼！何时眼前突兀见此屋，吾庐独破受冻死亦足！(死亦足 一作：死意足）",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2230,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "note",
+          "chunk_index": 8,
+          "line_start": null,
+          "line_end": null,
+          "text": "“安得广厦千万间，大庇天下寒士俱欢颜，风雨不动安如山”，前后用七字句，中间用九字句，句句蝉联而下，而表现阔大境界和愉快情感的词儿如“广厦”、“千万间”、“大庇”、“天下”、“欢颜”、“安如山”等等，又声音宏亮，从而构成了铿锵有力的节奏和奔腾前进的气势，恰切地表现了诗人从“床头屋漏无干处”、“长夜沾湿何由彻”的痛苦生活体验中迸发出来的奔放的激情和火热的希望。这种奔放的激情和火热的希望，咏歌之不足，故嗟叹之，“呜呼！何时眼前突兀见此屋，吾庐独破受冻死亦足！”诗人的博大胸襟和崇高理想，至此表现得淋漓尽致。",
+          "score": 0.968254,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2217,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "八月秋高风怒号，卷我屋上三重茅。茅飞渡江洒江郊，高者挂罥长林梢，下者飘转沉塘坳。\n南村群童欺我老无力，忍能对面为盗贼，公然抱茅入竹去。唇焦口燥呼不得，归来倚杖自叹息。\n俄顷风定云墨色，秋天漠漠向昏黑。布衾多年冷似铁，娇儿恶卧踏里裂。床头屋漏无干处，雨脚如麻未断绝。自经丧乱少睡眠，长夜沾湿何由彻?\n安得广厦千万间，大庇天下寒士俱欢颜，风雨不动安如山。呜呼！何时眼前突兀见此屋，吾庐独破受冻死亦足！(死亦足 一作：死意足）",
+          "score": 0.961166,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 4797,
+          "poem_id": 334,
+          "poem_version_id": 334,
+          "title": "南陵别儿童入京",
+          "granularity": "line",
+          "chunk_index": 5,
+          "line_start": 6,
+          "line_end": 6,
+          "text": "仰天大笑出门去，我辈岂是蓬蒿人。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2227,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "note",
+          "chunk_index": 5,
+          "line_start": null,
+          "line_end": null,
+          "text": "第二节五句。这是前一节的发展，也是对前一节的补充。前节写“洒江郊”的茅草无法收回。还有落在平地上可以收回的，然而却被“南村群童”抱跑了。“欺我老无力”五字宜着眼。如果诗人不是“老无力”，而是年当壮健有气力，自然不会受这样的欺侮。“忍能对面为盗贼”，意谓：竟然忍心在我的眼前做盗贼！这不过是表现了诗人因“老无力”而受欺侮的愤懑心情而已，决不是真的给“群童”加上“盗贼”的罪名，要告到官府里去办罪。所以，“唇焦口燥呼不得”，也就无可奈何了。用诗人《又呈吴郎》一诗里的话说，这正是“不为困穷宁有此”。诗人如果不是十分困穷，就不会对大风刮走茅草那么心急如焚；“群童”如果不是十分困穷，也不会冒着狂风抱那些并不值钱的茅草。这一切，都是结尾的伏线。“安得广厦千万间，大庇天下寒士俱欢颜”的崇高愿望，正是从“四海困穷”的现实基础上产生出来的。",
+          "score": 0.476562,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-v2-spring-river-return-01",
+      "category": "phrase",
+      "question": "不知乘月几人归",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 3,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 421.516,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 374,
+          "poem_id": 22,
+          "poem_version_id": 22,
+          "title": "春江花月夜",
+          "granularity": "line",
+          "chunk_index": 17,
+          "line_start": 18,
+          "line_end": 18,
+          "text": "不知乘月几人归，落月摇情满江树。(落月 一作：落花)",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 356,
+          "poem_id": 22,
+          "poem_version_id": 22,
+          "title": "春江花月夜",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 18,
+          "text": "春江潮水连海平，海上明月共潮生。\n滟滟随波千万里，何处春江无月明！\n江流宛转绕芳甸，月照花林皆似霰。\n空里流霜不觉飞，汀上白沙看不见。\n江天一色无纤尘，皎皎空中孤月轮。\n江畔何人初见月？江月何年初照人？\n人生代代无穷已，江月年年只相似。(只相似 一作：望相似)\n不知江月待何人，但见长江送流水。\n白云一片去悠悠，青枫浦上不胜愁。\n谁家今夜扁舟子？何处相思明月楼？\n可怜楼上月徘徊，应照离人妆镜台。\n玉户帘中卷不去，捣衣砧上拂还来。\n此时相望不相闻，愿逐月华流照君。\n鸿雁长飞光不度，鱼龙潜跃水成文。\n昨夜闲潭梦落花，可怜春半不还家。\n江水流春去欲尽，江潭落月复西斜。\n斜月沉沉藏海雾，碣石潇湘无限路。\n不知乘月几人归，落月摇情满江树。(落月 一作：落花)",
+          "score": 0.491935,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 5163,
+          "poem_id": 365,
+          "poem_version_id": 365,
+          "title": "秋浦歌十七首",
+          "granularity": "line",
+          "chunk_index": 8,
+          "line_start": 10,
+          "line_end": 10,
+          "text": "何年是归日，雨泪下孤舟。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-v2-red-cliff-rocks-02",
+      "category": "phrase",
+      "question": "乱石穿空，惊涛拍岸",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 222.885,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 289,
+          "poem_id": 16,
+          "poem_version_id": 16,
+          "title": "念奴娇·赤壁怀古",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "乱石穿空，惊涛拍岸，卷起千堆雪。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 3511,
+          "poem_id": 227,
+          "poem_version_id": 227,
+          "title": "风",
+          "granularity": "note",
+          "chunk_index": 5,
+          "line_start": null,
+          "line_end": null,
+          "text": "当它发怒的时候，过江卷起漫天狂澜，有苏轼的《赤壁怀古》来证明：乱石穿空，惊涛拍岸，卷起千堆雪。它引发海啸，将参天大树连根拨起，用掌击碎轿车甩向路沟，用衣袖挥断成片树木，狂笑着，轻蔑地看着对它束手无策的人们，视自己为一列战车，而世上万物如螳臂。",
+          "score": 0.968498,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 300,
+          "poem_id": 16,
+          "poem_version_id": 16,
+          "title": "念奴娇·赤壁怀古",
+          "granularity": "note",
+          "chunk_index": 5,
+          "line_start": null,
+          "line_end": null,
+          "text": "“乱石穿空，惊涛拍岸”的“穿”和“拍”是一组动词，使整个画面充满了动感和力度感，极富冲击力；而“乱石崩云，惊涛裂岸”的“崩”和“裂”，则强调了这种力量所带来的效果：乱石直插云霄，使云霞崩开了；惊涛怒卷江岸，使土石裂碎了，这些明显带有夸张想象的成分。好坏就看读者个人的喜好了。",
+          "score": 0.968254,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 286,
+          "poem_id": 16,
+          "poem_version_id": 16,
+          "title": "念奴娇·赤壁怀古",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 8,
+          "text": "大江东去，浪淘尽，千古风流人物。\n故垒西边，人道是，三国周郎赤壁。\n乱石穿空，惊涛拍岸，卷起千堆雪。\n江山如画，一时多少豪杰。\n遥想公瑾当年，小乔初嫁了，雄姿英发。\n羽扇纶巾，谈笑间，樯橹灰飞烟灭。(樯橹 一作：强虏)\n故国神游，多情应笑我，早生华发。\n人生如梦，一尊还酹江月。(人生 一作：人间；尊 通：樽)",
+          "score": 0.925092,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 299,
+          "poem_id": 16,
+          "poem_version_id": 16,
+          "title": "念奴娇·赤壁怀古",
+          "granularity": "note",
+          "chunk_index": 4,
+          "line_start": null,
+          "line_end": null,
+          "text": "另一读本 　　除上述《念奴娇·赤壁怀古》原文外，有另一读法，即：“乱石崩云，惊涛裂岸”。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-v2-shengsheng-search-03",
+      "category": "phrase",
+      "question": "寻寻觅觅，冷冷清清，凄凄惨惨戚戚",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 539.557,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 318,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "寻寻觅觅，冷冷清清，凄凄惨惨戚戚。乍暖还寒时候，最难将息。三杯两盏淡酒，怎敌他、晚来风急？雁过也，正伤心，却是旧时相识。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 317,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "寻寻觅觅，冷冷清清，凄凄惨惨戚戚。乍暖还寒时候，最难将息。三杯两盏淡酒，怎敌他、晚来风急？雁过也，正伤心，却是旧时相识。\n满地黄花堆积。憔悴损，如今有谁堪摘？守着窗儿，独自怎生得黑？梧桐更兼细雨，到黄昏、点点滴滴。这次第，怎一个愁字了得！（守着窗儿 一作：守著窗儿）",
+          "score": 0.976062,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 329,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "note",
+          "chunk_index": 9,
+          "line_start": null,
+          "line_end": null,
+          "text": "前人评此词，多以开端三句用一连串叠字为其特色。但只注意这一层，不免失之皮相。词中写主人公一整天的愁苦心情，却从“寻寻觅觅”开始，可见她从一起床便百无聊赖，如有所失，于是东张西望，仿佛飘流在海洋中的人要抓到点什么才能得救似的，希望找到点什么来寄托自己的空虚寂寞。下文“冷冷清清”，是“寻寻觅觅”的结果，不但无所获，反被一种孤寂清冷的气氛袭来，使自己感到凄惨忧戚。于是紧接着再写了一句“凄凄惨惨戚戚”。仅此三句，一种由愁惨而凄厉的氛围已笼罩全篇，使读者不禁为之屏息凝神。这乃是百感迸发于中，不得不吐之为快，所谓“欲罢不能”的结果。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 9765,
+          "poem_id": 725,
+          "poem_version_id": 725,
+          "title": "凤凰台上忆吹箫·寸寸微云",
+          "granularity": "note",
+          "chunk_index": 1,
+          "line_start": null,
+          "line_end": null,
+          "text": "鉴赏 　　《凤凰台上忆吹箫·寸寸微云》这首词是为别韩西而作，细腻地表现了作者内心抑郁的情绪，再现与女友分别使她堕入深渊的情景。巧用叠字抒情写意，堪与词作大家李清照的“寻寻觅觅，冷冷清清，凄凄惨惨戚戚”之句媲美，并将她后半生的酸楚尽相倾诉。这首词，情境哀凄，词义悲苦。“偷素粉、写写描描。谁还管，生生世世，夜夜朝朝。”用双字二十余叠，丝毫不露牵强痕迹。末尾三句，“谁还管，生生世世，夜夜朝朝”更是余怨无穷，紧紧扣人心弦，令人动容。此词通篇语言质朴，且巧用叠字，造成回环咏叹的艺术效果，缠绵悱恻，旋律优美，可谓情苦词哀，已达极致，加上连用叠字二十余韵，真可与李易安的《声声慢》相媲美，确是双卿自述境况的凄绝的哀歌。 ▲",
+          "score": 0.484127,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 320,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "note",
+          "chunk_index": 0,
+          "line_start": null,
+          "line_end": null,
+          "text": "寻寻觅觅：意谓想把失去的一切都找回来，表现非常空虚怅惘、迷茫失落的心态。\n凄凄惨惨戚戚：忧愁苦闷的样子。\n乍暖还（huán）寒：指秋天的天气，忽然变暖，又转寒冷。\n将息：旧时方言，休养调理之意。\n怎敌他：对付，抵挡。晚：一本作“晓”。\n损：表示程度极高。\n堪：可。\n著：亦写作“着”。\n怎生：怎样的。生：语助词。\n梧桐更兼细雨：暗用白居易《长恨歌》“秋雨梧桐叶落时”诗意。\n这次第：这光景、这情形。\n怎一个愁字了得：一个“愁”字怎么能概括得尽呢？",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-v2-qingyuan-search-04",
+      "category": "phrase",
+      "question": "众里寻他千百度",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 208.597,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 418,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "蛾儿雪柳黄金缕。笑语盈盈暗香去。众里寻他千百度。蓦然回首，那人却在，灯火阑珊处。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 424,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "note",
+          "chunk_index": 5,
+          "line_start": null,
+          "line_end": null,
+          "text": "“众里寻他千百度，蓦然回首，那人却在、灯火阑珊处。”经过千百次的寻觅，终于在灯火冷落的地方发现了她。人们都在尽情的狂欢，陶醉在热闹场中，可是她却在热闹圈外；独自站在“灯火阑珊处”，充分显示了“那人”的与众不同和孤高。“众里寻她千百度”极写寻觅之苦，而“蓦然”二字则写出了发现意中人后的惊喜之情。这里作者以含蓄的语言，表现了人物内心的活动。",
+          "score": 0.976062,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 416,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "东风夜放花千树。更吹落、星如雨。宝马雕车香满路。凤箫声动，玉壶光转，一夜鱼龙舞。\n蛾儿雪柳黄金缕。笑语盈盈暗香去。众里寻他千百度。蓦然回首，那人却在，灯火阑珊处。",
+          "score": 0.968498,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1631,
+          "poem_id": 92,
+          "poem_version_id": 92,
+          "title": "蝶恋花·槛菊愁烟兰泣露",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "昨夜西风凋碧树，独上高楼，望尽天涯路。欲寄彩笺兼尺素，山长水阔知何处？",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 426,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "note",
+          "chunk_index": 7,
+          "line_start": null,
+          "line_end": null,
+          "text": "灯火写得愈热闹，则愈显“那人”的孤高，人写得愈忘情，愈见“那人”的不同流俗。 全词就是通过这种强烈的对比手法，反衬出了一个自甘寂寞、独立不移、性格孤介的女性形象。作者写这样—个不肯随波逐流、自甘淡泊的女性形象，是有所寄托的。辛弃疾力主抗战，屡受排挤，但他矢志不移，宁可过寂寞的闲居生活，也不肯与投降派同流合污，这首词是他这种思想的艺术反映。“众里寻他千百度，蓦然回首，那人却在，灯火阑珊处”，历来也为人传诵。",
+          "score": 0.476562,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-v2-yulinling-willow-05",
+      "category": "phrase",
+      "question": "杨柳岸，晓风残月",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 244.187,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 665,
+          "poem_id": 43,
+          "poem_version_id": 43,
+          "title": "雨霖铃·寒蝉凄切",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "多情自古伤离别，更那堪，冷落清秋节！今宵酒醒何处？杨柳岸，晓风残月。此去经年，应是良辰好景虚设。便纵有千种风情，更与何人说？(好景 一作：美景)",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 663,
+          "poem_id": 43,
+          "poem_version_id": 43,
+          "title": "雨霖铃·寒蝉凄切",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "寒蝉凄切，对长亭晚，骤雨初歇。都门帐饮无绪，留恋处，兰舟催发。执手相看泪眼，竟无语凝噎。念去去，千里烟波，暮霭沉沉楚天阔。\n多情自古伤离别，更那堪，冷落清秋节！今宵酒醒何处？杨柳岸，晓风残月。此去经年，应是良辰好景虚设。便纵有千种风情，更与何人说？(好景 一作：美景)",
+          "score": 0.976062,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 6423,
+          "poem_id": 469,
+          "poem_version_id": 469,
+          "title": "江城子·西城杨柳弄春柔",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "西城杨柳弄春柔，动离忧，泪难收。犹记多情、曾为系归舟。碧野朱桥当日事，人不见，水空流。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 5982,
+          "poem_id": 429,
+          "poem_version_id": 429,
+          "title": "湘春夜月·近清明",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "这首词的下片更为精采。前几句，作者紧紧抓住“湘春夜月”的景色特点，将深沉的离愁别恨熔铸进去，造成了动人的艺术效果：“空樽夜泣，青山不语，残照当门。翠玉楼前，惟是有、一波湘水，摇荡湘云。”这个境界是由众多形象构筑起来的一个整体，七宝楼台固不应拆碎，然而，倘求观察得细致，却无妨从局部着眼。“空樽夜泣”，表示心情的极度忧伤，是一个凝炼警策的句子，其造语则显得老辣，与姜夔《暗香》词里的“翠樽易泣”相同。“青山不语”，山峰不会说话，而作者却好像认为它原是会说话的，只是此时此刻无话可说罢了，以这种方式描摹环境的幽静，其艺术效果则更为强烈。“残照当门”，意谓残月照在门前，门外唯见残月。残月象征离别，正是由于它的情调凄恻。“今宵酒醒何处？杨柳岸，晓风残月”（柳永《雨霖铃》）等常见的例子，已经足以说明用残月抒写离别之情的艺术表现力了。“翠玉楼”，即前文“楚乡旅宿”，“惟是有”，同义重叠，起着强调下文的作用，而它以“平去上”的声韵作为引出下文的铺垫，从而使“一波湘水，摇荡湘云”一句更富有诗意，显得更加突出。从“翠玉楼”望去，月色下的湘江，一片朦胧迷茫，水面上只看到隐隐的波光，天空飘动着朵朵浮云，阵阵微风吹来，又将水天“摇荡”在一起了。然而这轻微的摇荡却不能打破“青山不语，残月当门”的静寂，正像“蝉噪林逾静”那样，反倒更增强了这种静寂之感；同时，在静寂之中，“湘春夜月”的景色更显得空灵深邃，它启迪着人们对生活的沉思。",
+          "score": 0.484127,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 670,
+          "poem_id": 43,
+          "poem_version_id": 43,
+          "title": "雨霖铃·寒蝉凄切",
+          "granularity": "note",
+          "chunk_index": 4,
+          "line_start": null,
+          "line_end": null,
+          "text": "上片正面话别，到此结束；下片则宕开一笔，先作泛论，从个别说到一般，得出一条人生哲理：“多情自古伤离别”。意谓伤离惜别，并不自我始，自古皆然。接以“更那堪冷落清秋节”一句，则为层层加码，极言时当冷落凄凉的秋季，离情更甚于常时。“清秋节”一辞，映射起首三句，前后照应，针线极为绵密；而冠以“更那堪”三个虚字，则加强了感情色彩，比起首三句的以景寓情更为明显、深刻。“今宵”三句蝉联上句而来，是全篇之警策，后来竟成为苏轼相与争胜的对象。据俞文豹《吹剑录》云：“东坡在玉堂日，有幕士善歌，因问：‘我词何如柳七？’对日：‘柳郎中词，只合十七八女郎，执红牙板，歌“杨柳岸晓风残月”。学士词，须关西大汉，（执）铜琵琶，铁绰板，唱“大江东去”。’”这三句本是想象今宵旅途中的况味：一舟临岸，词人酒醒梦回，只见习习晓风吹拂萧萧疏柳，一弯残月高挂杨柳梢头。整个画面充满了凄清的气氛，客情之冷落，风景之清幽，离愁之绵邈，完全凝聚在这画面之中。比之上片结尾二句，虽同样是写景，写离愁，但前者仿佛是泼墨山水，一片苍茫；这里却似工笔小帧，无比清丽。词人描绘这清丽小帧，主要采用了画家所常用的点染笔法。清人刘熙载在《艺概》中说：“‘多情自古伤离别，更那堪冷落清秋节。今宵酒醒何处？杨柳岸、晓风残月。’上二句点出离别冷落，‘今宵’二句乃就上二句意染之。点染之间，不得有他语相隔，隔则警句亦成死灰矣。”也就是说，这四句密不可分，相互烘托，相互陪衬，中间若插上另外一句，就破坏了意境的完整性，形象的统一性，而后面这两个警句，就将失去光彩。",
+          "score": 0.476562,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-v2-lingding-loyalty-06",
+      "category": "phrase",
+      "question": "人生自古谁无死？留取丹心照汗青。",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 288.031,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 388,
+          "poem_id": 23,
+          "poem_version_id": 23,
+          "title": "过零丁洋",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "人生自古谁无死？留取丹心照汗青。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 384,
+          "poem_id": 23,
+          "poem_version_id": 23,
+          "title": "过零丁洋",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "辛苦遭逢起一经，干戈寥落四周星。\n山河破碎风飘絮，身世浮沉雨打萍。\n惶恐滩头说惶恐，零丁洋里叹零丁。\n人生自古谁无死？留取丹心照汗青。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 394,
+          "poem_id": 23,
+          "poem_version_id": 23,
+          "title": "过零丁洋",
+          "granularity": "note",
+          "chunk_index": 5,
+          "line_start": null,
+          "line_end": null,
+          "text": "尾联笔势一转，忽然宕进，由现在渡到将来，拨开现实，露出理想，如此结语，有如撞钟，清音绕梁。全诗格调，顿然一变，由沉郁转为开拓、豪放、洒脱。“人生自古谁无死，留取丹心照汗青。”让赤诚的心如一团火，照耀史册，照亮世界，照暖人生。用一照字，显示光芒四射，英气逼人。据说张弘范看到文天祥这首诗，尤其是尾联这两句，连称：“好人，好诗！”诚然文天祥把做诗与做人，诗格与人格，浑然一体。千秋绝唱，情调高昂，激励和感召古往今来无数志士仁人为正义事业英勇献身。",
+          "score": 0.851597,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 8364,
+          "poem_id": 630,
+          "poem_version_id": 630,
+          "title": "就义诗",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "浩气还太虚，丹心照千古。\n生平未报国，留作忠魂补。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1229,
+          "poem_id": 68,
+          "poem_version_id": 68,
+          "title": "永遇乐·京口北固亭怀古",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "元嘉草草，封狼居胥，赢得仓皇北顾。四十三年，望中犹记，烽火扬州路。可堪回首，佛狸祠下，一片神鸦社鼓。凭谁问，廉颇老矣，尚能饭否？",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "phrase-v2-guishui-old-horse-07",
+      "category": "phrase",
+      "question": "老骥伏枥，志在千里",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 204.893,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 753,
+          "poem_id": 50,
+          "poem_version_id": 50,
+          "title": "龟虽寿",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "老骥伏枥，志在千里。",
+          "score": 1.0,
+          "match_types": [
+            "lexical_match",
+            "chunk_exact",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 750,
+          "poem_id": 50,
+          "poem_version_id": 50,
+          "title": "龟虽寿",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 7,
+          "text": "神龟虽寿，犹有竟时。\n螣蛇乘雾，终为土灰。\n老骥伏枥，志在千里。\n烈士暮年，壮心不已。\n盈缩之期，不但在天；\n养怡之福，可得永年。\n幸甚至哉，歌以咏志。",
+          "score": 0.976062,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 762,
+          "poem_id": 50,
+          "poem_version_id": 50,
+          "title": "龟虽寿",
+          "granularity": "note",
+          "chunk_index": 4,
+          "line_start": null,
+          "line_end": null,
+          "text": "“ 老骥伏枥，志在千里，烈士暮年，壮心不已。” 笔力遒劲，韵律沉雄，内蕴着一股自强不息的豪迈气概，深刻地表达了曹操老当益壮、锐意进取的精神面貌。“壮心不已”表达了要有永不停止的理想追求和积极进取精神，永远乐观奋发，自强不息，保持思想上的青春，曹操以切身体验揭示了人的精神因素对健康的重要意义。",
+          "score": 0.976062,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 751,
+          "poem_id": 50,
+          "poem_version_id": 50,
+          "title": "龟虽寿",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "神龟虽寿，犹有竟时。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 774,
+          "poem_id": 51,
+          "poem_version_id": 51,
+          "title": "己亥杂诗·其五",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "“落红不是无情物”，这里的“落红”两字。在全诗中地位十分重要。它上承“浩荡离愁”，诗人的离愁不仅有“浩荡”修饰，“白日斜”烘托，“天涯”映衬，还被动态的，由时时拂面而过的“落红”撩起。这一笔是隐藏在诗内的，因此，“落红”既是对前面离愁内涵的补充，而作为转折，它又使整首诗从离愁中解脱出来，转入下层，为全诗主题升华作了铺垫。此时诗人在想落红护花。“落红”即落花，全句的本义是说从树上飘落的花瓣并不是无情之物，而是依附地表，腐烂成泥，化作精魂，养育来年的春花。作者借自然的循环法则来自比，表示自己虽然辞官，但仍会关心国家的前途命运。这富有哲理的一句话，传达出诗人“不在其位，亦谋其政”的难能可贵的精神，表明了诗人无比坚定的决心，成为千古名句，激励着许多人“老骥伏枥，志在千里”。落花决不是无情的废物，诗人辞去礼部主事之职，正是为了到家乡主掌书院，聚徒讲学，把自己的学业和思想传给生徒，以变革的热情和未来的憧憬启迪他们，为国为民尽自己的最后一点力量。花落归根，化为春泥，正可以孕育新的春天，色彩、芬芳，正可以献给后之来者。诗人从大自然生生不息的规律中得到启发。大自然里花开花落，本来风雨由之，无感情可言，落红说不上是“有情物”还是“无情物”，只是诗人把自己的身世与落花完全结合起来，把感情移向落花，才使落花也具有人的感情，从而变成有情物。落花有情，表现在去酿造新的彩色的世界——“化作春泥更护花”。至此，诗人终于把飞花般纷乱的思绪捉住，从愁思中摆脱出来，带着时代的使命感，上升到一种庄严神圣的境界。“化作春泥更护花”，这是飞花的独自，也是诗人与腐败的官场决裂，向黑暗的势力抗争的庄严而神圣的宣誓。为了国家和黎民百姓，为了似锦繁花，不惜献身化为春泥。",
+          "score": 0.476562,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "title-v2-chunwang-01",
+      "category": "title",
+      "question": "春望",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 253.023,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 167,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "“国破山河在，城春草木深。”诗篇一开头描写了春望所见：山河依旧，可是国都已经沦陷，城池也在战火中残破不堪了，乱草丛生，林木荒芜。诗人记忆中昔日长安的春天是何等的繁华，鸟语花香，飞絮弥漫，烟柳明媚，游人迤逦，可是那种景象今日已经荡然无存了。一个“破”字使人怵目惊心，继而一个“深”字又令人满目凄然。诗人写今日景物，实为抒发人去物非的历史感，将感情寄寓于物，借助景物反托情感，为全诗创造了一片荒凉凄惨的气氛。“国破”和“城春”两个截然相反的意象，同时存在并形成强烈的反差。“城春”当指春天花草树木繁盛茂密，烟景明丽的季节，可是由于“国破”，国家衰败，国都沦陷而失去了春天的光彩，留下的只是颓垣残壁，只是“草木深”。“草木深”三字意味深沉，表示长安城里已不是市容整洁、井然有序，而是荒芜破败，人烟稀少，草木杂生。这里，诗人睹物伤感，表现了强烈的黍离之悲。",
+          "score": 0.948529,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 160,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "国破山河在，城春草木深。\n感时花溅泪，恨别鸟惊心。\n烽火连三月，家书抵万金。\n白头搔更短，浑欲不胜簪。",
+          "score": 0.924455,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 162,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "感时花溅泪，恨别鸟惊心。",
+          "score": 0.898602,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 161,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "国破山河在，城春草木深。",
+          "score": 0.5,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 7363,
+          "poem_id": 551,
+          "poem_version_id": 551,
+          "title": "春愁",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "春愁难遣强看山，往事惊心泪欲潸。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "title-v2-changhenge-02",
+      "category": "title",
+      "question": "长恨歌",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 258.051,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 180,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "汉皇重色思倾国，御宇多年求不得。",
+          "score": 0.5,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 247,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 7,
+          "line_start": null,
+          "line_end": null,
+          "text": "《长恨歌》是白居易诗作中脍炙人口的名篇，作于元和元年（806），当时诗人正在盩厔县（今陕西周至）任县尉。这首诗是他和友人陈鸿、王质夫同游仙游寺，有感于唐玄宗、杨贵妃的故事而创作的。在这首长篇叙事诗里，作者以精炼的语言，优美的形象，叙事和抒情结合的手法，叙述了唐玄　宗、杨贵妃在安史之乱中的爱情悲剧：他们的爱情被自己酿成的叛乱断送了，正在没完没了地吃着这一精神的苦果。唐玄宗、杨贵妃都是历史上的人物，诗人并不拘泥于历史，而是借着历史的一点影子，根据当时人们的传说，街坊的歌唱，从中蜕化出一个回旋曲折、宛转动人的故事，用回环往复、缠绵悱恻的艺术形式，描摹、歌咏出来。由于诗中的故事、人物都是艺术化的，是现实中人的复杂真实的再现，所以能够在历代读者的心中漾起阵阵涟漪。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 181,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "杨家有女初长成，养在深闺人未识。",
+          "score": 0.491935,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 248,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 8,
+          "line_start": null,
+          "line_end": null,
+          "text": "《长恨歌》就是歌“长恨”，“长恨”是诗歌的主题，故事的焦点，也是埋在诗里的一颗牵动人心的种子。而“恨”什么，为什么要“长恨”，诗人不是直接铺叙、抒写出来，而是通过他笔下诗化的故事，一层一层地展示给读者，让人们自己去揣摸，去回味，去感受。　诗歌开卷第一句：“汉皇重色思倾国”，看来很寻常，好像故事原就应该从这里写起，不需要作者花什么心思似的，事实上这七个字含量极大，是全篇纲领，它既揭示了故事的悲剧因素，又唤起和统领着全诗。紧接着，诗人用极其省俭的语言，叙述了安史之乱前，唐玄宗如何重色、求色，终于得到了“回眸一笑百媚生，六宫粉黛无颜色”的杨贵妃。描写了杨贵妃的美貌、娇媚，进宫后因有色而得宠，不但自己“新承恩泽”，而且“姊妹弟兄皆列土”。反复渲染唐玄宗得贵妃以后在宫中如何纵欲，如何行乐，如何终日沉湎于歌舞酒色之中。所有这些，就酿成了安史之乱：“渔阳鼙鼓动地来，惊破霓裳羽衣曲”。这一部分写出了“长恨”的内因，是悲剧故事的基础。诗人通过这一段宫中生活的写实，不无讽刺地向我们介绍了故事的男女主人公：一个重色轻国的帝王，一个娇媚恃宠的妃子。还形象地暗示我们，唐玄宗的迷色误国，就是这一悲剧的根源。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 182,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "天生丽质难自弃，一朝选在君王侧。",
+          "score": 0.484127,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "title-v2-niannujiao-03",
+      "category": "title",
+      "question": "念奴娇·赤壁怀古",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 230.978,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 288,
+          "poem_id": 16,
+          "poem_version_id": 16,
+          "title": "念奴娇·赤壁怀古",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "故垒西边，人道是，三国周郎赤壁。",
+          "score": 0.983871,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 286,
+          "poem_id": 16,
+          "poem_version_id": 16,
+          "title": "念奴娇·赤壁怀古",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 8,
+          "text": "大江东去，浪淘尽，千古风流人物。\n故垒西边，人道是，三国周郎赤壁。\n乱石穿空，惊涛拍岸，卷起千堆雪。\n江山如画，一时多少豪杰。\n遥想公瑾当年，小乔初嫁了，雄姿英发。\n羽扇纶巾，谈笑间，樯橹灰飞烟灭。(樯橹 一作：强虏)\n故国神游，多情应笑我，早生华发。\n人生如梦，一尊还酹江月。(人生 一作：人间；尊 通：樽)",
+          "score": 0.942029,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 291,
+          "poem_id": 16,
+          "poem_version_id": 16,
+          "title": "念奴娇·赤壁怀古",
+          "granularity": "line",
+          "chunk_index": 4,
+          "line_start": 5,
+          "line_end": 5,
+          "text": "遥想公瑾当年，小乔初嫁了，雄姿英发。",
+          "score": 0.931352,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 295,
+          "poem_id": 16,
+          "poem_version_id": 16,
+          "title": "念奴娇·赤壁怀古",
+          "granularity": "note",
+          "chunk_index": 0,
+          "line_start": null,
+          "line_end": null,
+          "text": "念奴娇：词牌名。又名“百字令”“酹江月”等。赤壁：此指黄州赤壁，一名“赤鼻矶”，在今湖北黄冈西。而三国古战场的赤壁，文化界认为在今湖北赤壁市蒲圻县西北。\n大江：指长江。\n淘：冲洗，冲刷。\n风流人物：指杰出的历史名人。\n故垒：过去遗留下来的营垒。\n周郎：指三国时吴国名将周瑜，字公瑾，少年得志，二十四为中郎将，掌管东吴重兵，吴中皆呼为“周郎”。下文中的“公瑾”，即指周瑜。\n雪：比喻浪花。\n遥想：形容想得很远；回忆。\n小乔初嫁了（liǎo）：《三国志·吴志·周瑜传》载，周瑜从孙策攻皖，“得桥公两女，皆国色也。策自纳大桥，瑜纳小桥。”乔，本作“桥”。其时距赤壁之战已经十年，此处言“初嫁”，是言其少年得意，倜傥风流。\n雄姿英发（fā）：谓周瑜体貌不凡，言谈卓绝。英发，谈吐不凡，见识卓越。\n羽扇纶（guān）巾：古代儒将的便装打扮。羽扇，羽毛制成的扇子。纶巾，青丝制成的头巾。\n樯橹（qiánglǔ）：这里代指曹操的水军战船。樯，挂帆的桅杆。橹，一种摇船的桨。“樯橹”一作“强虏”，又作“樯虏”，又作“狂虏”。\n故国神游：“神游故国”的倒文。故国：这里指旧地，当年的赤壁战场。神游：于想象、梦境中游历。\n“多情”二句：“应笑我多情，早生华发”的倒文。华发（fà）：花白的头发。\n一尊还（huán）酹（lèi）江月：古人祭奠以酒浇在地上祭奠。这里指洒酒酬月，寄托自己的感情。尊：通“樽”，酒杯。\n强虏：强大之敌，指曹军。虏：对敌人的蔑称。",
+          "score": 0.904945,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 299,
+          "poem_id": 16,
+          "poem_version_id": 16,
+          "title": "念奴娇·赤壁怀古",
+          "granularity": "note",
+          "chunk_index": 4,
+          "line_start": null,
+          "line_end": null,
+          "text": "另一读本 　　除上述《念奴娇·赤壁怀古》原文外，有另一读法，即：“乱石崩云，惊涛裂岸”。",
+          "score": 0.896289,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "title-v2-shengshengman-04",
+      "category": "title",
+      "question": "声声慢·寻寻觅觅",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 238.484,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 318,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "寻寻觅觅，冷冷清清，凄凄惨惨戚戚。乍暖还寒时候，最难将息。三杯两盏淡酒，怎敌他、晚来风急？雁过也，正伤心，却是旧时相识。",
+          "score": 0.991935,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 317,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "寻寻觅觅，冷冷清清，凄凄惨惨戚戚。乍暖还寒时候，最难将息。三杯两盏淡酒，怎敌他、晚来风急？雁过也，正伤心，却是旧时相识。\n满地黄花堆积。憔悴损，如今有谁堪摘？守着窗儿，独自怎生得黑？梧桐更兼细雨，到黄昏、点点滴滴。这次第，怎一个愁字了得！（守着窗儿 一作：守著窗儿）",
+          "score": 0.953358,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 6608,
+          "poem_id": 488,
+          "poem_version_id": 488,
+          "title": "兰陵王·柳",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "闲寻旧踪迹，又酒趁哀弦，灯照离席。梨花榆火催寒食。愁一箭风快，半篙波暖，回头迢递便数驿，望人在天北。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 319,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "满地黄花堆积。憔悴损，如今有谁堪摘？守着窗儿，独自怎生得黑？梧桐更兼细雨，到黄昏、点点滴滴。这次第，怎一个愁字了得！（守着窗儿 一作：守著窗儿）",
+          "score": 0.491935,
+          "match_types": [
+            "lexical_match",
+            "title_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1416,
+          "poem_id": 78,
+          "poem_version_id": 78,
+          "title": "钗头凤·红酥手",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "红酥手，黄縢酒，满城春色宫墙柳。东风恶，欢情薄。一怀愁绪，几年离索。错、错、错。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "author-v2-caocao-01",
+      "category": "author",
+      "question": "曹操",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 255.877,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 489,
+          "poem_id": 30,
+          "poem_version_id": 30,
+          "title": "观沧海",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "东临碣石，以观沧海。",
+          "score": 0.5,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 490,
+          "poem_id": 30,
+          "poem_version_id": 30,
+          "title": "观沧海",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "水何澹澹，山岛竦峙。",
+          "score": 0.491935,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 491,
+          "poem_id": 30,
+          "poem_version_id": 30,
+          "title": "观沧海",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "树木丛生，百草丰茂。",
+          "score": 0.484127,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 492,
+          "poem_id": 30,
+          "poem_version_id": 30,
+          "title": "观沧海",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "秋风萧瑟，洪波涌起。",
+          "score": 0.476562,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 493,
+          "poem_id": 30,
+          "poem_version_id": 30,
+          "title": "观沧海",
+          "granularity": "line",
+          "chunk_index": 4,
+          "line_start": 5,
+          "line_end": 5,
+          "text": "日月之行，若出其中；",
+          "score": 0.469231,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "author-v2-baijuyi-02",
+      "category": "author",
+      "question": "白居易",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 1102.54,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 180,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "汉皇重色思倾国，御宇多年求不得。",
+          "score": 0.5,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 181,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "杨家有女初长成，养在深闺人未识。",
+          "score": 0.491935,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 182,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "天生丽质难自弃，一朝选在君王侧。",
+          "score": 0.484127,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 183,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "回眸一笑百媚生，六宫粉黛无颜色。",
+          "score": 0.476562,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 184,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 4,
+          "line_start": 5,
+          "line_end": 5,
+          "text": "春寒赐浴华清池，温泉水滑洗凝脂。",
+          "score": 0.469231,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "author-v2-xinqiji-03",
+      "category": "author",
+      "question": "辛弃疾",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 298.169,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 417,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "东风夜放花千树。更吹落、星如雨。宝马雕车香满路。凤箫声动，玉壶光转，一夜鱼龙舞。",
+          "score": 0.5,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 9693,
+          "poem_id": 720,
+          "poem_version_id": 720,
+          "title": "水调歌头·壬子三山被召陈端仁给事饮饯席上作",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "辛弃疾的这首《水调歌头》，是一首感时抚事的答别之作。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 418,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "蛾儿雪柳黄金缕。笑语盈盈暗香去。众里寻他千百度。蓦然回首，那人却在，灯火阑珊处。",
+          "score": 0.491935,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 9132,
+          "poem_id": 663,
+          "poem_version_id": 663,
+          "title": "摸鱼儿·东皋寓居",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "此词一反传统词家所谓“词须宛转绵丽”的常规，慷慨磊落，直抒胸臆，辞气充沛，感情爽豁，词境开阔，颇富豁达清旷的情趣，与作者的恩师苏东坡在词风上一脉相承，并对辛弃疾的词作产生了重要影响。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 429,
+          "poem_id": 26,
+          "poem_version_id": 26,
+          "title": "破阵子·为陈同甫赋壮词以寄之",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "醉里挑灯看剑，梦回吹角连营。八百里分麾下炙，五十弦翻塞外声。沙场秋点兵。",
+          "score": 0.484127,
+          "match_types": [
+            "lexical_match",
+            "author_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "dynasty-v2-han-01",
+      "category": "dynasty",
+      "question": "汉代诗歌",
+      "expected": "evidence",
+      "passed": false,
+      "retrieved_count": 0,
+      "recall_at_k": 0.0,
+      "reciprocal_rank": 0.0,
+      "matched_gold": [],
+      "missing_gold": [
+        1
+      ],
+      "latency_ms": 251.079,
+      "retrieved_evidence": []
+    },
+    {
+      "case_id": "dynasty-v2-tang-02",
+      "category": "dynasty",
+      "question": "唐代诗歌",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 2,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 256.617,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 3202,
+          "poem_id": 199,
+          "poem_version_id": 199,
+          "title": "逢入京使",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "这是一首边塞诗，盛唐时代，是边塞诗空前繁荣的时代，出现了以高适、岑参为代表的边塞诗派，他们的创作为百花齐放的盛唐诗坛，增添了一支奇葩。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 3226,
+          "poem_id": 201,
+          "poem_version_id": 201,
+          "title": "登幽州台歌",
+          "granularity": "note",
+          "chunk_index": 4,
+          "line_start": null,
+          "line_end": null,
+          "text": "这首诗没有对幽州台作一字描写，而只是登台的感慨，却成为千古名篇。诗篇风格明朗刚健，是具有“汉魏风骨”的唐代诗歌的先驱之作，对扫除齐梁浮艳纤弱的形式主义诗风具有拓疆开路之功。在艺术上，其意境雄浑，视野开阔，使得诗人的自我形象更加鲜亮感人。全诗语言奔放，富有感染力，虽然只有短短四句，却在人们面前展现了一幅境界雄浑，浩瀚空旷的艺术画面。诗的前三句粗笔勾勒，以浩茫宽广的宇宙天地和沧桑易变的古今人事作为深邃、壮美的背景加以衬托。第四句饱蘸感情，凌空一笔，使抒情主人公——诗人慷慨悲壮的自我形象站到了画面的主位上，画面顿时神韵飞动，光彩照人。从结构脉络上说，前两句是俯仰古今，写出时间的绵长；第三句登楼眺望，写空间的辽阔无限；第四句写诗人孤单悲苦的心绪。这样前后相互映照，格外动人。",
+          "score": 0.5,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "dynasty-v2-song-03",
+      "category": "dynasty",
+      "question": "宋代诗词",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 1,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 283.241,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 4429,
+          "poem_id": 308,
+          "poem_version_id": 308,
+          "title": "山园小梅二首",
+          "granularity": "note",
+          "chunk_index": 11,
+          "line_start": null,
+          "line_end": null,
+          "text": "第二首诗开头两句是说梅花像是剪碎了的丝织品，上面涂了油酥，正反面有深有浅，多么自然，画是画不出来的。这里用精细轻薄的丝织品绢和油酥制品来比喻悔花的滋润柔美，十分传神。这在宋代诗词作品中一不乏其例，如苏轼《腊梅》诗中就有“天工点酥作梅花”的句子。“向背”、“稀稠‘’描绘了在白天丽日高照下的梅花风姿。接下去说梅花在整个白天直到日薄西山这段时间里，可以尽情地享受春天的温暖，但到夜幕降临的时候，在严霜的侵袭下，梅花可能要受不了吧。梅花本来是以其经霜耐寒的品格受到人们称赞的，“霜深应怯”的顾虑似乎大可不必，但正是这不必要顾虑的顾虑，才能表达出诗人对梅花的无比深情。",
+          "score": 0.5,
+          "match_types": [
+            "lexical_match",
+            "chunk_phrase",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "multi-v2-changhen-yulin-01",
+      "category": "multi_evidence",
+      "question": "《长恨歌》的长生殿誓言和《雨霖铃》的杨柳残月分别怎样写离别",
+      "expected": "evidence",
+      "passed": false,
+      "retrieved_count": 5,
+      "recall_at_k": 0.0,
+      "reciprocal_rank": 0.0,
+      "matched_gold": [],
+      "missing_gold": [
+        1,
+        2
+      ],
+      "latency_ms": 243.346,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 2379,
+          "poem_id": 125,
+          "poem_version_id": 125,
+          "title": "木兰花·拟古决绝词柬友",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "“骊山语罢清宵半，泪雨零铃终不怨”二句用唐明皇与杨玉环的爱情典故。七夕的时候，唐杨二人在华清宫里山盟海誓。山盟海誓言犹在，马嵬坡事变一爆发，杨贵妃就成了政治斗争的牺牲品。据说后来唐明皇从四川回长安的路上，在栈道上听到雨中的铃声，又勾起了他对杨贵妃的思恋，就写了著名的曲子《雨霖铃》。这里借用此典说即使是最后作决绝之别，也不生怨。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 243,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 3,
+          "line_start": null,
+          "line_end": null,
+          "text": "银屏：饰银的屏风。逦迤：接连不断地。\n新睡觉：刚睡醒。觉，醒。\n袂（mèi）：衣袖。\n玉容寂寞：此指神色黯淡凄楚。阑干：纵横交错的样子。这里形容泪痕满面。\n凝睇（dì）：凝视。\n昭阳殿：汉成帝宠妃赵飞燕的寝宫。此借指杨贵妃住过的宫殿。\n蓬莱宫：传说中的海上仙山。这里指贵妃在仙山的居所。\n人寰（huán）：人间。\n旧物：指生前与玄宗定情的信物。\n寄将去：托道士带回。\n钗留二句：把金钗、钿盒分成两半，自留一半。擘：分开。合分钿：将钿盒上的图案分成两部分。\n重寄词：贵妃在告别是重又托他捎话。\n两心知：只有玄宗、贵妃二人心里明白。\n长生殿：在骊山华清宫内，天宝元年（742）造。按“七月”以下六句为作者虚拟之词。而所谓长生殿者，亦非华清宫之长生殿，而是长安皇宫寝殿之习称。\n比翼鸟：传说中的鸟名，据说只有一目一翼，雌雄并在一起才能飞。\n连理枝：两株树木树干相抱。古人常用此二物比喻情侣相爱、永不分离。\n恨：遗憾。绵绵：连绵不断。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 4402,
+          "poem_id": 307,
+          "poem_version_id": 307,
+          "title": "玉楼春·尊前拟把归期说",
+          "granularity": "note",
+          "chunk_index": 0,
+          "line_start": null,
+          "line_end": null,
+          "text": "尊前：即樽前，饯行的酒席前。\n春容：如春风妩媚的颜容。此指别离的佳人。\n离歌：指饯别宴前唱的流行的送别曲。\n翻新阕：按旧曲填新词。白居易《杨柳枝》：“古歌旧曲君莫听，听取新翻杨柳枝。”阙，乐曲终止。\n洛阳花：洛阳盛产牡丹，欧阳修有《洛阳牡丹记》。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2371,
+          "poem_id": 125,
+          "poem_version_id": 125,
+          "title": "木兰花·拟古决绝词柬友",
+          "granularity": "line",
+          "chunk_index": 2,
+          "line_start": 3,
+          "line_end": 3,
+          "text": "骊山语罢清宵半，泪雨霖铃终不怨。(一作：泪雨零 / 夜雨霖)",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 246,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "临别殷勤托方士，寄语君王表情思，语中誓言只有君王与我知。\n当年七月七日长生殿中，夜半无人，我们共起山盟海誓。\n在天愿为比翼双飞鸟，在地愿为并生连理枝。\n即使是天长地久，也总会有尽头，但这生死遗恨，却永远没有尽期。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "multi-v2-chunwang-maowu-02",
+      "category": "multi_evidence",
+      "question": "《春望》的战乱景象和《茅屋为秋风所破歌》的寒士愿望",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1,
+        2
+      ],
+      "missing_gold": [],
+      "latency_ms": 304.285,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 2217,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "八月秋高风怒号，卷我屋上三重茅。茅飞渡江洒江郊，高者挂罥长林梢，下者飘转沉塘坳。\n南村群童欺我老无力，忍能对面为盗贼，公然抱茅入竹去。唇焦口燥呼不得，归来倚杖自叹息。\n俄顷风定云墨色，秋天漠漠向昏黑。布衾多年冷似铁，娇儿恶卧踏里裂。床头屋漏无干处，雨脚如麻未断绝。自经丧乱少睡眠，长夜沾湿何由彻?\n安得广厦千万间，大庇天下寒士俱欢颜，风雨不动安如山。呜呼！何时眼前突兀见此屋，吾庐独破受冻死亦足！(死亦足 一作：死意足）",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2223,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "note",
+          "chunk_index": 1,
+          "line_start": null,
+          "line_end": null,
+          "text": "八月里秋深，狂风怒号，狂风卷走了我屋顶上好几层茅草。茅草乱飞，渡过浣花溪，散落在对岸江边。飞得高的茅草缠绕在高高的树梢上，飞得低的飘飘洒洒沉落到池塘和洼地里。\n南村的一群儿童欺负我年老没力气，竟忍心这样当面做“贼”抢东西，毫无顾忌地抱着茅草跑进竹林去了。我嘴唇干燥也喝止不住，回来后拄着拐杖，独自叹息。\n一会儿风停了，天空中乌云像墨一样黑，深秋天空阴沉迷蒙渐渐黑下来了。布被盖了多年，又冷又硬，像铁板似的。孩子睡觉姿势不好，把被子蹬破了。一下雨屋顶漏水，屋内没有一点儿干燥的地方，房顶的雨水像麻线一样不停地往下漏。自从安史之乱之后，我睡眠的时间很少，长夜漫漫，屋漏床湿，怎能挨到天亮。\n如何能得到千万间宽敞高大的房子，普遍地庇覆天下间贫寒的读书人，让他们开颜欢笑，房子在风雨中也不为所动，安稳得像是山一样？唉！什么时候眼前出现这样高耸的房屋，到那时即使我的茅屋被秋风所吹破，我自己受冻而死也心甘情愿！",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2230,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "note",
+          "chunk_index": 8,
+          "line_start": null,
+          "line_end": null,
+          "text": "“安得广厦千万间，大庇天下寒士俱欢颜，风雨不动安如山”，前后用七字句，中间用九字句，句句蝉联而下，而表现阔大境界和愉快情感的词儿如“广厦”、“千万间”、“大庇”、“天下”、“欢颜”、“安如山”等等，又声音宏亮，从而构成了铿锵有力的节奏和奔腾前进的气势，恰切地表现了诗人从“床头屋漏无干处”、“长夜沾湿何由彻”的痛苦生活体验中迸发出来的奔放的激情和火热的希望。这种奔放的激情和火热的希望，咏歌之不足，故嗟叹之，“呜呼！何时眼前突兀见此屋，吾庐独破受冻死亦足！”诗人的博大胸襟和崇高理想，至此表现得淋漓尽致。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2221,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "安得广厦千万间，大庇天下寒士俱欢颜，风雨不动安如山。呜呼！何时眼前突兀见此屋，吾庐独破受冻死亦足！(死亦足 一作：死意足）",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 167,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "“国破山河在，城春草木深。”诗篇一开头描写了春望所见：山河依旧，可是国都已经沦陷，城池也在战火中残破不堪了，乱草丛生，林木荒芜。诗人记忆中昔日长安的春天是何等的繁华，鸟语花香，飞絮弥漫，烟柳明媚，游人迤逦，可是那种景象今日已经荡然无存了。一个“破”字使人怵目惊心，继而一个“深”字又令人满目凄然。诗人写今日景物，实为抒发人去物非的历史感，将感情寄寓于物，借助景物反托情感，为全诗创造了一片荒凉凄惨的气氛。“国破”和“城春”两个截然相反的意象，同时存在并形成强烈的反差。“城春”当指春天花草树木繁盛茂密，烟景明丽的季节，可是由于“国破”，国家衰败，国都沦陷而失去了春天的光彩，留下的只是颓垣残壁，只是“草木深”。“草木深”三字意味深沉，表示长安城里已不是市容整洁、井然有序，而是荒芜破败，人烟稀少，草木杂生。这里，诗人睹物伤感，表现了强烈的黍离之悲。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "multi-v2-shengsheng-qingyuan-03",
+      "category": "multi_evidence",
+      "question": "《声声慢》的孤寂愁绪和《青玉案·元夕》的灯火寻觅",
+      "expected": "evidence",
+      "passed": false,
+      "retrieved_count": 5,
+      "recall_at_k": 0.5,
+      "reciprocal_rank": 0.25,
+      "matched_gold": [
+        2
+      ],
+      "missing_gold": [
+        1
+      ],
+      "latency_ms": 293.781,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 419,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "note",
+          "chunk_index": 0,
+          "line_start": null,
+          "line_end": null,
+          "text": "青玉案：词牌名。“案”读wan，第三声，与“碗”同音。\n元夕：夏历正月十五日为上元节，元宵节，此夜称元夕或元夜。\n“东风”句：形容元宵夜花灯繁多。花千树，花灯之多如千树开花。\n星如雨：指焰火纷纷，乱落如雨。星，指焰火。形容满天的烟花。\n宝马雕车：豪华的马车。\n“凤箫”句：指笙、箫等乐器演奏。凤箫，箫的美称。\n玉壶：比喻明月。亦可解释为指灯。\n鱼龙舞：指舞动鱼形、龙形的彩灯，如鱼龙闹海一样。\n“蛾儿”句：写元夕的妇女装饰。蛾儿、雪柳、黄金缕，皆古代妇女元宵节时头上佩戴的各种装饰品。这里指盛装的妇女。\n盈盈：声音轻盈悦耳，亦指仪态娇美的样子。暗香：本指花香，此指女性们身上散发出来的香气。\n他：泛指第三人称，古时就包括“她”。千百度：千百遍。\n蓦然：突然，猛然。\n阑珊：零落稀疏的样子。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 5062,
+          "poem_id": 359,
+          "poem_version_id": 359,
+          "title": "摸鱼儿·更能消几番风雨",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "淳熙己亥，自湖北漕移湖南，同官王正之置酒小山亭，为赋。\n更能消、几番风雨，匆匆春又归去。惜春长怕花开早，何况落红无数。春且住，见说道、天涯芳草无归路。怨春不语。算只有殷勤，画檐蛛网，尽日惹飞絮。(怕 一作：恨) (无归路 一作：迷归路）\n长门事，准拟佳期又误。蛾眉曾有人妒。千金纵买相如赋，脉脉此情谁诉？君莫舞，君不见、玉环飞燕皆尘土！闲愁最苦！休去倚危栏，斜阳正在，烟柳断肠处。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 830,
+          "poem_id": 56,
+          "poem_version_id": 56,
+          "title": "一剪梅·红藕香残玉簟秋",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "红藕香残玉簟秋。轻解罗裳，独上兰舟。云中谁寄锦书来，雁字回时，月满西楼。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 416,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "东风夜放花千树。更吹落、星如雨。宝马雕车香满路。凤箫声动，玉壶光转，一夜鱼龙舞。\n蛾儿雪柳黄金缕。笑语盈盈暗香去。众里寻他千百度。蓦然回首，那人却在，灯火阑珊处。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 6608,
+          "poem_id": 488,
+          "poem_version_id": 488,
+          "title": "兰陵王·柳",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "闲寻旧踪迹，又酒趁哀弦，灯照离席。梨花榆火催寒食。愁一箭风快，半篙波暖，回头迢递便数驿，望人在天北。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "natural-v2-chunwang-war-01",
+      "category": "natural_language",
+      "question": "杜甫怎样在《春望》中写战乱中的长安与家书",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 262.019,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 167,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "“国破山河在，城春草木深。”诗篇一开头描写了春望所见：山河依旧，可是国都已经沦陷，城池也在战火中残破不堪了，乱草丛生，林木荒芜。诗人记忆中昔日长安的春天是何等的繁华，鸟语花香，飞絮弥漫，烟柳明媚，游人迤逦，可是那种景象今日已经荡然无存了。一个“破”字使人怵目惊心，继而一个“深”字又令人满目凄然。诗人写今日景物，实为抒发人去物非的历史感，将感情寄寓于物，借助景物反托情感，为全诗创造了一片荒凉凄惨的气氛。“国破”和“城春”两个截然相反的意象，同时存在并形成强烈的反差。“城春”当指春天花草树木繁盛茂密，烟景明丽的季节，可是由于“国破”，国家衰败，国都沦陷而失去了春天的光彩，留下的只是颓垣残壁，只是“草木深”。“草木深”三字意味深沉，表示长安城里已不是市容整洁、井然有序，而是荒芜破败，人烟稀少，草木杂生。这里，诗人睹物伤感，表现了强烈的黍离之悲。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 169,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "note",
+          "chunk_index": 4,
+          "line_start": null,
+          "line_end": null,
+          "text": "“烽火连三月，家书抵万金。”诗人想到：战火已经连续不断地进行了一个春天，仍然没有结束。唐玄宗都被迫逃亡蜀地，唐肃宗刚刚继位，但是官军暂时还没有获得有利形势，至今还未能收复西京，看来这场战争还不知道要持续多久。又想起自己流落被俘，扣留在敌军营，好久没有妻子儿女的音信，他们生死未卜，也不知道怎么样了。要能得到封家信多好啊。“家书抵万金”，含有多少辛酸、多少期盼，反映了诗人在消息隔绝、久盼音讯不至时的迫切心情。战争是一封家信胜过“万金”的真正原因，这也是所有受战争追害的人民的共同心理，反映出广大人民反对战争，期望和平安定的美好愿望，很自然地使人产生共鸣。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 166,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "note",
+          "chunk_index": 1,
+          "line_start": null,
+          "line_end": null,
+          "text": "长安沦陷，国家破碎，只有山河依旧；春天来了，人烟稀少的长安城里草木茂密。\n感伤国事，不禁涕泪四溅，鸟鸣惊心，徒增离愁别恨。\n连绵的战火已经延续了半年多，家书难得，一封抵得上万两黄金。\n愁绪缠绕，搔头思考，白发越搔越短，简直要不能插簪了。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 7537,
+          "poem_id": 565,
+          "poem_version_id": 565,
+          "title": "秋兴八首",
+          "granularity": "note",
+          "chunk_index": 13,
+          "line_start": null,
+          "line_end": null,
+          "text": "《秋兴八首》的结构，从全诗来说，可分两部，而以第四首为过渡。前三首详夔州而略长安，后五首详长安而略夔州；前三首由夔州而思及长安，后五首则由思长安而归结到夔州；前三首由现实引发回忆，后五首则由回忆回到现实。至于各首之间，则亦首尾相衔，有一定次第，不能移易，八首只如一首。八首诗，章法缜密严整，脉络分明，不宜拆开，亦不可颠倒。从整体看，从诗人身在的夔州，联想到长安；由暮年飘零，羁旅江上，面对满目萧条景色而引起国家盛衰及个人身世的感叹；以对长安盛世胜事的追忆而归结到诗人现实的孤寂处境、今昔对比的哀愁。这种忧思不能看作是杜甫一时一地的偶然触发，而是自经丧乱以来，他忧国伤时感情的集中表现。目睹国家残破，而不能有所作为，其中曲折，诗人不忍明言，也不能尽言。这就是他所以望长安，写长安，婉转低回，反复慨叹的道理。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 7538,
+          "poem_id": 565,
+          "poem_version_id": 565,
+          "title": "秋兴八首",
+          "granularity": "note",
+          "chunk_index": 14,
+          "line_start": null,
+          "line_end": null,
+          "text": "为理解这组诗的结构，须对其内容先略作说明。第一首是组诗的序曲，通过对巫山巫峡的秋色秋声的形象描绘，烘托出阴沉萧森、动荡不安的环境气氛，令人感到秋色秋声扑面惊心，抒发了诗人忧国之情和孤独抑郁之感。这一首开门见山，抒情写景，波澜壮阔，感情强烈。诗意落实在“丛菊两开他日泪，孤舟一系故园心”两句上，下启第二、三首。第二首写诗人身在孤城，从落日的黄昏坐到深宵，翘首北望，长夜不寐，上应第一首。最后两句，侧重写自己已近暮年，兵戈不息，卧病秋江的寂寞，以及身在剑南，心怀渭北，“每依北斗望京华”，表现出对长安的强烈怀念。第三首写晨曦中的夔府，是第二首的延伸。诗人日日独坐江楼，秋气清明，江色宁静，而这种宁静给作者带来的却是烦扰不安。面临种种矛盾，深深感叹自己一生的事与愿违。第四首是组诗的前后过渡。前三首诗的忧郁不安步步紧逼，至此才揭示它们的中心内容，接触到“每依北斗望京华”的核心：长安象“弈棋”一样彼争此夺，反复不定。人事的更变，纲纪的崩坏，以及回纥、吐蕃的连年进犯，这一切使诗人深感国运大非昔比。对杜甫说来，长安不是个抽象的地理概念，他在这唐代的政治中心住过整整十年，深深印在心上的有依恋，有爱慕，有欢笑，也有到处“潜悲辛”的苦闷。当此国家残破、秋江清冷、个人孤独之际，所熟悉的长安景象，一一浮现眼前。“故国平居有所思”一句挑出以下四首。第五首，描绘长安宫殿的巍峨壮丽，早朝场面的庄严肃穆，以及自己曾得“识圣颜”至今引为欣慰的回忆。值此沧江病卧，岁晚秋深，更加触动他的忧国之情。第六首怀想昔日帝王歌舞游宴之地曲江的繁华。帝王佚乐游宴引来了无穷的“边愁”，清歌曼舞，断送了“自古帝王州”，在无限惋惜之中，隐含斥责之意。第七首忆及长安的昆明池，展示唐朝当年国力昌盛、景物壮丽和物产富饶的盛景。第八首表现了诗人当年在昆吾、御宿、渼陂春日郊游的诗意豪情。“彩笔昔曾干气象”，更是深刻难忘的印象。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "natural-v2-changhen-love-02",
+      "category": "natural_language",
+      "question": "白居易在《长恨歌》结尾怎样写生死不渝的爱情",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.2,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 216.786,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 257,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 17,
+          "line_start": null,
+          "line_end": null,
+          "text": "应该说，写作之初，白居易至少在主观上是同意陈鸿的“惩尤物、窒乱阶”之说的，后来在《新乐府》的《李夫人》、《古家狐》中还重复强调了“尤物惑人”、“狐媚害人”的主题，明确宣扬性爱之为害，但是又承认“人非木石皆有情”，性爱是消灭不了的，所以解决问题的途径只好是“不如不遇倾城色”。但在《长恨歌》的实际写作当中，他又服从了民间爱情故事所表达的人类的向美本能和情感欲望。这样，整个故事便具有了更为深刻复杂的涵义：既写了真美，又写了真恶，并将两者直接联系在一起；《丽情集》本《长恨歌传》有一段话：叔向母曰：“甚美必甚恶。”李延年歌曰：“倾国复倾城。”此之谓也。　这段话大概可以代表中唐士人对这一　问题的最后思考。白居易写作《长恨歌》时遵循的一条基本原则是：不因为“甚恶”而抹煞“甚美”。尽管其主题最后似偏离了对“甚恶”的谴责，但“甚恶”内容本身毕竟没有被抹煞，反过来又丰富了“甚美”的涵义。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 246,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "临别殷勤托方士，寄语君王表情思，语中誓言只有君王与我知。\n当年七月七日长生殿中，夜半无人，我们共起山盟海誓。\n在天愿为比翼双飞鸟，在地愿为并生连理枝。\n即使是天长地久，也总会有尽头，但这生死遗恨，却永远没有尽期。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 259,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 19,
+          "line_start": null,
+          "line_end": null,
+          "text": "而白居易从民本思想出发，有条件、并有所扬弃地接受了城市居民的这种对唐明皇的理想化，这样完成了对唐明皇形象的塑造。诗人被贬江州以后，“独善”与“兼济”的地位才发生了转化，他的精神生活与仕宦生涯逐渐转轨，终于以“独善”消释了“兼济”，在精神自救的过程中，白居易逐渐从关注社会政治转向关注个体生命，对于自由人格的钟爱逐渐超越了对道德人格的执著。 　　 　　作为一首千古绝唱的叙事诗，《长恨歌》在艺术上的成就是很高的。古往今来，许多人都肯定这首诗的特殊的艺术魅力。《长恨歌》在艺术上以什么感染和诱惑着读者呢？宛转动人，缠绵悱恻，恐怕是它最大的艺术个性，也是它能吸住千百年来的读者，使他们受感染、被诱惑的力量。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 247,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 7,
+          "line_start": null,
+          "line_end": null,
+          "text": "《长恨歌》是白居易诗作中脍炙人口的名篇，作于元和元年（806），当时诗人正在盩厔县（今陕西周至）任县尉。这首诗是他和友人陈鸿、王质夫同游仙游寺，有感于唐玄宗、杨贵妃的故事而创作的。在这首长篇叙事诗里，作者以精炼的语言，优美的形象，叙事和抒情结合的手法，叙述了唐玄　宗、杨贵妃在安史之乱中的爱情悲剧：他们的爱情被自己酿成的叛乱断送了，正在没完没了地吃着这一精神的苦果。唐玄宗、杨贵妃都是历史上的人物，诗人并不拘泥于历史，而是借着历史的一点影子，根据当时人们的传说，街坊的歌唱，从中蜕化出一个回旋曲折、宛转动人的故事，用回环往复、缠绵悱恻的艺术形式，描摹、歌咏出来。由于诗中的故事、人物都是艺术化的，是现实中人的复杂真实的再现，所以能够在历代读者的心中漾起阵阵涟漪。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 250,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 10,
+          "line_start": null,
+          "line_end": null,
+          "text": "从“临邛道士鸿都客”至诗的末尾，写道士帮助唐玄宗寻找杨贵妃。诗人采用的是浪漫主义的手法，忽而上天，忽而入地，“上穷碧落下黄泉，两处茫茫皆不见”。后来，在海上虚无缥缈的仙山上找到了杨贵妃，让她以“玉容寂寞泪阑干，梨花一枝春带雨”的形象在仙境中再现，殷勤迎接汉家的使者，含情脉脉，托物寄词，重申前誓，照应唐玄宗对她的思念，进一步深化、渲染“长恨”的主题。诗歌的末尾，用“天长地久有时尽，此恨绵绵无绝期”结笔，点明题旨，回应开头，而且做到“清音有余”，给读者以联想、回味的余地。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "natural-v2-shengsheng-lonely-03",
+      "category": "natural_language",
+      "question": "李清照《声声慢·寻寻觅觅》如何写孤独与愁绪",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 292.562,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 329,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "note",
+          "chunk_index": 9,
+          "line_start": null,
+          "line_end": null,
+          "text": "前人评此词，多以开端三句用一连串叠字为其特色。但只注意这一层，不免失之皮相。词中写主人公一整天的愁苦心情，却从“寻寻觅觅”开始，可见她从一起床便百无聊赖，如有所失，于是东张西望，仿佛飘流在海洋中的人要抓到点什么才能得救似的，希望找到点什么来寄托自己的空虚寂寞。下文“冷冷清清”，是“寻寻觅觅”的结果，不但无所获，反被一种孤寂清冷的气氛袭来，使自己感到凄惨忧戚。于是紧接着再写了一句“凄凄惨惨戚戚”。仅此三句，一种由愁惨而凄厉的氛围已笼罩全篇，使读者不禁为之屏息凝神。这乃是百感迸发于中，不得不吐之为快，所谓“欲罢不能”的结果。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 317,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 2,
+          "text": "寻寻觅觅，冷冷清清，凄凄惨惨戚戚。乍暖还寒时候，最难将息。三杯两盏淡酒，怎敌他、晚来风急？雁过也，正伤心，却是旧时相识。\n满地黄花堆积。憔悴损，如今有谁堪摘？守着窗儿，独自怎生得黑？梧桐更兼细雨，到黄昏、点点滴滴。这次第，怎一个愁字了得！（守着窗儿 一作：守著窗儿）",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 333,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "note",
+          "chunk_index": 13,
+          "line_start": null,
+          "line_end": null,
+          "text": "从“守著窗儿”以下，写独坐无聊，内心苦闷之状，比“寻寻觅觅”三句又进一层。“守著”句如依张惠言《词选》断句，以“独自”连上文。秦观（一作无名氏）《鹧鸪天》下片：“无一语，对芳樽，安排肠断到黄昏。甫能炙得灯儿了，雨打梨花深闭门”，与此词意境相近。但秦词从人对黄昏有思想准备方面着笔，李则从反面说，好像天有意不肯黑下来而使人尤为难过。“梧桐”两句不仅脱胎淮海，而且兼用温庭筠《更漏子》下片“梧桐树，三更雨，不道离情正苦；一叶叶，一声声，空阶滴到明”词意，把两种内容融而为一，笔更直而情更切。最后以“怎一个愁字了得”句作收，也是蹊径独辟之笔。自庾信以来，或言愁有千斛万斛，或言愁如江如海（分别见李煜、秦观词），总之是极言其多。这里却化多为少，只说自己思绪纷茫复杂，仅用一个“愁”字如何包括得尽。妙在又不说明于一个“愁”字之外更有什么心情，即戛然而止，仿佛不了了之。表面上有“欲说还休”之势，实际上已倾泻无遗，淋漓尽致了。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 318,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "寻寻觅觅，冷冷清清，凄凄惨惨戚戚。乍暖还寒时候，最难将息。三杯两盏淡酒，怎敌他、晚来风急？雁过也，正伤心，却是旧时相识。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 9486,
+          "poem_id": 695,
+          "poem_version_id": 695,
+          "title": "声声慢·秋声",
+          "granularity": "note",
+          "chunk_index": 0,
+          "line_start": null,
+          "line_end": null,
+          "text": "译文及注释 译文 菊花黄黄的开放在那深深的小巷，枫叶红红的映照着低矮的门窗，凄凉一片都是那秋天的声音。豆子开花的时候却来了下雨的声音，那中间还夹带着风声。稀稀疏疏一夜二十五点也就到了五更，高高的谯楼大门，却锁不住那些声音。老朋友离我那么远，请问是哪一个摇晃着玉佩发出了声音，原来是那屋檐底下的风铃声？ 系着彩绸的号角发出的声音一直吹到月亮落下了却还在那里慢腾腾，渐渐地那军营里的人马才接连不断地骚动起来了，可是四周却又扬起了胡笳的声音。邻居的灯光闪烁着，灯前还有那女人为军人在石砧上捣衣的声音。谁知她一边捣衣一边咕咕叨叨地诉说着愁苦一直诉说到天明，碎碎琐琐咕咕哝哝的，就像那数不清的秋蝉哀鸣。她诉说得没完没了，还把一半分给那天空的大雁，让大雁代替她的怨声。 注释 声声慢：词牌名。据传蒋捷作此慢词俱用“声”字入韵，故称此名。亦称胜胜慢、凤示凰、寒松叹、人在楼上，最早见于北宋晁补之笔下。双调，九十七字。前后阕各五仄韵。 豆雨：即豆花雨。 二十五点：指更点。古代用铜壶滴漏计时，一夜分为五更，一更分为五点，所以叫更点。 丽谯门：魏武帝曹操曾筑楼名“丽谯”。谯门：指城上能望远的楼。 彩角：即画角。 笳声：胡笳的声音，其声悲凉。 砧声：砧杆声，即捣衣的声音。砧：捶物时，垫在底下的器具。 ▲",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "natural-v2-qingyuan-search-04",
+      "category": "natural_language",
+      "question": "辛弃疾《青玉案·元夕》中反复寻找意中人的词句",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 235.839,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 4509,
+          "poem_id": 314,
+          "poem_version_id": 314,
+          "title": "鹤冲天·黄金榜上",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "烟花巷陌，依约丹青屏障。幸有意中人，堪寻访。且恁偎红倚翠，风流事，平生畅。青春都一饷。忍把浮名，换了浅斟低唱！",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 418,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "line",
+          "chunk_index": 1,
+          "line_start": 2,
+          "line_end": 2,
+          "text": "蛾儿雪柳黄金缕。笑语盈盈暗香去。众里寻他千百度。蓦然回首，那人却在，灯火阑珊处。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 426,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "note",
+          "chunk_index": 7,
+          "line_start": null,
+          "line_end": null,
+          "text": "灯火写得愈热闹，则愈显“那人”的孤高，人写得愈忘情，愈见“那人”的不同流俗。 全词就是通过这种强烈的对比手法，反衬出了一个自甘寂寞、独立不移、性格孤介的女性形象。作者写这样—个不肯随波逐流、自甘淡泊的女性形象，是有所寄托的。辛弃疾力主抗战，屡受排挤，但他矢志不移，宁可过寂寞的闲居生活，也不肯与投降派同流合污，这首词是他这种思想的艺术反映。“众里寻他千百度，蓦然回首，那人却在，灯火阑珊处”，历来也为人传诵。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 421,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "阴历正月十五为上元节，这日晚上称元夕，亦称元宵，元夜。我国古代有元夕观灯的风俗。玉壶：指月亮。鱼龙舞：指舞鱼灯、龙灯之类。这是一首别有寄托的词作。词人假借对一位厌恶热闹、自甘寂寞的女子的寻求，含蓄地表达了自己的高洁志向和情怀．梁启超《艺蘅馆胡词选》云：“自怜幽独，伤心人别有怀抱。”其体会是可信的。词的上片，极写元夕灯火辉煌、歌舞繁盛的热闹景象。“东风夜放花千树，更吹落、星如雨，”前一句写灯，后一句写焰火。上元之夜，满城灯火，就象一夜春风吹开了千树万树的繁花，满天的焰火明灭，又象是春风把满天星斗吹落。真是一片灯的海洋，焰火的世界，令人眼花缭乱。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 419,
+          "poem_id": 25,
+          "poem_version_id": 25,
+          "title": "青玉案·元夕",
+          "granularity": "note",
+          "chunk_index": 0,
+          "line_start": null,
+          "line_end": null,
+          "text": "青玉案：词牌名。“案”读wan，第三声，与“碗”同音。\n元夕：夏历正月十五日为上元节，元宵节，此夜称元夕或元夜。\n“东风”句：形容元宵夜花灯繁多。花千树，花灯之多如千树开花。\n星如雨：指焰火纷纷，乱落如雨。星，指焰火。形容满天的烟花。\n宝马雕车：豪华的马车。\n“凤箫”句：指笙、箫等乐器演奏。凤箫，箫的美称。\n玉壶：比喻明月。亦可解释为指灯。\n鱼龙舞：指舞动鱼形、龙形的彩灯，如鱼龙闹海一样。\n“蛾儿”句：写元夕的妇女装饰。蛾儿、雪柳、黄金缕，皆古代妇女元宵节时头上佩戴的各种装饰品。这里指盛装的妇女。\n盈盈：声音轻盈悦耳，亦指仪态娇美的样子。暗香：本指花香，此指女性们身上散发出来的香气。\n他：泛指第三人称，古时就包括“她”。千百度：千百遍。\n蓦然：突然，猛然。\n阑珊：零落稀疏的样子。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "natural-v2-guishui-aging-05",
+      "category": "natural_language",
+      "question": "曹操《龟虽寿》怎样表达年老仍有雄心",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 290.681,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 758,
+          "poem_id": 50,
+          "poem_version_id": 50,
+          "title": "龟虽寿",
+          "granularity": "note",
+          "chunk_index": 0,
+          "line_start": null,
+          "line_end": null,
+          "text": "该于建安十二年(207)，这时曹操五十三岁。选自《先秦汉魏晋南北朝诗》（中华书局1983年版）。这首诗是曹操所作乐府组诗《步出夏门行》中的第四章。诗中融哲理思考、慷慨激情和艺术形象于一炉，表现了老当益壮、积极进取的人生态度。此诗是曹操的乐府诗《步出夏门行》四章中的最后一章。\n“神龟”二句：神龟虽能长寿，但也有死亡的时候。神龟，传说中的通灵之龟，能活几千岁。寿，长寿。　 3.竟：终结，这里指死亡。\n“螣(téng)蛇”二句：腾蛇即使能乘雾升天，最终也得死亡，变成灰土。腾蛇，传说中与龙同类的神物，能乘云雾升天。\n骥(jì)：良马，千里马。\n伏：趴，卧。\n枥(lì)：马槽。\n烈士：有远大抱负的人。暮年：晚年。\n已：停止。\n盈缩：指人的寿命长短。盈，满，引申为长。缩，亏，引申为短。\n但：仅，只。\n养怡：指调养身心，保持身心健康。怡，愉快、和乐。\n永：长久。永年：长寿，活得长。\n幸甚至哉，歌以咏志：两句是附文，跟正文没关系，只是抒发作者感情，是乐府诗的一种形式性结尾。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 762,
+          "poem_id": 50,
+          "poem_version_id": 50,
+          "title": "龟虽寿",
+          "granularity": "note",
+          "chunk_index": 4,
+          "line_start": null,
+          "line_end": null,
+          "text": "“ 老骥伏枥，志在千里，烈士暮年，壮心不已。” 笔力遒劲，韵律沉雄，内蕴着一股自强不息的豪迈气概，深刻地表达了曹操老当益壮、锐意进取的精神面貌。“壮心不已”表达了要有永不停止的理想追求和积极进取精神，永远乐观奋发，自强不息，保持思想上的青春，曹操以切身体验揭示了人的精神因素对健康的重要意义。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 759,
+          "poem_id": 50,
+          "poem_version_id": 50,
+          "title": "龟虽寿",
+          "granularity": "note",
+          "chunk_index": 1,
+          "line_start": null,
+          "line_end": null,
+          "text": "神龟的寿命即使十分长久，但也还有生命终结的时候。\n螣蛇尽管能乘雾飞行，终究也会死亡化为土灰。 \n年老的千里马躺在马棚里，它的雄心壮志仍然是能够驰骋千里。\n有远大抱负的人士到了晚年，奋发思进的雄心不会止息。\n人的寿命长短，不只是由上天所决定的。\n只要自己调养好身心，也可以益寿延年。\n我非常庆幸，就用这首诗歌来表达自己内心的志向。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 750,
+          "poem_id": 50,
+          "poem_version_id": 50,
+          "title": "龟虽寿",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 7,
+          "text": "神龟虽寿，犹有竟时。\n螣蛇乘雾，终为土灰。\n老骥伏枥，志在千里。\n烈士暮年，壮心不已。\n盈缩之期，不但在天；\n养怡之福，可得永年。\n幸甚至哉，歌以咏志。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 764,
+          "poem_id": 50,
+          "poem_version_id": 50,
+          "title": "龟虽寿",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "人寿命的长短不完全决定于天，只要保持身心健康就能延年益寿。曹操所云“养怡之福”，不是指无所事事，坐而静养，而是说一个人精神状态是最重要的，不应因年暮而消沉。这里可见诗人对天命持否定态度，而对事在人为抱有信心的乐观主义精神，抒发了诗人不甘衰老、不信天命、奋斗不息、对伟大理想的追求永不停止的壮志豪情。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "long-v2-changhen-tail-01",
+      "category": "long_form",
+      "question": "《长恨歌》最后两句怎样写遗恨",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 232.495,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 248,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 8,
+          "line_start": null,
+          "line_end": null,
+          "text": "《长恨歌》就是歌“长恨”，“长恨”是诗歌的主题，故事的焦点，也是埋在诗里的一颗牵动人心的种子。而“恨”什么，为什么要“长恨”，诗人不是直接铺叙、抒写出来，而是通过他笔下诗化的故事，一层一层地展示给读者，让人们自己去揣摸，去回味，去感受。　诗歌开卷第一句：“汉皇重色思倾国”，看来很寻常，好像故事原就应该从这里写起，不需要作者花什么心思似的，事实上这七个字含量极大，是全篇纲领，它既揭示了故事的悲剧因素，又唤起和统领着全诗。紧接着，诗人用极其省俭的语言，叙述了安史之乱前，唐玄宗如何重色、求色，终于得到了“回眸一笑百媚生，六宫粉黛无颜色”的杨贵妃。描写了杨贵妃的美貌、娇媚，进宫后因有色而得宠，不但自己“新承恩泽”，而且“姊妹弟兄皆列土”。反复渲染唐玄宗得贵妃以后在宫中如何纵欲，如何行乐，如何终日沉湎于歌舞酒色之中。所有这些，就酿成了安史之乱：“渔阳鼙鼓动地来，惊破霓裳羽衣曲”。这一部分写出了“长恨”的内因，是悲剧故事的基础。诗人通过这一段宫中生活的写实，不无讽刺地向我们介绍了故事的男女主人公：一个重色轻国的帝王，一个娇媚恃宠的妃子。还形象地暗示我们，唐玄宗的迷色误国，就是这一悲剧的根源。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 250,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 10,
+          "line_start": null,
+          "line_end": null,
+          "text": "从“临邛道士鸿都客”至诗的末尾，写道士帮助唐玄宗寻找杨贵妃。诗人采用的是浪漫主义的手法，忽而上天，忽而入地，“上穷碧落下黄泉，两处茫茫皆不见”。后来，在海上虚无缥缈的仙山上找到了杨贵妃，让她以“玉容寂寞泪阑干，梨花一枝春带雨”的形象在仙境中再现，殷勤迎接汉家的使者，含情脉脉，托物寄词，重申前誓，照应唐玄宗对她的思念，进一步深化、渲染“长恨”的主题。诗歌的末尾，用“天长地久有时尽，此恨绵绵无绝期”结笔，点明题旨，回应开头，而且做到“清音有余”，给读者以联想、回味的余地。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 246,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "临别殷勤托方士，寄语君王表情思，语中誓言只有君王与我知。\n当年七月七日长生殿中，夜半无人，我们共起山盟海誓。\n在天愿为比翼双飞鸟，在地愿为并生连理枝。\n即使是天长地久，也总会有尽头，但这生死遗恨，却永远没有尽期。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2379,
+          "poem_id": 125,
+          "poem_version_id": 125,
+          "title": "木兰花·拟古决绝词柬友",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "“骊山语罢清宵半，泪雨零铃终不怨”二句用唐明皇与杨玉环的爱情典故。七夕的时候，唐杨二人在华清宫里山盟海誓。山盟海誓言犹在，马嵬坡事变一爆发，杨贵妃就成了政治斗争的牺牲品。据说后来唐明皇从四川回长安的路上，在栈道上听到雨中的铃声，又勾起了他对杨贵妃的思恋，就写了著名的曲子《雨霖铃》。这里借用此典说即使是最后作决绝之别，也不生怨。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 5779,
+          "poem_id": 411,
+          "poem_version_id": 411,
+          "title": "代悲白头翁",
+          "granularity": "note",
+          "chunk_index": 7,
+          "line_start": null,
+          "line_end": null,
+          "text": "结尾四句点明主旨，收束全诗。“宛转蛾眉能几时？须臾鹤发乱如丝”两句感叹美貌的少女转眼之间将化作白发的老妇，惋惜青春难驻。“但看古来歌舞地，唯有黄昏鸟雀悲”两句，一切都如同过眼云烟，迅速消失了！往日繁华热闹的游乐场所，如今只有几只离群的鸟雀在清冷的暮蔼中发出几声凄苦的悲鸣。末句的最后一个“悲”字，是此诗的基调。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "long-v2-pipaxing-tail-02",
+      "category": "long_form",
+      "question": "《琵琶行》结尾怎样写听众再次落泪",
+      "expected": "evidence",
+      "passed": false,
+      "retrieved_count": 5,
+      "recall_at_k": 0.0,
+      "reciprocal_rank": 0.0,
+      "matched_gold": [],
+      "missing_gold": [
+        1
+      ],
+      "latency_ms": 458.666,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 1346,
+          "poem_id": 73,
+          "poem_version_id": 73,
+          "title": "琵琶行 / 琵琶引",
+          "granularity": "note",
+          "chunk_index": 9,
+          "line_start": null,
+          "line_end": null,
+          "text": "从“夜送客”之时的“秋萧瑟”“无管弦”“惨将别”一转而为“忽闻”“寻声”“暗问”“移船”，直到“邀相见”，这对于琵琶女的出场来说，已可以说是“千呼万唤”了。但“邀相见”还不那么容易，又要经历一个“千呼万唤”的过程，她才肯“出来”。这并不是她在意身份。正象“我”渴望听仙乐一般的琵琶声，是“直欲摅写天涯沦落之恨”一样，她“千呼万唤始出来”，也是由于有一肚子“天涯沦落之恨”，不便明说，也不愿见人。诗人正是抓住这一点，用“琵琶声停欲语迟”“犹抱琵琶半遮面”的肖像描写来表现她的难言之痛的。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1349,
+          "poem_id": 73,
+          "poem_version_id": 73,
+          "title": "琵琶行 / 琵琶引",
+          "granularity": "note",
+          "chunk_index": 12,
+          "line_start": null,
+          "line_end": null,
+          "text": "如此绘声绘色地再现千变万化的音乐形象，已不能不使我们惊佩作者的艺术才华。但作者的才华还不仅表现在再现音乐形象，更重要的是通过音乐形象的千变万化，展现了琵琶女起伏回荡的心潮，为下面的诉说身世作了音乐性的渲染。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1341,
+          "poem_id": 73,
+          "poem_version_id": 73,
+          "title": "琵琶行 / 琵琶引",
+          "granularity": "note",
+          "chunk_index": 4,
+          "line_start": null,
+          "line_end": null,
+          "text": "暮去朝来我也渐渐地年老色衰。\n门前车马减少光顾者落落稀稀；青春已逝我只得嫁给商人为妻。\n商人重利不重情常常轻易别离；上个月他去浮梁做茶叶的生意。\n他去了留下我在江口孤守空船；秋月与我作伴绕舱的秋水凄寒。\n更深夜阑常梦少年时作乐狂欢；梦中哭醒涕泪纵横污损了粉颜。\n我听琵琶的悲泣早已摇头叹息；又听到她这番诉说更叫我悲凄。\n我们俩同是天涯沦落的可悲人；今日相逢何必问是否曾经相识！\n自从去年我离开繁华长安京城；被贬居住在浔阳江畔常常卧病。\n浔阳这地方荒凉偏僻没有音乐；一年到头听不到管弦的乐器声。\n住在湓江这个低洼潮湿的地方；第宅周围黄芦和苦竹缭绕丛生。\n在这里早晚能听到的是什么呢？尽是杜鹃猿猴那些悲凄的哀鸣。\n春江花朝秋江月夜那样好光景；也无可奈何常常取酒独酌独饮。\n难道这里就没有山歌和村笛吗？只是那音调嘶哑粗涩实在难听。\n今晚我听你弹奏琵琶诉说衷情，就像听到仙乐眼也亮来耳也明。\n请你不要推辞坐下来再弹一曲；我要为你创作一首新诗《琵琶行》。\n被我的话所感动她站立了好久；回身坐下再转紧琴弦拨出急声。\n凄凄切切不再像刚才那种声音；在座的人重听都掩面哭泣不停。\n要问在座之中谁流的眼泪最多？我江州司马泪水湿透青衫衣襟！",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1339,
+          "poem_id": 73,
+          "poem_version_id": 73,
+          "title": "琵琶行 / 琵琶引",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "唐宪宗元和十年，我被贬为九江郡司马。第二年秋季的一天，送客到湓浦口，夜里听到船上有人弹琵琶。听那声音，铮铮铿铿有京都流行的声韵。探问这个人，原来是长安的歌女，曾经向穆、曹两位琵琶大师学艺。后来年纪大了，红颜退尽，嫁给商人为妻。于是命人摆酒叫她畅快地弹几曲。她弹完后，有些闷闷不乐的样子，自己说起了少年时欢乐之事，而今漂泊沉沦，形容憔悴，在江湖之间辗转流浪。我离京调外任职两年来，随遇而安，自得其乐，而今被这个人的话所感触，这天夜里才有被降职的感觉。于是撰写一首长诗赠送给她，共六百一十六字，题为《琵琶行》。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1289,
+          "poem_id": 73,
+          "poem_version_id": 73,
+          "title": "琵琶行 / 琵琶引",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "元和十年，予左迁九江郡司马。明年秋，送客湓浦口，闻舟中夜弹琵琶者，听其音，铮铮然有京都声。问其人，本长安倡女，尝学琵琶于穆、曹二善才，年长色衰，委身为贾人妇。遂命酒，使快弹数曲。曲罢悯然，自叙少小时欢乐事，今漂沦憔悴，转徙于江湖间。予出官二年，恬然自安，感斯人言，是夕始觉有迁谪意。因为长句，歌以赠之，凡六百一十六言，命曰《琵琶行》。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "long-v2-tianmu-tail-03",
+      "category": "long_form",
+      "question": "《梦游天姥吟留别》结尾怎样表现不向权贵低头",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 271.197,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 1842,
+          "poem_id": 99,
+          "poem_version_id": 99,
+          "title": "梦游天姥吟留别 / 梦游天姥山别东鲁诸公",
+          "granularity": "note",
+          "chunk_index": 11,
+          "line_start": null,
+          "line_end": null,
+          "text": "仙境倏忽消失，梦境旋亦破灭，诗人终于在惊悸中返回现实。梦境破灭后，人，不是随心所欲地轻飘飘地在梦幻中翱翔了，而是沉甸甸地躺在枕席之上。“古来万事东流水”，其中包含着诗人对人生的几多失意和深沉的感慨。此时此刻诗人感到最能抚慰心灵的是“且放白鹿青崖间，须行即骑访名山”。徜徉山水的乐趣，才是最快意的，也就是在《春夜宴从弟桃花园序》中所说：“古人秉烛夜游，良有以也。”本来诗意到此似乎已尽，可是最后却愤愤然加添了两句“安能摧眉折腰事权贵，使我不得开心颜！”一吐长安三年的郁闷之气。天外飞来之笔，点亮了全诗的主题：对于名山仙境的向往，是出之于对权贵的抗争，它唱出封建社会中多少怀才不遇的人的心声。在等级森严的封建社会中，多少人屈身权贵，多少人埋没无闻！唐朝比之其他朝代是比较开明的，较为重视人才，但也只是比较而言。人才在当时仍然摆脱不了“臣妾气态间”的屈辱地位。“折腰”一词出之于东晋的陶渊明，他由于不愿忍辱而赋“归去来”。李白虽然受帝王优宠，也不过是个词臣，在宫廷中所受到的屈辱，大约可以从这两句诗中得到一些消息。封建君主把自己称“天子”，君临天下，把自己升高到至高无上的地位，却抹煞了一切人的尊严。李白在这里所表示的决绝态度，是向封建统治者所投过去的一瞥蔑视。在封建社会，敢于这样想、敢于这样说的人并不多。李白说了，也做了，这是他异乎常人的伟大之处。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1837,
+          "poem_id": 99,
+          "poem_version_id": 99,
+          "title": "梦游天姥吟留别 / 梦游天姥山别东鲁诸公",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "“海客谈瀛洲，烟涛微茫信难求；越人语天姥，云霓明灭或可睹。”诗一开始先说古代传说中的海外仙境──瀛洲，虚无缥缈，不可寻求；而现实中的天姥山在浮云彩霓中时隐时现，真是胜似仙境。以虚衬实，突出了天姥胜景，暗蕴着诗人对天姥山的向往，写得富有神奇色彩，引人入胜。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1808,
+          "poem_id": 99,
+          "poem_version_id": 99,
+          "title": "梦游天姥吟留别 / 梦游天姥山别东鲁诸公",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 22,
+          "text": "海客谈瀛洲，烟涛微茫信难求；\n越人语天姥，云霞明灭或可睹。\n天姥连天向天横，势拔五岳掩赤城。\n天台四万八千丈，对此欲倒东南倾。(四万 一作：一万)\n我欲因之梦吴越，一夜飞度镜湖月。(度 通：渡)\n湖月照我影，送我至剡溪。\n谢公宿处今尚在，渌水荡漾清猿啼。\n脚著谢公屐，身登青云梯。\n半壁见海日，空中闻天鸡。\n千岩万转路不定，迷花倚石忽已暝。\n熊咆龙吟殷岩泉，栗深林兮惊层巅。\n云青青兮欲雨，水澹澹兮生烟。\n列缺霹雳，丘峦崩摧。\n洞天石扉，訇然中开。\n青冥浩荡不见底，日月照耀金银台。\n霓为衣兮风为马，云之君兮纷纷而来下。\n虎鼓瑟兮鸾回车，仙之人兮列如麻。\n忽魂悸以魄动，恍惊起而长嗟。\n惟觉时之枕席，失向来之烟霞。\n世间行乐亦如此，古来万事东流水。\n别君去兮何时还？且放白鹿青崖间，须行即骑访名山。\n安能摧眉折腰事权贵，使我不得开心颜!",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 6569,
+          "poem_id": 483,
+          "poem_version_id": 483,
+          "title": "奉赠韦左丞丈二十二韵",
+          "granularity": "note",
+          "chunk_index": 8,
+          "line_start": null,
+          "line_end": null,
+          "text": "“白鸥没浩荡，万里谁能驯！”从结构安排上看，这个结尾是从百转千回中逼出来的，宛若奇峰突起，末势愈壮。它将诗人高洁的情操、宽广的胸怀、刚强的性格，表现得辞气喷薄，跃然纸上。正如浦起龙指出的“一结高绝”（见《读杜心解》）。董养性也说：“篇中……词气磊落，傲睨宇宙，可见公虽困踬之中，英锋俊彩，未尝少挫也。”（转引自仇兆鳌《杜诗详注》）吟咏这样的曲终高奏，诗人青年时期的英气豪情，会重新在读者心头激荡。诗人经受着尘世的磨炼，没有向封建社会严酷的不合理现实屈服，显示出一种碧海展翅的冲击力，从而把全诗的思想性升华到一个新的高度。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 4494,
+          "poem_id": 312,
+          "poem_version_id": 312,
+          "title": "行路难三首",
+          "granularity": "note",
+          "chunk_index": 7,
+          "line_start": null,
+          "line_end": null,
+          "text": "全诗在高度彷徨与大量感叹之后，以“长风破浪会有时”忽开异境，并且坚信美好前景，终会到来，因而“直挂云帆济沧海”，激流勇进。蕴意波澜起伏，跌宕多姿。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "long-v2-shudao-tail-04",
+      "category": "long_form",
+      "question": "《蜀道难》中描写剑阁险要和守关的句子",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 250.38,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 944,
+          "poem_id": 64,
+          "poem_version_id": 64,
+          "title": "蜀道难",
+          "granularity": "line",
+          "chunk_index": 16,
+          "line_start": 17,
+          "line_end": 17,
+          "text": "剑阁峥嵘而崔嵬，一夫当关，万夫莫开。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 964,
+          "poem_id": 64,
+          "poem_version_id": 64,
+          "title": "蜀道难",
+          "granularity": "note",
+          "chunk_index": 15,
+          "line_start": null,
+          "line_end": null,
+          "text": "风光变幻，险象丛生。在十分惊险的气氛中，最后写到蜀中要塞剑阁，在大剑山和小剑山之间有一条三十里长的栈道，群峰如剑，连山耸立，削壁中断如门，形成天然要塞。因其地势险要，易守难攻，历史上在此割据称王者不乏其人。诗人从剑阁的险要引出对政治形势的描写。他化用西晋张载《剑阁铭》中“形胜之地，匪亲勿居”的语句，劝人引为鉴戒，警惕战乱的发生，并联系当时的社会背景，揭露了蜀中豺狼的“磨牙吮血，杀人如麻”，从而表达了对国事的忧虑与关切。唐天宝初年，太平景象的背后正潜伏着危机，后来发生的安史之乱，证明诗人的忧虑是有现实意义的。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 927,
+          "poem_id": 64,
+          "poem_version_id": 64,
+          "title": "蜀道难",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 21,
+          "text": "噫吁嚱，危乎高哉！蜀道之难，难于上青天！\n蚕丛及鱼凫，开国何茫然！\n尔来四万八千岁，不与秦塞通人烟。\n西当太白有鸟道，可以横绝峨眉巅。\n地崩山摧壮士死，然后天梯石栈相钩连。\n上有六龙回日之高标，下有冲波逆折之回川。\n黄鹤之飞尚不得过，猿猱欲度愁攀援。(攀援 一作：攀缘)\n青泥何盘盘，百步九折萦岩峦。\n扪参历井仰胁息，以手抚膺坐长叹。\n问君西游何时还？畏途巉岩不可攀。\n但见悲鸟号古木，雄飞雌从绕林间。\n又闻子规啼夜月，愁空山。\n蜀道之难,难于上青天，使人听此凋朱颜！\n连峰去天不盈尺，枯松倒挂倚绝壁。\n飞湍瀑流争喧豗，砯崖转石万壑雷。\n其险也如此，嗟尔远道之人胡为乎来哉！(也如此 一作：也若此)\n剑阁峥嵘而崔嵬，一夫当关，万夫莫开。\n所守或匪亲，化为狼与豺。\n朝避猛虎，夕避长蛇；磨牙吮血，杀人如麻。\n锦城虽云乐，不如早还家。\n蜀道之难,难于上青天，侧身西望长咨嗟！",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 950,
+          "poem_id": 64,
+          "poem_version_id": 64,
+          "title": "蜀道难",
+          "granularity": "note",
+          "chunk_index": 1,
+          "line_start": null,
+          "line_end": null,
+          "text": "飞湍（tuān）：飞奔而下的急流。喧豗（huī）：喧闹声，这里指急流和瀑布发出的巨大响声。砯（pīng）崖：水撞石之声。砯，水冲击石壁发出的响声，这里作动词用，冲击的意思。转，使滚动。 壑：山谷。\n嗟：感叹声。尔：你。胡为：为什么。来：指入蜀。\n剑阁：又名剑门关，在四川剑阁县北，是大、小剑山之间的一条栈道，长约三十余里。峥嵘、崔嵬，都是形容山势高大雄峻的样子。一夫：一人。当关：守关。莫开：不能打开。\n所守：指把守关口的人。或匪亲：倘若不是可信赖的人。匪，同“非”。\n朝：早上。吮：吸。\n锦城：成都古代以产棉闻名，朝廷曾经设官于此，专收棉织品，故称锦城或锦官城。今四川成都市。\n咨嗟：叹息。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 201,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "line",
+          "chunk_index": 21,
+          "line_start": 24,
+          "line_end": 24,
+          "text": "黄埃散漫风萧索，云栈萦纡登剑阁。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "long-v2-maowu-tail-05",
+      "category": "long_form",
+      "question": "《茅屋为秋风所破歌》结尾怎样表达对天下寒士的祝愿",
+      "expected": "evidence",
+      "passed": true,
+      "retrieved_count": 5,
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "matched_gold": [
+        1
+      ],
+      "missing_gold": [],
+      "latency_ms": 226.312,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 2227,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "note",
+          "chunk_index": 5,
+          "line_start": null,
+          "line_end": null,
+          "text": "第二节五句。这是前一节的发展，也是对前一节的补充。前节写“洒江郊”的茅草无法收回。还有落在平地上可以收回的，然而却被“南村群童”抱跑了。“欺我老无力”五字宜着眼。如果诗人不是“老无力”，而是年当壮健有气力，自然不会受这样的欺侮。“忍能对面为盗贼”，意谓：竟然忍心在我的眼前做盗贼！这不过是表现了诗人因“老无力”而受欺侮的愤懑心情而已，决不是真的给“群童”加上“盗贼”的罪名，要告到官府里去办罪。所以，“唇焦口燥呼不得”，也就无可奈何了。用诗人《又呈吴郎》一诗里的话说，这正是“不为困穷宁有此”。诗人如果不是十分困穷，就不会对大风刮走茅草那么心急如焚；“群童”如果不是十分困穷，也不会冒着狂风抱那些并不值钱的茅草。这一切，都是结尾的伏线。“安得广厦千万间，大庇天下寒士俱欢颜”的崇高愿望，正是从“四海困穷”的现实基础上产生出来的。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2221,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "line",
+          "chunk_index": 3,
+          "line_start": 4,
+          "line_end": 4,
+          "text": "安得广厦千万间，大庇天下寒士俱欢颜，风雨不动安如山。呜呼！何时眼前突兀见此屋，吾庐独破受冻死亦足！(死亦足 一作：死意足）",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2217,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "poem",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 4,
+          "text": "八月秋高风怒号，卷我屋上三重茅。茅飞渡江洒江郊，高者挂罥长林梢，下者飘转沉塘坳。\n南村群童欺我老无力，忍能对面为盗贼，公然抱茅入竹去。唇焦口燥呼不得，归来倚杖自叹息。\n俄顷风定云墨色，秋天漠漠向昏黑。布衾多年冷似铁，娇儿恶卧踏里裂。床头屋漏无干处，雨脚如麻未断绝。自经丧乱少睡眠，长夜沾湿何由彻?\n安得广厦千万间，大庇天下寒士俱欢颜，风雨不动安如山。呜呼！何时眼前突兀见此屋，吾庐独破受冻死亦足！(死亦足 一作：死意足）",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 7914,
+          "poem_id": 600,
+          "poem_version_id": 600,
+          "title": "咏煤炭",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "第四句：“但愿苍生俱饱暖”，从煤炭进一步生发，即杜甫广厦万间大庇天下寒士之意而扩大之。末句绾结到自己出山济世，一切艰辛在所甘心历之的本意，即托物言志。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2223,
+          "poem_id": 112,
+          "poem_version_id": 112,
+          "title": "茅屋为秋风所破歌",
+          "granularity": "note",
+          "chunk_index": 1,
+          "line_start": null,
+          "line_end": null,
+          "text": "八月里秋深，狂风怒号，狂风卷走了我屋顶上好几层茅草。茅草乱飞，渡过浣花溪，散落在对岸江边。飞得高的茅草缠绕在高高的树梢上，飞得低的飘飘洒洒沉落到池塘和洼地里。\n南村的一群儿童欺负我年老没力气，竟忍心这样当面做“贼”抢东西，毫无顾忌地抱着茅草跑进竹林去了。我嘴唇干燥也喝止不住，回来后拄着拐杖，独自叹息。\n一会儿风停了，天空中乌云像墨一样黑，深秋天空阴沉迷蒙渐渐黑下来了。布被盖了多年，又冷又硬，像铁板似的。孩子睡觉姿势不好，把被子蹬破了。一下雨屋顶漏水，屋内没有一点儿干燥的地方，房顶的雨水像麻线一样不停地往下漏。自从安史之乱之后，我睡眠的时间很少，长夜漫漫，屋漏床湿，怎能挨到天亮。\n如何能得到千万间宽敞高大的房子，普遍地庇覆天下间贫寒的读书人，让他们开颜欢笑，房子在风雨中也不为所动，安稳得像是山一样？唉！什么时候眼前出现这样高耸的房屋，到那时即使我的茅屋被秋风所吹破，我自己受冻而死也心甘情愿！",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "structured-v2-baijuyi-tang-long-01",
+      "category": "structured_filter",
+      "question": "唐代白居易写爱情悲剧的长诗",
+      "expected": "evidence",
+      "passed": false,
+      "retrieved_count": 5,
+      "recall_at_k": 0.0,
+      "reciprocal_rank": 0.0,
+      "matched_gold": [],
+      "missing_gold": [
+        1
+      ],
+      "latency_ms": 214.009,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 247,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 7,
+          "line_start": null,
+          "line_end": null,
+          "text": "《长恨歌》是白居易诗作中脍炙人口的名篇，作于元和元年（806），当时诗人正在盩厔县（今陕西周至）任县尉。这首诗是他和友人陈鸿、王质夫同游仙游寺，有感于唐玄宗、杨贵妃的故事而创作的。在这首长篇叙事诗里，作者以精炼的语言，优美的形象，叙事和抒情结合的手法，叙述了唐玄　宗、杨贵妃在安史之乱中的爱情悲剧：他们的爱情被自己酿成的叛乱断送了，正在没完没了地吃着这一精神的苦果。唐玄宗、杨贵妃都是历史上的人物，诗人并不拘泥于历史，而是借着历史的一点影子，根据当时人们的传说，街坊的歌唱，从中蜕化出一个回旋曲折、宛转动人的故事，用回环往复、缠绵悱恻的艺术形式，描摹、歌咏出来。由于诗中的故事、人物都是艺术化的，是现实中人的复杂真实的再现，所以能够在历代读者的心中漾起阵阵涟漪。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 7994,
+          "poem_id": 606,
+          "poem_version_id": 606,
+          "title": "马嵬",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "唐玄宗李隆基与贵妃杨玉环之间悲欢离合的故事，引发了很多文人墨客的诗情文思。白居易的《长恨歌》，在揭示唐玄宗宠幸杨贵妃而造成政治悲剧的同时，也表达了对二人爱情悲剧的同情。袁枚此诗却能不落俗套，另翻新意，将李、杨爱情悲剧放在民间百姓悲惨遭遇的背景下加以审视，强调广大民众的苦难远非帝妃可比。《长恨歌》和《石壕吏》是有名的诗篇，其创作背景均为安史之乱。它们一以帝王生活为题材，一以百姓遭遇为主旨，恰好构成鲜明的对照。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 8571,
+          "poem_id": 647,
+          "poem_version_id": 647,
+          "title": "长干行二首",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "诗人李白写过许多反映妇女生活的作品，《长干行两首》就是其中杰出的诗篇。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 1420,
+          "poem_id": 78,
+          "poem_version_id": 78,
+          "title": "钗头凤·红酥手",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "这首词写的是陆游自己的爱情悲剧。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 257,
+          "poem_id": 13,
+          "poem_version_id": 13,
+          "title": "长恨歌",
+          "granularity": "note",
+          "chunk_index": 17,
+          "line_start": null,
+          "line_end": null,
+          "text": "应该说，写作之初，白居易至少在主观上是同意陈鸿的“惩尤物、窒乱阶”之说的，后来在《新乐府》的《李夫人》、《古家狐》中还重复强调了“尤物惑人”、“狐媚害人”的主题，明确宣扬性爱之为害，但是又承认“人非木石皆有情”，性爱是消灭不了的，所以解决问题的途径只好是“不如不遇倾城色”。但在《长恨歌》的实际写作当中，他又服从了民间爱情故事所表达的人类的向美本能和情感欲望。这样，整个故事便具有了更为深刻复杂的涵义：既写了真美，又写了真恶，并将两者直接联系在一起；《丽情集》本《长恨歌传》有一段话：叔向母曰：“甚美必甚恶。”李延年歌曰：“倾国复倾城。”此之谓也。　这段话大概可以代表中唐士人对这一　问题的最后思考。白居易写作《长恨歌》时遵循的一条基本原则是：不因为“甚恶”而抹煞“甚美”。尽管其主题最后似偏离了对“甚恶”的谴责，但“甚恶”内容本身毕竟没有被抹煞，反过来又丰富了“甚美”的涵义。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "structured-v2-song-ci-sorrow-02",
+      "category": "structured_filter",
+      "question": "宋代李清照写孤独愁绪的词",
+      "expected": "evidence",
+      "passed": false,
+      "retrieved_count": 5,
+      "recall_at_k": 0.0,
+      "reciprocal_rank": 0.0,
+      "matched_gold": [],
+      "missing_gold": [
+        1
+      ],
+      "latency_ms": 209.519,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 7005,
+          "poem_id": 531,
+          "poem_version_id": 531,
+          "title": "凤凰台上忆吹箫·香冷金猊",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "这首词是李清照抒写离愁的名篇之一。下面是中华诗词学会理事徐培均先生对此词的赏析要点。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 322,
+          "poem_id": 19,
+          "poem_version_id": 19,
+          "title": "声声慢·寻寻觅觅",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "靖康之变后，李清照国破，家亡，夫死，伤于人事。这时期她的作品再没有当年那种清新可人，浅斟低唱，而转为沉郁凄婉，主要抒写她对亡夫赵明诚的怀念和自己孤单凄凉的景况。此词便是这时期的典型代表作品之一。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 3480,
+          "poem_id": 224,
+          "poem_version_id": 224,
+          "title": "渔家傲·天接云涛连晓雾",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "李清照是一位可以代表婉约派的女作家，她的《声声慢》、《醉花阴》等是大家熟悉的名作。这些词多半写闺情幽怨，它的风格是含蓄、委婉的。但是在她的词作中也有一首风格特殊的《渔家傲》，这是一首豪放的词，她用《离骚》、《远游》的感情来写小令，不但是五代词中所没有的，就是北宋词中也很少见。一位婉约派的女词人，而能写出这样有气魄的作品，确实值得注意。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 834,
+          "poem_id": 56,
+          "poem_version_id": 56,
+          "title": "一剪梅·红藕香残玉簟秋",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "这是一首倾诉相思、别愁之苦的词。这首词在黄昇《花庵词选》中题作“别愁”，是李清照写给新婚未久即离家外出的丈夫赵明诚的，她诉说了自己独居生活的孤独寂寞，急切思念丈夫早日归来的心情。伊世珍《琅嬛记》说：“易安结褵（婚）未久，明诚即负笈远游。易安殊不忍别，觅锦帕书《一剪梅》词以送之。”作者在词中以女性特有的敏感捕捉稍纵即逝的真切感受，将抽象而不易捉摸的思想感情，以素淡的语言表现出具体可感、为人理解、耐人寻味的东西。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 9439,
+          "poem_id": 689,
+          "poem_version_id": 689,
+          "title": "临江仙·庭院深深深几许",
+          "granularity": "note",
+          "chunk_index": 4,
+          "line_start": null,
+          "line_end": null,
+          "text": "词作下片，承上片怕触景伤怀，进而追忆往昔，对比眼前，感到一切心灰意冷。“感月吟风多少事？如今老去无成”，今昔对比，无限感喟。李清照与赵明诚是一对有较高文化修养的恩爱夫妻，他们共迷金石，同醉诗文，烹茗煮酒，展玩赏鉴，沉醉于富有诗意的幸福生活之中。李清照以其女性的独特敏感和文学修养，以春花秋菊为题材，曾写过不少好词。“多少事”，以强调语气，表示很多，记也记不清了。可如今年老飘零，心情不好，什么事也做不成。至此，词人情绪极为激动，不禁呼出：“谁怜憔悴更凋零！”破碎山河无人收拾，词人憔悴瘦损、流落江南。词人在《永遇乐》中曾以“风鬟雾鬓”描绘她的“如今憔悴”。“谁怜”二字，表明词人身处异乡，孤身一人，无人可诉。而一个“更”字，道出了词人的心境日渐一日的悲凄。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "no-answer-v2-kubernetes-01",
+      "category": "no_answer_cross_domain",
+      "question": "Kubernetes 的 Pod 调度器如何选择节点",
+      "expected": "no_evidence",
+      "passed": true,
+      "retrieved_count": 0,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 243.636,
+      "retrieved_evidence": []
+    },
+    {
+      "case_id": "no-answer-v2-graphql-02",
+      "category": "no_answer_cross_domain",
+      "question": "GraphQL 和 REST 的查询方式有什么区别",
+      "expected": "no_evidence",
+      "passed": true,
+      "retrieved_count": 0,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 225.77,
+      "retrieved_evidence": []
+    },
+    {
+      "case_id": "no-answer-v2-react-hooks-03",
+      "category": "no_answer_cross_domain",
+      "question": "React Hooks 的 useEffect 依赖数组有什么作用",
+      "expected": "no_evidence",
+      "passed": true,
+      "retrieved_count": 0,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 278.976,
+      "retrieved_evidence": []
+    },
+    {
+      "case_id": "no-answer-v2-tidu-nancheng-entity-04",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "崔护《题都城南庄》的译文是什么",
+      "expected": "no_evidence",
+      "passed": false,
+      "retrieved_count": 5,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 205.013,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 5910,
+          "poem_id": 423,
+          "poem_version_id": 423,
+          "title": "清平乐·红笺小字",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "结尾两句化用崔护《题都城南庄》诗句：“人面不知何处去，桃花依旧笑东风”之意，略加变化，给人以有余不尽之感。绿水，或曾映照过如花的人面，如今，流水依然在眼，而人面不知何处，唯有相思之情，跟随流水，悠悠东去而已。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 6572,
+          "poem_id": 484,
+          "poem_version_id": 484,
+          "title": "菊花",
+          "granularity": "line",
+          "chunk_index": 0,
+          "line_start": 1,
+          "line_end": 1,
+          "text": "故园三径吐幽丛，一夜玄霜坠碧空。",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 10699,
+          "poem_id": 864,
+          "poem_version_id": 864,
+          "title": "送平阴杨令迁晋府审理二十二韵",
+          "granularity": "line",
+          "chunk_index": 7,
+          "line_start": 15,
+          "line_end": 15,
+          "text": "花树存遗爱，棠阴郁别情。幽居门久杜，过访盖频倾。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 4314,
+          "poem_id": 299,
+          "poem_version_id": 299,
+          "title": "海棠",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "全诗语言浅近而情意深永。写此诗时，诗人虽已过不惑之年，但此诗却没有给人以颓唐、萎靡之气，从“东风”“崇光”“香雾”“高烛”“红妆”这些明丽的意象中分明可以感触到诗人的达观、潇洒的胸襟。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 9361,
+          "poem_id": 679,
+          "poem_version_id": 679,
+          "title": "南园十三首",
+          "granularity": "note",
+          "chunk_index": 25,
+          "line_start": null,
+          "line_end": null,
+          "text": "这是一首诗，也是一幅画。诗人以诗作画，采用移步换形的方法，就像绘制动画片那样，描绘出南园一带从早到晚的水色山光，旖旎动人。 　　首二句写晨景。夜雾逐渐消散，一条蜿蜒于绿树丛中的羊肠小道随着天色转明而豁然开朗。路边的蒙茸细草沾满了露水，湿漉漉的，分外苍翠可爱。诗歌开头从林间小路落笔，然后由此及彼，依次点染。显然，它展示的是诗人清晨出游时观察所得的印象。 　　三、四句写白昼的景色。诗人由幽静、逼仄的林间小道来到空旷的溪水旁边。这时风和日暖，晨露已晞，柳絮纷纷扬扬，飘落在溪边的浅滩上，白花花的一片，像是铺了一层雪。阳春三月，莺飞草长，诗人沿途所见多是绿的树，绿的草，绿的田园。到了这里，眼前忽地出现一片银白色，不禁大为惊奇。惊定之后，也就尽情欣赏起这似雪非雪的奇异景象来。 　　诗人在诗中着意刻画了田园生活的安逸，流露出浓厚的归隐情绪，表现了诗人对仕途的失望、无奈之感。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "no-answer-v2-xunyinzhe-entity-05",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "贾岛《寻隐者不遇》的赏析是什么",
+      "expected": "no_evidence",
+      "passed": false,
+      "retrieved_count": 5,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 206.425,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 8378,
+          "poem_id": 631,
+          "poem_version_id": 631,
+          "title": "致酒行",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "这首诗写诗人客居长安，求官而不得的困难处境和潦倒感伤的心情。诗人以不得志的人的身份作客饮酒，前四句写作客的情形和潦倒自伤的心情。中间四句，诗人由自伤转为自负和自勉，引汉代名士主父偃和唐代名士马周自比，说明他自己有经世之才，早晚会得到皇帝赏识。后四句，诗人又由自负和自勉转为自伤，感慨自己冷落寂寞的处境。三层意思转折跌宕，沉郁顿挫，而以怀才不遇之意加以贯通。《李长吉集》引黄淳耀的话评价说：“绝无雕刻，真率之至者也。”黎简评价说：“长吉少有此沉顿之作。”",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2189,
+          "poem_id": 110,
+          "poem_version_id": 110,
+          "title": "清明",
+          "granularity": "note",
+          "chunk_index": 13,
+          "line_start": null,
+          "line_end": null,
+          "text": "这首小诗，一个难字也没有，一个典故也不用，整篇是十分通俗的语言，写得自如之极，毫无经营造作之痕。音节十分和谐圆满，景象非常清新、生动，而又境界优美、兴味隐跃。诗由篇法讲也很自然，是顺序的写法。第一句交代情景、环境、气氛，是“起”；第二句是“承”，写出了人物，显示了人物的凄迷纷乱的心境；第三句是一“转”，然而也就提出了如何摆脱这种心境的办法；而这就直接逼出了第四句，成为整篇的精彩所在—“合”。在艺术上，这是由低而高、逐步上升、高潮顶点放在最后的手法。所谓高潮顶点，却又不是一览无余，索然兴尽，而是余韵邈然，耐人寻味。这些，都是诗人的高明之处，也就是值得我们学习继承的地方吧！",
+          "score": 0.491935,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2988,
+          "poem_id": 181,
+          "poem_version_id": 181,
+          "title": "题李凝幽居",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "这首诗以“鸟宿池边树，僧敲月下门”一联著称。全诗只是抒写了作者走访友人李凝未遇这样一件寻常小事。",
+          "score": 0.484127,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 2989,
+          "poem_id": 181,
+          "poem_version_id": 181,
+          "title": "题李凝幽居",
+          "granularity": "note",
+          "chunk_index": 3,
+          "line_start": null,
+          "line_end": null,
+          "text": "首联“闲居少邻并，草径入荒园”，诗人用很经济的手法，描写了这一幽居的周围环境：一条杂草遮掩的小路通向荒芜不治的小园；近旁，亦无人家居住。淡淡两笔，十分概括地写了一个“幽”字，暗示出李凝的隐士身分。",
+          "score": 0.476562,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        },
+        {
+          "chunk_id": 3602,
+          "poem_id": 237,
+          "poem_version_id": 237,
+          "title": "独坐敬亭山",
+          "granularity": "note",
+          "chunk_index": 6,
+          "line_start": null,
+          "line_end": null,
+          "text": "三、四两句“相看两不厌，只有敬亭山”用浪漫主义手法，将敬亭山人格化、个性化。尽管鸟飞云去，诗人仍没有回去，也不想回去，他久久地凝望着幽静秀丽的敬亭山，觉得敬亭山似乎也正含情脉脉地看着他自己。他们之间不必说什么话，已达到了感情上的交流。“相看两不厌”表达了诗人与敬亭山之间的深厚感情。“相”、“两”二字同义重复，把诗人与敬亭山紧紧地联系在一起，表现出强烈的感情。同时，“相看”也点出此时此刻唯有“山”和“我”的孤寂情景与“两”字相重，山与人的相依之情油然而生。结句中“只有”两字也是经过锤炼的，更突出诗人对敬亭山的喜爱。“人生得一知己足矣”，鸟飞云去对诗人来说不足挂齿。这两句诗所创造的意境仍然是“静”的，表面看来，是写了诗人与敬亭山相对而视，脉脉含情。实际上，诗人愈是写山的“有情”，愈是表现出人的“无情”；而他那横遭冷遇，寂寞凄凉的处境，也就在这静谧的场面中透露出来了。",
+          "score": 0.469231,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "no-answer-v2-chunwang-year-06",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "《春望》写于哪一年",
+      "expected": "no_evidence",
+      "passed": false,
+      "retrieved_count": 1,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 190.155,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 167,
+          "poem_id": 12,
+          "poem_version_id": 12,
+          "title": "春望",
+          "granularity": "note",
+          "chunk_index": 2,
+          "line_start": null,
+          "line_end": null,
+          "text": "“国破山河在，城春草木深。”诗篇一开头描写了春望所见：山河依旧，可是国都已经沦陷，城池也在战火中残破不堪了，乱草丛生，林木荒芜。诗人记忆中昔日长安的春天是何等的繁华，鸟语花香，飞絮弥漫，烟柳明媚，游人迤逦，可是那种景象今日已经荡然无存了。一个“破”字使人怵目惊心，继而一个“深”字又令人满目凄然。诗人写今日景物，实为抒发人去物非的历史感，将感情寄寓于物，借助景物反托情感，为全诗创造了一片荒凉凄惨的气氛。“国破”和“城春”两个截然相反的意象，同时存在并形成强烈的反差。“城春”当指春天花草树木繁盛茂密，烟景明丽的季节，可是由于“国破”，国家衰败，国都沦陷而失去了春天的光彩，留下的只是颓垣残壁，只是“草木深”。“草木深”三字意味深沉，表示长安城里已不是市容整洁、井然有序，而是荒芜破败，人烟稀少，草木杂生。这里，诗人睹物伤感，表现了强烈的黍离之悲。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "no-answer-v2-baijuyi-birthplace-07",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "白居易的出生地在哪里",
+      "expected": "no_evidence",
+      "passed": false,
+      "retrieved_count": 1,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 228.481,
+      "retrieved_evidence": [
+        {
+          "chunk_id": 1802,
+          "poem_id": 98,
+          "poem_version_id": 98,
+          "title": "望月有感",
+          "granularity": "note",
+          "chunk_index": 0,
+          "line_start": null,
+          "line_end": null,
+          "text": "河南：唐时河南道，辖今河南省大部和山东、江苏、安徽三省的部分地区。\n关内：关内道，辖今陕西大部及甘肃、宁夏、内蒙的部分地区。\n阻饥：遭受饥荒等困难。\n浮梁大兄：白居易的长兄白幼文，贞元十四、五年（798—799年）间任饶州浮梁（今属江西景德镇）主簿。\n於潜七兄：白居易叔父白季康的长子，时为於潜（今浙江临安县）县尉。\n乌江十五兄：白居易的从兄白逸，时任乌江（今安徽和县）主簿。\n符离：在今安徽宿县内。白居易的父亲在彭城（今江苏徐州）作官多年，就把家安置在符离。\n下邽：县名，治所在今陕西省渭南县。白氏祖居曾在此。\n时难年荒：指遭受战乱和灾荒。荒，一作“饥”。\n世业：祖传的产业。唐代初年推行授田制度，所授之田分“口分田”和“世业田”，人死后，子孙可以继承“世业田”。\n羁旅：漂泊流浪。\n寥落：荒芜零落。\n干戈：古代两种兵器，此代指战争。\n吊影：一个人孤身独处，形影相伴，没有伴侣。\n千里雁：比喻兄弟们相隔千里，皆如孤雁离群。\n辞根：草木离开根部，比喻兄弟们各自背井离乡。\n九秋蓬：深秋时节随风飘转的蓬草，古人用来比喻游子在异乡漂泊。九秋，秋天。\n乡心：思亲恋乡之心。\n五处：即诗题所言五处。",
+          "score": 0.5,
+          "match_types": [
+            "dense_similarity",
+            "rrf_fusion"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "no-answer-v2-xinqiji-office-08",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "辛弃疾担任过哪些具体官职",
+      "expected": "no_evidence",
+      "passed": true,
+      "retrieved_count": 0,
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "matched_gold": [],
+      "missing_gold": [],
+      "latency_ms": 205.306,
+      "retrieved_evidence": []
+    }
+  ]
+}

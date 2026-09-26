@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import logging
 from collections.abc import AsyncIterator, Sequence
 from typing import Any
 
+import pytest
 from app.ai.graphs.rag import NO_EVIDENCE_ANSWER
 from app.ai.providers.chat import ChatMessage, ChatModelError, ChatResponseFormat
 from app.api.deps import get_chat_provider
@@ -199,7 +201,9 @@ def test_stream_persists_messages_citations_and_events(client: TestClient) -> No
     assert "delta" in event_names
     assert "citation" in event_names
     assert event_names[-1] == "done"
+    assert "timing" not in event_names
     assert event_names.index("done") > event_names.index("citation")
+    assert set(events[-1][1]) == {"finish_reason", "latency_ms"}
     assert provider.closed is True
     assert provider.calls
 
@@ -218,6 +222,45 @@ def test_stream_persists_messages_citations_and_events(client: TestClient) -> No
     assert citation["title"] == "静夜思"
     assert citation["chunk_id"] is not None
     assert citation["text"]
+
+
+def test_stream_logs_request_metrics_without_exposing_internal_timing(
+    client: TestClient,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    _seed_evidence(client)
+    user = _register(client, "metrics@example.com")
+    conversation = _create_conversation(client, user)
+    _use_provider(client, FakeChatProvider(["月光常与思乡相连。[1]"]))
+    request_id = "req_test_chat_metrics_123"
+    caplog.set_level(logging.INFO, logger="app.services.chat")
+
+    response = client.post(
+        f"/api/v1/conversations/{conversation['id']}/messages:stream",
+        headers={**user, "X-Request-ID": request_id},
+        json={"content": "赏析静夜思里的月亮有什么含义？"},
+    )
+
+    assert response.status_code == 200
+    records = [
+        record
+        for record in caplog.records
+        if record.name == "app.services.chat"
+        and record.getMessage() == "Chat stream completed"
+    ]
+    assert len(records) == 1
+    record = records[0]
+    assert record.request_id == request_id
+    assert record.status == "completed"
+    assert record.error_code is None
+    assert record.query_variant_limit == 8
+    assert record.rewrite_ms is not None
+    assert record.retrieval_ms is not None
+    assert record.assess_ms is not None
+    assert record.generation_ms is not None
+    assert record.validate_ms is not None
+    assert record.ttft_ms is not None
+    assert record.total_ms >= record.retrieval_ms
 
 
 def test_stream_rejects_answer_without_citation_marker(client: TestClient) -> None:
@@ -310,7 +353,9 @@ def test_no_evidence_returns_stable_refusal_without_model_call(
     assert messages[1]["citations"] == []
 
 
-def test_assess_refusal_skips_generation(client: TestClient) -> None:
+def test_hard_filtered_missing_fact_refusal_skips_model_calls(
+    client: TestClient,
+) -> None:
     _seed_evidence(client)
     user = _register(client, "assess-refusal@example.com")
     conversation = _create_conversation(client, user)
@@ -340,7 +385,7 @@ def test_assess_refusal_skips_generation(client: TestClient) -> None:
     ]
     delta = next(data for name, data in events if name == "delta")
     assert delta["text"] == NO_EVIDENCE_ANSWER
-    assert len(provider.generate_calls) == 1
+    assert provider.generate_calls == []
     assert provider.calls == []
 
     messages = client.get(

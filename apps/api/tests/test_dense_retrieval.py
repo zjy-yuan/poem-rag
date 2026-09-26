@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import pytest
@@ -16,6 +16,7 @@ from app.core.text import normalize_content, sha256_text
 from app.models.annotation import AnnotationStatus, AnnotationType, PoemAnnotation
 from app.models.chunk import ChunkGranularity, ChunkStatus, PoemChunk
 from app.services.dense_retrieval import DenseRetrievalService
+from app.services.retrieval import RetrievalRequest
 from fastapi.testclient import TestClient
 from test_catalog import _admin_client
 from test_rag_corpus import _load_versions
@@ -59,6 +60,10 @@ class FakeVectorStore:
 
 
 class FailingEmbeddingProvider(FakeEmbeddingProvider):
+    async def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        del texts
+        raise EmbeddingProviderError("provider unavailable")
+
     async def embed_query(self, text: str) -> list[float]:
         del text
         raise EmbeddingProviderError("provider unavailable")
@@ -124,6 +129,50 @@ def _prepare_indexed_chunks(
     return portal.call(create)
 
 
+def _add_published_note_chunk(
+    client: TestClient,
+    poem_id: int,
+) -> str:
+    portal = client.portal
+    assert portal is not None
+    session_factory = client.app.state.session_factory
+    versions = portal.call(_load_versions, session_factory, poem_id)
+
+    async def create() -> str:
+        async with session_factory() as session:
+            vector_id = f"note-vector-{poem_id}"
+            annotation = PoemAnnotation(
+                poem_version_id=versions[0].id,
+                annotation_type=AnnotationType.APPRECIATION.value,
+                content="Published appreciation.",
+                normalized_content=normalize_content("Published appreciation."),
+                status=AnnotationStatus.PUBLISHED.value,
+                content_hash=sha256_text("Published appreciation."),
+            )
+            session.add(annotation)
+            await session.flush()
+            chunk = PoemChunk(
+                poem_id=poem_id,
+                poem_version_id=versions[0].id,
+                annotation_id=annotation.id,
+                granularity=ChunkGranularity.NOTE.value,
+                chunk_index=0,
+                text=annotation.content,
+                normalized_text=annotation.normalized_content,
+                content_hash=annotation.content_hash,
+                chunk_strategy="structural-v1",
+                status=ChunkStatus.READY.value,
+                vector_id=vector_id,
+                embedding_model="fake-embedding",
+                embedding_dimension=3,
+            )
+            session.add(chunk)
+            await session.commit()
+            return vector_id
+
+    return portal.call(create)
+
+
 def test_dense_retrieval_returns_mysql_evidence_in_qdrant_order(
     client: TestClient,
 ) -> None:
@@ -166,6 +215,69 @@ def test_dense_retrieval_returns_mysql_evidence_in_qdrant_order(
     assert all(item.match_types == ["dense_similarity"] for item in result.items)
     assert store.requests[0].limit == 10
     assert store.requests[0].chunk_strategy == "structural-v1"
+
+
+def test_dense_retrieval_batches_query_embeddings(
+    client: TestClient,
+) -> None:
+    headers, _ = _admin_client(client)
+    poem = _create_poem(
+        client,
+        headers=headers,
+        title="Batch",
+        content="Moonlight line.\nHomecoming line.",
+    )
+    chunks, vector_ids = _prepare_indexed_chunks(client, poem["id"])
+    store = FakeVectorStore(
+        [
+            VectorSearchHit(id=vector_ids[0], score=0.91),
+            VectorSearchHit(id=vector_ids[1], score=0.83),
+        ]
+    )
+
+    @dataclass
+    class RecordingEmbeddingProvider:
+        document_calls: list[list[str]] = field(default_factory=list)
+        query_calls: list[str] = field(default_factory=list)
+        model: str = "fake-embedding"
+        dimension: int | None = 3
+
+        async def embed_documents(self, texts: list[str]) -> list[list[float]]:
+            self.document_calls.append(list(texts))
+            return [[1.0, 0.0, 0.0] for _ in texts]
+
+        async def embed_query(self, text: str) -> list[float]:
+            self.query_calls.append(text)
+            return [1.0, 0.0, 0.0]
+
+    provider = RecordingEmbeddingProvider()
+    portal = client.portal
+    assert portal is not None
+    session_factory = client.app.state.session_factory
+
+    async def search() -> Any:
+        async with session_factory() as session:
+            return await DenseRetrievalService(
+                session,
+                embedding_provider=provider,
+                vector_store=store,
+            ).search_evidence_batch(
+                [
+                    RetrievalRequest(query="moon", limit=2),
+                    RetrievalRequest(query="home", limit=2),
+                ]
+            )
+
+    results = portal.call(search)
+
+    assert provider.document_calls == [["moon", "home"]]
+    assert provider.query_calls == []
+    assert len(results) == 2
+    assert [item.chunk_id for item in results[0].items] == [
+        chunks[0].id,
+        chunks[1].id,
+    ]
+    assert [request.limit for request in store.requests] == [10, 10]
 
 
 def test_dense_retrieval_drops_candidates_below_min_score(
@@ -212,6 +324,55 @@ def test_dense_retrieval_drops_candidates_below_min_score(
         chunks[0].id,
     ]
     assert unfiltered.candidate_count == 2
+
+
+def test_dense_retrieval_relaxes_min_score_only_for_primary_text(
+    client: TestClient,
+) -> None:
+    headers, _ = _admin_client(client)
+    poem = _create_poem(
+        client,
+        headers=headers,
+        title="Primary text tolerance",
+        content="First line.\nSecond line.",
+    )
+    chunks, vector_ids = _prepare_indexed_chunks(client, poem["id"])
+    note_vector_id = _add_published_note_chunk(client, poem["id"])
+    store = FakeVectorStore(
+        [
+            VectorSearchHit(id=vector_ids[0], score=0.58),
+            VectorSearchHit(id=vector_ids[1], score=0.58),
+            VectorSearchHit(id=note_vector_id, score=0.58),
+        ]
+    )
+    portal = client.portal
+    assert portal is not None
+    session_factory = client.app.state.session_factory
+
+    async def search(
+        min_score: float,
+        granularities: list[ChunkGranularity] | None = None,
+    ) -> Any:
+        async with session_factory() as session:
+            return await DenseRetrievalService(
+                session,
+                embedding_provider=FakeEmbeddingProvider(),
+                vector_store=store,
+                min_score=min_score,
+            ).search_evidence(
+                query="line",
+                limit=5,
+                granularities=granularities,
+            )
+
+    primary_text = portal.call(search, 0.60)
+    assert [item.chunk_id for item in primary_text.items] == [
+        chunks[0].id,
+        chunks[1].id,
+    ]
+
+    notes = portal.call(search, 0.60, [ChunkGranularity.NOTE])
+    assert notes.items == []
 
 
 def test_dense_retrieval_drops_stale_and_invisible_qdrant_hits(

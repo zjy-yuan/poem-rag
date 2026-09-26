@@ -1,0 +1,2552 @@
+{
+  "source_dataset_version": "generation-holdout-1000-v3",
+  "source_generated_at": "2026-09-24T13:44:14.913427Z",
+  "generator_model": "deepseek-chat",
+  "judge_model": "deepseek-chat",
+  "generated_at": "2026-09-24T14:05:58.053922Z",
+  "summary": {
+    "total_cases": 26,
+    "answerable_cases": 16,
+    "refusal_cases": 10,
+    "judged_cases": 16,
+    "judge_error_cases": 0,
+    "deterministic_pass_rate": 0.961538,
+    "faithfulness_pass_rate": 0.8125,
+    "answer_relevance_rate": 1.0,
+    "claim_support_rate": 0.95092,
+    "average_unsupported_claims": 0.0,
+    "refusal_accuracy": 1.0
+  },
+  "categories": {
+    "poem_fact": {
+      "total_cases": 6,
+      "answerable_cases": 6,
+      "refusal_cases": 0,
+      "judged_cases": 6,
+      "judge_error_cases": 0,
+      "deterministic_pass_rate": 1.0,
+      "faithfulness_pass_rate": 0.833333,
+      "answer_relevance_rate": 1.0,
+      "claim_support_rate": 0.981818,
+      "average_unsupported_claims": 0.0,
+      "refusal_accuracy": null
+    },
+    "natural_language": {
+      "total_cases": 7,
+      "answerable_cases": 7,
+      "refusal_cases": 0,
+      "judged_cases": 7,
+      "judge_error_cases": 0,
+      "deterministic_pass_rate": 0.857143,
+      "faithfulness_pass_rate": 0.857143,
+      "answer_relevance_rate": 1.0,
+      "claim_support_rate": 0.972222,
+      "average_unsupported_claims": 0.0,
+      "refusal_accuracy": null
+    },
+    "multi_evidence": {
+      "total_cases": 3,
+      "answerable_cases": 3,
+      "refusal_cases": 0,
+      "judged_cases": 3,
+      "judge_error_cases": 0,
+      "deterministic_pass_rate": 1.0,
+      "faithfulness_pass_rate": 0.666667,
+      "answer_relevance_rate": 1.0,
+      "claim_support_rate": 0.861111,
+      "average_unsupported_claims": 0.0,
+      "refusal_accuracy": null
+    },
+    "refusal_cross_domain": {
+      "total_cases": 3,
+      "answerable_cases": 0,
+      "refusal_cases": 3,
+      "judged_cases": 0,
+      "judge_error_cases": 0,
+      "deterministic_pass_rate": 1.0,
+      "faithfulness_pass_rate": null,
+      "answer_relevance_rate": null,
+      "claim_support_rate": null,
+      "average_unsupported_claims": null,
+      "refusal_accuracy": 1.0
+    },
+    "refusal_missing_entity": {
+      "total_cases": 3,
+      "answerable_cases": 0,
+      "refusal_cases": 3,
+      "judged_cases": 0,
+      "judge_error_cases": 0,
+      "deterministic_pass_rate": 1.0,
+      "faithfulness_pass_rate": null,
+      "answer_relevance_rate": null,
+      "claim_support_rate": null,
+      "average_unsupported_claims": null,
+      "refusal_accuracy": 1.0
+    },
+    "refusal_missing_attribute": {
+      "total_cases": 4,
+      "answerable_cases": 0,
+      "refusal_cases": 4,
+      "judged_cases": 0,
+      "judge_error_cases": 0,
+      "deterministic_pass_rate": 1.0,
+      "faithfulness_pass_rate": null,
+      "answer_relevance_rate": null,
+      "claim_support_rate": null,
+      "average_unsupported_claims": null,
+      "refusal_accuracy": 1.0
+    }
+  },
+  "deterministic_failure_case_ids": [
+    "gen-v3-guazhou-homesick"
+  ],
+  "judge_failure_case_ids": [
+    "gen-v3-duange-talent",
+    "gen-v3-pozhenzi-dream",
+    "gen-v3-multi-dufu-life"
+  ],
+  "results": [
+    {
+      "case_id": "gen-v3-duange-talent",
+      "category": "poem_fact",
+      "question": "曹操《短歌行》怎样从人生短促写到求贤若渴？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "曹操《短歌行》从人生短促写到求贤若渴，关键在“忧”字的层层推进：先由生命短暂引出解忧之叹，再把“忧”落在贤才不至、天下未归上，最终以礼贤下士、天下归心收束。\n\n**一、以人生短促起兴，先立“忧”的基调。**\n开篇“对酒当歌，人生几何！譬如朝露，去日苦多”，把人生比作晨露，转瞬即逝，失去的时日太多 [1][2][3]。这使全诗一开始就笼罩在时光易逝、人生短促的忧思中。接着“慨当以慷，忧思难忘。何以解忧？唯有杜康”，说明这种忧思难以排遣，只能借酒暂解 [1][2]。\n\n**二、由泛泛的人生之忧，转向对贤才的思念。**\n“青青子衿，悠悠我心。但为君故，沉吟至今”，直接化用对学子的思念，表达对贤才的朝夕思慕 [1][2]。这里的“君”被明确指向所渴慕的贤才，诗人的“忧”就不再只是生命短促，而变为贤才难得、求之不得的深沉忧思 [1]。\n\n**三、以宴饮嘉宾的想象，表现礼遇贤才的热望。**\n“呦呦鹿鸣，食野之苹。我有嘉宾，鼓瑟吹笙”，写一旦四方贤才光临，自己将奏瑟吹笙、设宴相待 [1][2]。这就把求贤若渴落实为具体而热烈的礼遇场景。\n\n**四、明月与乌鹊的意象，强化贤才无所依托、自己渴望招纳的心情。**\n“明明如月，何时可掇？忧从中来，不可断绝”，以皓月难拾喻贤才难得，忧思不断 [1][2]。“月明星稀，乌鹊南飞。绕树三匝，何枝可依？”则写乌鹊绕树无枝可依，暗喻贤才尚在徘徊、未得归宿，也反衬诗人希望他们前来依附自己 [1][2]。\n\n**五、最后以山海周公作结，点明求贤若渴的目的。**\n“山不厌高，海不厌深。周公吐哺，天下归心”，以高山不辞土石、大海不弃细流为喻，表示自己愿像周公一样礼贤下士，使天下英杰真心归顺 [1][2]。这样，全诗就从“人生几何”的短促之感，推进到“天下归心”的政治抱负，完成了由生命忧思到求贤若渴的转折 [1][2]。",
+      "citation_count": 3,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "partially_supported",
+        "claims": [
+          {
+            "text": "《短歌行》开篇“对酒当歌，人生几何！譬如朝露，去日苦多”把人生比作晨露，感叹人生短促、失去的时日太多。",
+            "citation_ranks": [
+              1,
+              2,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“慨当以慷，忧思难忘。何以解忧？唯有杜康”说明忧思难以排遣，只能借酒暂解。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“青青子衿，悠悠我心。但为君故，沉吟至今”表达对贤才的朝夕思慕。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "诗中的“君”被明确指向所渴慕的贤才，诗人的“忧”由生命短促转为贤才难得、求之不得的忧思。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "partially_supported"
+          },
+          {
+            "text": "“呦呦鹿鸣，食野之苹。我有嘉宾，鼓瑟吹笙”写一旦四方贤才光临，自己将奏瑟吹笙、设宴相待。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“明明如月，何时可掇？忧从中来，不可断绝”以皓月难拾喻贤才难得，忧思不断。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“月明星稀，乌鹊南飞。绕树三匝，何枝可依？”写乌鹊绕树无枝可依，暗喻贤才尚在徘徊、未得归宿，也反衬诗人希望他们前来依附自己。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“山不厌高，海不厌深。周公吐哺，天下归心”以高山不辞土石、大海不弃细流为喻，表示自己愿像周公一样礼贤下士，使天下英杰真心归顺。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "全诗从“人生几何”的短促之感，推进到“天下归心”的政治抱负，完成了由生命忧思到求贤若渴的转折。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，将《短歌行》从人生短促写到求贤若渴的层次梳理清楚，各核心事实声明基本都能在引用诗文中找到依据；仅“君”明确指向贤才这一解释性判断在引用中未直接点明，故标为部分支持。"
+      },
+      "error_code": null,
+      "latency_ms": 2689.608,
+      "citations": [
+        {
+          "chunk_id": 721,
+          "poem_id": 48,
+          "poem_version_id": 48,
+          "annotation_id": 122,
+          "title": "短歌行",
+          "author_name": "曹操",
+          "dynasty_name": "汉",
+          "granularity": "note",
+          "text": "一边喝酒一边高歌，人生短促日月如梭。好比晨露转瞬即逝，失去的时日实在太多！\n席上歌声激昂慷慨，忧郁长久填满心窝。靠什么来排解忧闷？唯有狂饮方可解脱。\n那穿着青领（周代学士的服装）的学子哟，你们令我朝夕思慕。只是因为您的缘故，让我沉痛吟诵至今。\n阳光下鹿群呦呦欢鸣，悠然自得啃食在绿坡。一旦四方贤才光临舍下，我将奏瑟吹笙宴请嘉宾。\n当空悬挂的皓月哟，什么时候才可以拾到；我久蓄于怀的忧愤哟，突然喷涌而出汇成长河。\n远方宾客踏着田间小路，一个个屈驾前来探望我。彼此久别重逢谈心宴饮，争着将往日的情谊诉说。\n月光明亮星光稀疏，一群寻巢乌鹊向南飞去。绕树飞了三周却没敛翅，哪里才有它们栖身之所？\n高山不辞土石才见巍峨，大海不弃涓流才见壮阔。我愿如周公一般礼贤下士，愿天下的英杰真心归顺与我。",
+          "score": 0.613212,
+          "rank": 1
+        },
+        {
+          "chunk_id": 711,
+          "poem_id": 48,
+          "poem_version_id": 48,
+          "annotation_id": null,
+          "title": "短歌行",
+          "author_name": "曹操",
+          "dynasty_name": "汉",
+          "granularity": "poem",
+          "text": "对酒当歌，人生几何！譬如朝露，去日苦多。\n慨当以慷，忧思难忘。何以解忧？唯有杜康。\n青青子衿，悠悠我心。但为君故，沉吟至今。\n呦呦鹿鸣，食野之苹。我有嘉宾，鼓瑟吹笙。\n明明如月，何时可掇？忧从中来，不可断绝。\n越陌度阡，枉用相存。契阔谈讌，心念旧恩。(谈讌 一作：谈宴)\n月明星稀，乌鹊南飞。绕树三匝，何枝可依？\n山不厌高，海不厌深。周公吐哺，天下归心。(海 一作：水)",
+          "score": 0.559791,
+          "rank": 2
+        },
+        {
+          "chunk_id": 712,
+          "poem_id": 48,
+          "poem_version_id": 48,
+          "annotation_id": null,
+          "title": "短歌行",
+          "author_name": "曹操",
+          "dynasty_name": "汉",
+          "granularity": "line",
+          "text": "对酒当歌，人生几何！譬如朝露，去日苦多。",
+          "score": 0.67526,
+          "rank": 3
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-guancanghai-sea",
+      "category": "poem_fact",
+      "question": "曹操《观沧海》怎样由眼前海景写到宇宙气象和志向？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "《观沧海》由眼前海景逐步推进到宇宙气象，并最终寄托志向，层次很清楚。\n\n首先，开头写登高观海的实景：“东临碣石，以观沧海。水何澹澹，山岛竦峙。”[2] 这是诗人站在碣石山上俯视大海所见，海波荡漾，山岛高耸，境界已经十分开阔[1]。接着写岛上草木与海上风浪：“树木丛生，百草丰茂。秋风萧瑟，洪波涌起。”[2] 这仍是眼前实景，但已由静而动，显示出大海和自然界旺盛的生命力[1]。\n\n然后，诗人由实景转入想象，写出宇宙气象：“日月之行，若出其中；星汉灿烂，若出其里。”[2] 日月的运行仿佛从大海中升起，灿烂银河也仿佛包孕在大海之中[1]。这就从眼前的海景，扩展到吞吐日月、包蕴星汉的宏伟境界[1]。\n\n最后，“幸甚至哉，歌以咏志”是合乐时所加的套语，与正文没有直接关系[4][5]。但就全诗而言，前面写大海的壮阔气象，正是以沧海自比，表现诗人宽广的胸怀和豪迈的气魄，寄托其统一中原、建功立业的抱负[1][4]。所以，诗是由“观海”写起，经海上生机与风浪，推向日月星汉的宇宙想象，再以含蓄方式写出志向。",
+      "citation_count": 4,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "开头写登高观海的实景：“东临碣石，以观沧海。水何澹澹，山岛竦峙。”",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这是诗人站在碣石山上俯视大海所见，海波荡漾，山岛高耸，境界已经十分开阔。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "接着写岛上草木与海上风浪：“树木丛生，百草丰茂。秋风萧瑟，洪波涌起。”",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这仍是眼前实景，但已由静而动，显示出大海和自然界旺盛的生命力。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "然后，诗人由实景转入想象，写出宇宙气象：“日月之行，若出其中；星汉灿烂，若出其里。”",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "日月的运行仿佛从大海中升起，灿烂银河也仿佛包孕在大海之中。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这就从眼前的海景，扩展到吞吐日月、包蕴星汉的宏伟境界。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“幸甚至哉，歌以咏志”是合乐时所加的套语，与正文没有直接关系。",
+            "citation_ranks": [
+              4,
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "前面写大海的壮阔气象，正是以沧海自比，表现诗人宽广的胸怀和豪迈的气魄，寄托其统一中原、建功立业的抱负。",
+            "citation_ranks": [
+              1,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "诗是由“观海”写起，经海上生机与风浪，推向日月星汉的宇宙想象，再以含蓄方式写出志向。",
+            "citation_ranks": [
+              1,
+              4
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，将《观沧海》由实景到宇宙想象再到寄托志向的层次逐层拆解，各事实声明均有对应引用直接或合理支持。"
+      },
+      "error_code": null,
+      "latency_ms": 1906.93,
+      "citations": [
+        {
+          "chunk_id": 488,
+          "poem_id": 30,
+          "poem_version_id": 30,
+          "annotation_id": null,
+          "title": "观沧海",
+          "author_name": "曹操",
+          "dynasty_name": "汉",
+          "granularity": "poem",
+          "text": "东临碣石，以观沧海。\n水何澹澹，山岛竦峙。\n树木丛生，百草丰茂。\n秋风萧瑟，洪波涌起。\n日月之行，若出其中；\n星汉灿烂，若出其里。\n幸甚至哉，歌以咏志。",
+          "score": 0.626813,
+          "rank": 2
+        },
+        {
+          "chunk_id": 500,
+          "poem_id": 30,
+          "poem_version_id": 30,
+          "annotation_id": 69,
+          "title": "观沧海",
+          "author_name": "曹操",
+          "dynasty_name": "汉",
+          "granularity": "note",
+          "text": "首二句“东临碣石，以观沧海”，写诗人于挥师北伐之际来到碣石山下，登高观海。碣石山原位于今河北省乐亭县西南（一说在今河北省昌黎县西北），汉时还在陆上，面对着渤海，六朝时由于地质变动，沉于海中。诗人登上碣石山，俯视大海，只见的：“水何澹澹，山岛竦峙”。澹澹，水波动荡。竦峙，岛屿高耸的样子。诗人登高远眺，举目所及只见一望无垠的大海波摇浪涌，海中的岛屿高高矗立。这是多么辽阔、多么壮观的景象！在历史上，秦始皇、汉武帝都曾东巡至此，刻石观海。如今诗人站在秦皇、汉武游踪所到之处，居高临下，望着水天相连的苍茫大海和海中高耸的岛屿，想到中原地区已经平定，北伐乌桓也已取得决定性胜利，北方统一即将实现，心情该是何等激奋！这时，诗人的目光注视着海上的岛屿，眼前是一派生机盎然的景象：“树木丛生，百草丰茂。秋风萧瑟，洪波涌起。”树木百草，生长十分繁茂，一阵萧瑟的秋风吹过，海面上涌起滚滚的波涛。尽管萧瑟的秋风给人以悲凉萧杀之感，但是疾风劲草，方显其英雄本色；洪波汹涌，愈见其生命不息！这是对自然环境的真实描绘，也是诗人主观感受的具体写照。曹操在取得一连串的战争胜利之后，他觉得自己的雄图伟业犹如这树木百卉一样，生机勃发，也为这洪波涌起的大海，充满生命的活力。以下，诗人又展开其丰富的想象，进一步描绘了大海吞吐日月、包蕴星汉的宏伟气魄和博大胸怀。“日月之行，若出其中；星汉灿烂，若出其里。”日月的运行好像出没于大海的怀抱之中，灿烂的银河群星好像包孕于大海的母腹之内。请看，这就是大海的气魄，大海的胸怀。真是太壮观、太奇伟了。 《观沧海》是一首写景抒情诗。诗人勾画了大海吞吐日月、包蕴万千的壮丽景象，表现了开阔的胸襟，抒发了统一中原建功立业的抱负。虽然其中并无直抒胸臆的感慨之词，但是诵读全诗，仍能令人感到它所深深寄托的诗人的情怀。",
+          "score": 0.603551,
+          "rank": 1
+        },
+        {
+          "chunk_id": 498,
+          "poem_id": 30,
+          "poem_version_id": 30,
+          "annotation_id": 69,
+          "title": "观沧海",
+          "author_name": "曹操",
+          "dynasty_name": "汉",
+          "granularity": "note",
+          "text": "《观沧海》这首诗，前六句写的是实景,而后四句则是曹操的想象,最后两句跟本诗原文没有直接关系。这首诗不但通篇写景，且独具一格，堪称中国山水诗的最早佳作，特别受到文学史家的厚爱。这首诗写秋天的大海，能够一洗悲秋的感伤情调，写得沉雄健爽，气象壮阔，这与曹操的气度、品格乃至美学情趣都是紧密相关的。 在这首诗中，情景紧密相连。作者通过写沧海，表达了他统一中国建功立业的抱负。这种感情在诗中并没有直接表露，而是把它蕴藏在对景物的描写当中来抒发情感，寓情于景中，句句写景，又是句句抒情。“水何”六句虽然是在描绘生机勃勃的大海风光，实际上在歌颂祖国壮丽的山河，透露出作者热爱祖国的感情。目睹祖国山河壮丽的景色，更加激起了诗人要统一祖国的强烈愿望。于是借助丰富的想象，来充分表达这种愿望。作者以沧海自比，通过写大海吞吐宇宙的气势，来表现诗人自己宽广的胸怀和豪迈的气魄，感情奔放，却很含蓄。“日月”四句是写景的高潮，也是作者感情发展的高潮。宋人敖陶孙说曹诗“如幽燕老将，气韵沉雄”。《观沧海》这首诗意境开阔，气势雄浑，这与一个雄心勃勃的政治家和军事家的风度是一致的，真是使人读其诗如见其人。",
+          "score": 0.624777,
+          "rank": 4
+        },
+        {
+          "chunk_id": 496,
+          "poem_id": 30,
+          "poem_version_id": 30,
+          "annotation_id": 67,
+          "title": "观沧海",
+          "author_name": "曹操",
+          "dynasty_name": "汉",
+          "granularity": "note",
+          "text": "临：登上，有游览的意思。\n碣（jié）石：山名。碣石山，河北昌黎碣石山。公元207年秋天，曹操征乌桓得胜回师时经过此地。\n沧：通“苍”，青绿色。\n海：渤海\n何：多么\n澹澹（dàn dàn）：水波摇动的样子。\n竦峙（sǒng zhì）：耸立。竦 ，通耸，高。\n萧瑟：树木被秋风吹的声音。\n洪波：汹涌澎湃的波浪\n日月：太阳和月亮\n若：如同.好像是.\n星汉：银河，天河。\n幸：庆幸。\n甚：极点。\n至：非常，\n幸甚至哉，歌以咏志：太值得庆幸了！就用诗歌来表达心志吧。\n（最后两句每章都有，与本诗正文的内容没有的直接关系。）",
+          "score": 0.599,
+          "rank": 5
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-wangyue-summit",
+      "category": "poem_fact",
+      "question": "杜甫《望岳》如何描写泰山并表达登临绝顶的雄心？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "杜甫《望岳》先从远望落笔，以“岱宗夫如何？齐鲁青未了”写泰山横跨齐鲁、青翠绵延的辽阔气象[2][4]。接着以“造化钟神秀，阴阳割昏晓”写大自然汇聚神奇秀丽，山势高峻到能分割昏晓[2]。再以“荡胸生曾云，决眦入归鸟”写望山时云气涤荡心胸、凝望归鸟入山的专注感受[2]。全诗紧扣“望”字，由远望到近望、凝望，最后是俯望[5]。\n\n结尾“会当凌绝顶，一览众山小”由望岳生出登岳之想，“会当”是唐人口语，意即“一定要”[1]。这两句以众山的小与泰山的高大对比，突出泰山高峻，表现诗人不怕困难、敢于攀登绝顶、俯视一切的雄心和气概[1]。因此，诗中既写出泰山雄伟磅礴的气象，也抒发了勇于攀登、傲视一切的雄心壮志[5]。",
+      "citation_count": 4,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "杜甫《望岳》先从远望落笔，以“岱宗夫如何？齐鲁青未了”写泰山横跨齐鲁、青翠绵延的辽阔气象。",
+            "citation_ranks": [
+              2,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "接着以“造化钟神秀，阴阳割昏晓”写大自然汇聚神奇秀丽，山势高峻到能分割昏晓。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "再以“荡胸生曾云，决眦入归鸟”写望山时云气涤荡心胸、凝望归鸟入山的专注感受。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "全诗紧扣“望”字，由远望到近望、凝望，最后是俯望。",
+            "citation_ranks": [
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "结尾“会当凌绝顶，一览众山小”由望岳生出登岳之想。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“会当”是唐人口语，意即“一定要”。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这两句以众山的小与泰山的高大对比，突出泰山高峻，表现诗人不怕困难、敢于攀登绝顶、俯视一切的雄心和气概。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "因此，诗中既写出泰山雄伟磅礴的气象，也抒发了勇于攀登、傲视一切的雄心壮志。",
+            "citation_ranks": [
+              5
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答准确概括了《望岳》的写景层次和结尾的雄心表达，所有事实声明均被所标注的引用直接支持。"
+      },
+      "error_code": null,
+      "latency_ms": 2126.234,
+      "citations": [
+        {
+          "chunk_id": 636,
+          "poem_id": 41,
+          "poem_version_id": 41,
+          "annotation_id": null,
+          "title": "望岳",
+          "author_name": "杜甫",
+          "dynasty_name": "唐",
+          "granularity": "poem",
+          "text": "岱宗夫如何？齐鲁青未了。\n造化钟神秀，阴阳割昏晓。\n荡胸生曾云，决眦入归鸟。( 曾 通：层)\n会当凌绝顶，一览众山小。",
+          "score": 0.611586,
+          "rank": 2
+        },
+        {
+          "chunk_id": 637,
+          "poem_id": 41,
+          "poem_version_id": 41,
+          "annotation_id": null,
+          "title": "望岳",
+          "author_name": "杜甫",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text": "岱宗夫如何？齐鲁青未了。",
+          "score": 0.671252,
+          "rank": 4
+        },
+        {
+          "chunk_id": 643,
+          "poem_id": 41,
+          "poem_version_id": 41,
+          "annotation_id": 102,
+          "title": "望岳",
+          "author_name": "杜甫",
+          "dynasty_name": "唐",
+          "granularity": "note",
+          "text": "这首诗是杜甫青年时代的作品，充满了诗人青年时代的浪漫与激情。全诗没有一个“望”字，却紧紧围绕诗题“望岳”的“望”字着笔，由远望到近望，再到凝望，最后是俯望。诗人描写了泰山雄伟磅礴的气象，抒发了自己勇于攀登，傲视一切的雄心壮志，洋溢着蓬勃向上的朝气。",
+          "score": 0.533108,
+          "rank": 5
+        },
+        {
+          "chunk_id": 648,
+          "poem_id": 41,
+          "poem_version_id": 41,
+          "annotation_id": 102,
+          "title": "望岳",
+          "author_name": "杜甫",
+          "dynasty_name": "唐",
+          "granularity": "note",
+          "text": "末句的“会当凌绝顶，一览众山小”两句，写诗人从望岳产生了登岳的想法，体现了中华民族自强不息的仙字精神。此联号为绝响，再一次突出了泰山的高峻，写出了雄视一切的雄姿和气势，也表现出诗人的心胸气魄。“会当”是唐人口语，意即“一定要”。如果把“会当”解作“应当”，便欠准确，神气索然。众山的小和高大的泰山进行对比，表现出诗人不怕困难、敢于攀登绝顶、俯视一切的雄心和气概。 这正是杜甫能够成为一个伟大诗人的关键所在， 也是一切有所作为的人们所不可缺少的。 这就是这两句诗一直为人们所传诵的原因。正因为泰山的崇高伟大不仅是自然的也是人文的，所以登上的极顶的想望本身，当然也具备了双重的含义。",
+          "score": 0.658958,
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-shizhi-border",
+      "category": "poem_fact",
+      "question": "王维《使至塞上》如何写边塞行程和壮阔景色？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "王维《使至塞上》以出使边塞的行程为线索，先写轻车简从、远赴边陲，再以塞外景象展现壮阔风光。\n\n行程方面，首联“单车欲问边，属国过居延”交代出使边塞、路经居延一带。[2] 其中“单车”形容轻车简从，“问边”指到边塞去察看、慰问守卫边疆的官兵；“属国”在唐人诗中有时代称出使边陲的使臣，“居延”则是汉代以来边地地名。[1] 颔联“征蓬出汉塞，归雁入胡天”继续写行程：诗人以随风飘飞的蓬草自喻，又写北飞的大雁进入胡地天空，既点出行经汉塞、胡天，也寄寓了身世飘零之感。[1][3]\n\n壮阔景色方面，颈联“大漠孤烟直，长河落日圆”最为著名。[4] 它写广阔沙漠中一缕孤烟笔直升起，长河尽头一轮落日浑圆，以“大漠”“长河”的辽阔背景和“直”“圆”的鲜明形象，构成苍茫、雄浑的边塞图景。[1][4]\n\n结尾“萧关逢候骑，都护在燕然”写到达边塞后，遇到负责侦察、通讯的骑兵，得知都护正在燕然前线。[1][5] 这既收束了边塞行程，也把诗意由眼前景象引向更远的前线。[5]",
+      "citation_count": 5,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "王维《使至塞上》以出使边塞的行程为线索，先写轻车简从、远赴边陲，再以塞外景象展现壮阔风光。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "首联“单车欲问边，属国过居延”交代出使边塞、路经居延一带。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“单车”形容轻车简从，“问边”指到边塞去察看、慰问守卫边疆的官兵。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“属国”在唐人诗中有时代称出使边陲的使臣，“居延”是汉代以来边地地名。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "颔联“征蓬出汉塞，归雁入胡天”继续写行程。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "诗人以随风飘飞的蓬草自喻，又写北飞的大雁进入胡地天空，既点出行经汉塞、胡天，也寄寓了身世飘零之感。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "颈联“大漠孤烟直，长河落日圆”最为著名。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "它写广阔沙漠中一缕孤烟笔直升起，长河尽头一轮落日浑圆。",
+            "citation_ranks": [
+              1,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "以“大漠”“长河”的辽阔背景和“直”“圆”的鲜明形象，构成苍茫、雄浑的边塞图景。",
+            "citation_ranks": [
+              1,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "结尾“萧关逢候骑，都护在燕然”写到达边塞后，遇到负责侦察、通讯的骑兵，得知都护正在燕然前线。",
+            "citation_ranks": [
+              1,
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这既收束了边塞行程，也把诗意由眼前景象引向更远的前线。",
+            "citation_ranks": [
+              5
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，从行程和壮阔景色两方面分析《使至塞上》，所有事实声明均有对应引用支持，引用与诗句及注释一致。"
+      },
+      "error_code": null,
+      "latency_ms": 2554.232,
+      "citations": [
+        {
+          "chunk_id": 2325,
+          "poem_id": 121,
+          "poem_version_id": 121,
+          "annotation_id": null,
+          "title": "使至塞上",
+          "author_name": "王维",
+          "dynasty_name": "唐",
+          "granularity": "poem",
+          "text": "单车欲问边，属国过居延。\n征蓬出汉塞，归雁入胡天。\n大漠孤烟直，长河落日圆。\n萧关逢候骑，都护在燕然。",
+          "score": 0.477193,
+          "rank": 2
+        },
+        {
+          "chunk_id": 2330,
+          "poem_id": 121,
+          "poem_version_id": 121,
+          "annotation_id": 335,
+          "title": "使至塞上",
+          "author_name": "王维",
+          "dynasty_name": "唐",
+          "granularity": "note",
+          "text": "使至塞上：奉命出使边塞。使：出使。\n单车：一辆车，车辆少，这里形容轻车简从。问边：到边塞去察看，指慰问守卫边疆的官兵。\n属国：有几种解释：一指少数民族附属于汉族朝廷而存其国号者。汉、唐两朝均有一些属国。二指官名，秦汉时有一种官职名为典属国，苏武归汉后即授典属国官职。唐人有时以“属国”代称出使边陲的使臣。居延：地名，汉代称居延泽，唐代称居延海，在今内蒙古额济纳旗北境。又西汉张掖郡有居延县（参《汉书·地理志》），故城在今额济纳旗东南。又东汉凉州刺史部有张掖居延属国，辖境在居延泽一带。此句一般注本均言王维路过居延。然而王维此次出使，实际上无需经过居延。因而林庚、冯沅君主编的《中国历代诗歌选》认为此句是写唐王朝“边塞的辽阔，附属国直到居延以外”。\n征蓬：随风飘飞的蓬草，此处为诗人自喻。\n归雁：雁是候鸟，春天北飞，秋天南行，这里是指大雁北飞。胡天：胡人的领空。这里是指唐军占领的北方地方。\n大漠：大沙漠，此处大约是指凉州之北的沙漠。孤烟：赵殿成注有二解：一云古代边防报警时燃狼粪，“其烟直而聚，虽风吹之不散”。二云塞外多旋风，“袅烟沙而直上”。据后人有到甘肃、新疆实地考察者证实，确有旋风如“孤烟直上”。又：孤烟也可能是唐代边防使用的平安火。长河：指流经凉州（今甘肃武威）以北沙漠的一条内陆河，这条河在唐代叫马成河，疑即今石羊河。\n萧关：古关名，又名陇山关，故址在今宁夏固原东南。候骑：负责侦察、通讯的骑兵。王维出使河西并不经过萧关，此处大概是用何逊诗“候骑出萧关，追兵赴马邑”之意，非实写。\n都护：唐朝在西北边疆置安西、安北等六大都护府，其长官称都护，每府派大都护一人，副都护二人，负责辖区一切事务。这里指前敌统帅。燕然：燕然山，即今蒙古国杭爱山。东汉窦宪北破匈奴，曾于此刻石记功。《这里代指前线。\n“单车”两句：一作“衔命辞天阙，单车欲问边”。\n候骑：骑马的侦察兵。",
+          "score": 0.492608,
+          "rank": 1
+        },
+        {
+          "chunk_id": 2327,
+          "poem_id": 121,
+          "poem_version_id": 121,
+          "annotation_id": null,
+          "title": "使至塞上",
+          "author_name": "王维",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text": "征蓬出汉塞，归雁入胡天。",
+          "score": 0.5757,
+          "rank": 3
+        },
+        {
+          "chunk_id": 2328,
+          "poem_id": 121,
+          "poem_version_id": 121,
+          "annotation_id": null,
+          "title": "使至塞上",
+          "author_name": "王维",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text": "大漠孤烟直，长河落日圆。",
+          "score": 0.558034,
+          "rank": 4
+        },
+        {
+          "chunk_id": 2337,
+          "poem_id": 121,
+          "poem_version_id": 121,
+          "annotation_id": 337,
+          "title": "使至塞上",
+          "author_name": "王维",
+          "dynasty_name": "唐",
+          "granularity": "note",
+          "text": "最后两句写到达边塞：“萧关逢候骑，都护在燕然”。到了边塞，却没有遇到将官，侦察兵告诉使臣：首将正在燕然前线。",
+          "score": 0.454953,
+          "rank": 5
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-youshanxi-turn",
+      "category": "poem_fact",
+      "question": "陆游《游山西村》怎样写山村人情和柳暗花明的转折？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "陆游《游山西村》写山村人情，主要体现在首联和颈联：首联“莫笑农家腊酒浑，丰年留客足鸡豚”，写农家虽酒浊，却以丰足酒菜殷勤待客，见出乡村人情的淳朴厚道 [2]；颈联“箫鼓追随春社近，衣冠简朴古风存”，写春社将临、箫鼓相随，村民衣着简朴，保留着古老风俗，进一步表现山村的人情与风习 [2]。\n\n“柳暗花明”的转折则在颔联：“山重水复疑无路，柳暗花明又一村。” [1][2][3] 前句写山水重叠回环，仿佛已无路可走；后句写柳色深暗、花色明艳之间，忽然又出现一个村庄，形成由疑无路到忽见新境的转折 [1]。这一联既描绘山村风光，又被后世用来形容陷入绝境后忽又出现转机 [1]。其妙处还在于写景中寓含哲理：人在迷惘之际，若继续前行，可能豁然开朗，发现新天地，因此具有超越自然景色描写的艺术生命力 [4]。",
+      "citation_count": 4,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "《游山西村》写山村人情主要体现在首联和颈联。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "首联“莫笑农家腊酒浑，丰年留客足鸡豚”写农家虽酒浊，却以丰足酒菜殷勤待客，见出乡村人情的淳朴厚道。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "颈联“箫鼓追随春社近，衣冠简朴古风存”写春社将临、箫鼓相随，村民衣着简朴，保留着古老风俗，进一步表现山村的人情与风习。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“柳暗花明”的转折在颔联：“山重水复疑无路，柳暗花明又一村。”",
+            "citation_ranks": [
+              1,
+              2,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "前句写山水重叠回环，仿佛已无路可走；后句写柳色深暗、花色明艳之间，忽然又出现一个村庄，形成由疑无路到忽见新境的转折。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这一联既描绘山村风光，又被后世用来形容陷入绝境后忽又出现转机。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "其妙处还在于写景中寓含哲理：人在迷惘之际，若继续前行，可能豁然开朗，发现新天地，因此具有超越自然景色描写的艺术生命力。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，分别说明山村人情和柳暗花明的转折，所有事实声明均能从所标注的引用中找到直接或合理支持。"
+      },
+      "error_code": null,
+      "latency_ms": 1798.872,
+      "citations": [
+        {
+          "chunk_id": 2266,
+          "poem_id": 116,
+          "poem_version_id": 116,
+          "annotation_id": null,
+          "title": "游山西村",
+          "author_name": "陆游",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "莫笑农家腊酒浑，丰年留客足鸡豚。\n山重水复疑无路，柳暗花明又一村。\n箫鼓追随春社近，衣冠简朴古风存。\n从今若许闲乘月，拄杖无时夜叩门。",
+          "score": 0.374256,
+          "rank": 2
+        },
+        {
+          "chunk_id": 2274,
+          "poem_id": 116,
+          "poem_version_id": 116,
+          "annotation_id": 322,
+          "title": "游山西村",
+          "author_name": "陆游",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "颔联：“山重水复疑无路，柳暗花明又一村。”这句描绘山村风光，被后世用来形容已陷入绝境，忽又出现转机。",
+          "score": 0.696213,
+          "rank": 1
+        },
+        {
+          "chunk_id": 2268,
+          "poem_id": 116,
+          "poem_version_id": 116,
+          "annotation_id": null,
+          "title": "游山西村",
+          "author_name": "陆游",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text": "山重水复疑无路，柳暗花明又一村。",
+          "score": 0.654935,
+          "rank": 3
+        },
+        {
+          "chunk_id": 2278,
+          "poem_id": 116,
+          "poem_version_id": 116,
+          "annotation_id": 322,
+          "title": "游山西村",
+          "author_name": "陆游",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "次联写山间水畔的景色，写景中寓含哲理，千百年来广泛被人引用。“山重水复疑无路，柳暗花明又一村。”读了如此流畅绚丽、开朗明快的诗句，仿佛可以看到诗人在青翠可掬的山峦间漫步，清碧的山泉在曲折溪流中汩汩穿行，草木愈见浓茂，蜿蜒的山径也愈益依稀难认。正在迷惘之际，突然看见前面花明柳暗，几间农家茅舍，隐现于花木扶疏之间，诗人顿觉豁然开朗。其喜形于色的兴奋之状，可以想见。当然这种境界前人也有描摹，这两句却格外委婉别致，所以钱钟书说“陆游这一联才把它写得‘题无剩义’”(《宋诗选注》)。人们在探讨学问、研究问题时，往往会有这样的情况：山回路转、扑朔迷离，出路何在?于是顿生茫茫之感。但是，如果锲而不舍，继续前行，忽然间眼前出现一线亮光，再往前行，便豁然开朗，发现了一个前所未见的新天地。这就是此联给人们的启发，也是宋诗特有的理趣。人们读后，都会感到，在人生某种境遇中，与诗句所写有着惊人的契合之处，因而更觉亲切。这里描写的是诗人置身山阴道上，信步而行，疑若无路，忽又开朗的情景，不仅反映了诗人对前途所抱的希望，也道出了世间事物消长变化的哲理。于是这两句诗就越出了自然景色描写的范围，而具有很强的艺术生命力。",
+          "score": 0.595085,
+          "rank": 4
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-dingfeng-calm",
+      "category": "poem_fact",
+      "question": "苏轼《定风波·莫听穿林打叶声》怎样表现雨中徐行和旷达心境？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "苏轼《定风波·莫听穿林打叶声》主要通过小序与词句中的动作、意象和心态来表现雨中徐行与旷达心境。\n\n首先，小序交代了写作背景：“三月七日，沙湖道中遇雨。雨具先去，同行皆狼狈，余独不觉，已而遂晴，故作此词。”同行人都因无雨具而“狼狈”，唯独苏轼“不觉”，这已直接显出他面对骤雨时的从容与超脱[2]。\n\n其次，词中正面写“雨中徐行”：“莫听穿林打叶声，何妨吟啸且徐行。”面对穿林打叶的大雨声，他不为所动，反而“吟啸”“徐行”，以放声吟咏、从容慢走来应对风雨[2][3][4]。这里的“吟啸”是放声吟咏，“徐行”即慢慢行走，动作本身就有一种不为外物所扰的旷达[4]。\n\n再次，他用“竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生”进一步表现心境。“竹杖”“芒鞋”“蓑衣”“烟雨”等意象，配合雨中“吟啸”“徐行”等动作，勾勒出一个从容淡泊的隐士形象；虽无荣华富贵，却无宦海浮沉之忧，心情平静安宁[1]。“一蓑烟雨任平生”更表示披着蓑衣在风雨里过一辈子也处之泰然，即把人生风雨视为平常[4]。\n\n最后，结尾“回首向来萧瑟处，归去，也无风雨也无晴”，说明他既不怕雨，也不喜晴，超越风雨与晴明的对立，达到一种平静旷达的境界[2][4]。",
+      "citation_count": 4,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "小序交代了写作背景：三月七日，沙湖道中遇雨，雨具先去，同行皆狼狈，余独不觉，已而遂晴，故作此词。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "同行人都因无雨具而狼狈，唯独苏轼不觉，这直接显出他面对骤雨时的从容与超脱。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "词中正面写雨中徐行：莫听穿林打叶声，何妨吟啸且徐行。",
+            "citation_ranks": [
+              2,
+              3,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "面对穿林打叶的大雨声，他不为所动，反而吟啸徐行，以放声吟咏、从容慢走来应对风雨。",
+            "citation_ranks": [
+              2,
+              3,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "吟啸是放声吟咏，徐行即慢慢行走，动作本身就有一种不为外物所扰的旷达。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "他用竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生进一步表现心境。",
+            "citation_ranks": [
+              2,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "竹杖、芒鞋、蓑衣、烟雨等意象，配合雨中吟啸、徐行等动作，勾勒出一个从容淡泊的隐士形象。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "虽无荣华富贵，却无宦海浮沉之忧，心情平静安宁。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "一蓑烟雨任平生表示披着蓑衣在风雨里过一辈子也处之泰然，即把人生风雨视为平常。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "结尾回首向来萧瑟处，归去，也无风雨也无晴，说明他既不怕雨，也不喜晴，超越风雨与晴明的对立，达到一种平静旷达的境界。",
+            "citation_ranks": [
+              2,
+              4
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，从序、词句、意象和结尾分析雨中徐行与旷达心境，所有事实声明均被所标注的引用直接或合理支持。"
+      },
+      "error_code": null,
+      "latency_ms": 2152.001,
+      "citations": [
+        {
+          "chunk_id": 994,
+          "poem_id": 66,
+          "poem_version_id": 66,
+          "annotation_id": null,
+          "title": "定风波·莫听穿林打叶声",
+          "author_name": "苏轼",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "三月七日，沙湖道中遇雨。雨具先去，同行皆狼狈，余独不觉，已而遂晴，故作此词。\n莫听穿林打叶声，何妨吟啸且徐行。竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。\n料峭春风吹酒醒，微冷，山头斜照却相迎。回首向来萧瑟处，归去，也无风雨也无晴。",
+          "score": 0.541056,
+          "rank": 2
+        },
+        {
+          "chunk_id": 996,
+          "poem_id": 66,
+          "poem_version_id": 66,
+          "annotation_id": null,
+          "title": "定风波·莫听穿林打叶声",
+          "author_name": "苏轼",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text": "莫听穿林打叶声，何妨吟啸且徐行。竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。",
+          "score": 0.541056,
+          "rank": 3
+        },
+        {
+          "chunk_id": 998,
+          "poem_id": 66,
+          "poem_version_id": 66,
+          "annotation_id": 175,
+          "title": "定风波·莫听穿林打叶声",
+          "author_name": "苏轼",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "定风波：词牌名。\n沙湖：在今湖北黄冈东南三十里，又名螺丝店。\n狼狈：进退皆难的困顿窘迫之状。\n已而：过了一会儿。\n穿林打叶声：指大雨点透过树林打在树叶上的声音。\n吟啸：放声吟咏。\n芒鞋：草鞋。\n一蓑烟雨任平生：披着蓑衣在风雨里过一辈子也处之泰然。一蓑（suō）：蓑衣，用棕制成的雨披。\n料峭：微寒的样子。\n斜照：偏西的阳光。\n向来：方才。萧瑟：风雨吹打树叶声。\n也无风雨也无晴：意谓既不怕雨，也不喜晴。",
+          "score": 0.476562,
+          "rank": 4
+        },
+        {
+          "chunk_id": 1008,
+          "poem_id": 66,
+          "poem_version_id": 66,
+          "annotation_id": 177,
+          "title": "定风波·莫听穿林打叶声",
+          "author_name": "苏轼",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "入梦句是“莫听穿林打叶声”，梦境为“何妨吟啸且徐行，竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生”。这里作者用“竹杖”“芒鞋”“蓑衣”“烟雨”等意象及雨中“吟啸”“徐行”等动作创设了一个极为美妙的白日梦梦境，活脱脱地勾勒出了一个隐居江湖过着从容淡泊生活的隐士形象，他虽无荣华富贵之享受，但亦无宦海浮沉之忧患，心情得以平静，心境得以安宁。",
+          "score": 0.505602,
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-yumeiren-sorrow",
+      "category": "natural_language",
+      "question": "李煜《虞美人·春花秋月何时了》怎样由故国回忆写到滔滔愁绪？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "李煜《虞美人·春花秋月何时了》由故国回忆写到滔滔愁绪，主要靠触景生情、今昔对照和以水喻愁三步推进。\n\n开头由眼前美景触发往事：“春花秋月何时了？往事知多少。”一看到春花秋月，就有无数往事涌上心头，想到在南唐时欣赏春花秋月的美好日子，反而不堪回首，所以怕看见春花秋月[4]。接着写现实处境中的故国之思：“小楼昨夜又东风，故国不堪回首月明中。”在东风吹拂的月明之夜，金陵的故国生活不堪回顾[4]。\n\n然后落到故国景物与人事变化的对照：“雕栏玉砌应犹在，只是朱颜改。”故国宫殿的雕栏玉砌应该还在，只是人的容貌因愁苦变得憔悴；这里还含有人事的改变、人的主奴关系的改变[4]。最后以问答收束，把抽象愁绪化为具体形象：“问君能有几多愁？恰似一江春水向东流。”用一江春水来比愁，并且一江指长江，跟南唐故国金陵在长江边相结合，充满怀念故国之情，愁思如滔滔春水无穷无尽[4]。",
+      "citation_count": 1,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "李煜《虞美人·春花秋月何时了》由故国回忆写到滔滔愁绪，主要靠触景生情、今昔对照和以水喻愁三步推进。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "开头由眼前美景触发往事：“春花秋月何时了？往事知多少。”",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "一看到春花秋月，就有无数往事涌上心头，想到在南唐时欣赏春花秋月的美好日子，反而不堪回首，所以怕看见春花秋月。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "接着写现实处境中的故国之思：“小楼昨夜又东风，故国不堪回首月明中。”",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "在东风吹拂的月明之夜，金陵的故国生活不堪回顾。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "然后落到故国景物与人事变化的对照：“雕栏玉砌应犹在，只是朱颜改。”",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "故国宫殿的雕栏玉砌应该还在，只是人的容貌因愁苦变得憔悴。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这里还含有人事的改变、人的主奴关系的改变。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "最后以问答收束，把抽象愁绪化为具体形象：“问君能有几多愁？恰似一江春水向东流。”",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "用一江春水来比愁，并且一江指长江，跟南唐故国金陵在长江边相结合，充满怀念故国之情，愁思如滔滔春水无穷无尽。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答将词作从故国回忆到愁绪的推进拆解为触景生情、今昔对照、以水喻愁三个层次，所有关键句、意象解释和情感分析均直接对应引用[4]中的文本，未引入外部知识，忠实且切题。"
+      },
+      "error_code": null,
+      "latency_ms": 2337.502,
+      "citations": [
+        {
+          "chunk_id": 354,
+          "poem_id": 21,
+          "poem_version_id": 21,
+          "annotation_id": 42,
+          "title": "虞美人·春花秋月何时了",
+          "author_name": "李煜",
+          "dynasty_name": "五代",
+          "granularity": "note",
+          "text": "这首词，是李煜被俘到汴京后所作。开头说，春花秋月的美好时光，何时了结。因为一看到春花秋月，就有无数往事涌上心头，想到在南唐时欣赏春花秋月的美好日子，不堪回首，所以怕看见春花秋月。在东风吹拂的月明之夜，金陵的故国生活不堪回顾了。那里宫殿的雕栏玉砌应该还在，只是人的容貌因愁苦变得憔悴了。倘若要问有多少愁苦，恰恰象一江春水的向东流去，无穷无尽。一江指长江，用一江春水来比愁，跟南唐故国金陵在长江边相结合，充满怀念故国之情。宋代王绖《默记》卷上：“又后主在赐第，因七夕，命故妓作乐，声闻于外。太宗闻之，大怒。又传‘小楼昨夜又东风’及‘一江春水向东流’之句，并坐之，遂被祸云。’王国维《人间词话》：“尼采谓一切文学，余爱以血书者。后主之词，真所谓以血书者也。宋道君皇帝(徽宗)《燕山亭》词亦略似之。然道君不过自道身世之戚，后主则俨然有释迦，基督担荷人类罪恶之意，其大小固不同矣。”李煜被毒死，跟他写这首词有关，这真是用血写的。所谓“有释迦、基督担荷人类罪恶之意”，就是说，李煜这样的词，不光是写他个人的愁苦，还有极大的概括性，概括了所有具亡国之痛的人的痛苦感情：如怕看到春花秋月，怕想到过去的美好生活。再如故国的美好景物已经不堪回顾。故国的景物象雕栏玉砌等还在，但人的容颜因愁苦改变，这里还含有人事的改变，人的主奴关系的改变。再象以一江春水来比愁。整首词正是反映了有亡国之痛的人的感情，担负了所有这些人的感情痛苦。这正说明这首词具有高度的概括性、代表性，这正是这首词的杰出成就。",
+          "score": 0.745151,
+          "rank": 4
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-wuling-sorrow",
+      "category": "natural_language",
+      "question": "李清照《武陵春·春晚》怎样写物是人非和愁重难载？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "李清照《武陵春·春晚》先以“物是人非事事休，欲语泪先流”写物是人非之痛：风住花尽，人事全非，一切皆休，尚未开口已先落泪 [2]。后又以“只恐双溪舴艋舟，载不动许多愁”写愁重难载：听说双溪春好，本拟泛舟，却只怕小小舟船载不动这许多愁 [2][3]。前者直说人事变迁与悲痛，后者把无形的愁化为有重量、可“载”之物，以舟“载不动”反衬愁之深重 [2][3]。",
+      "citation_count": 2,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "词先以“物是人非事事休，欲语泪先流”写物是人非之痛",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“风住花尽，人事全非，一切皆休，尚未开口已先落泪”是对“风住尘香花已尽”和“物是人非事事休，欲语泪先流”的解读",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "词后又以“只恐双溪舴艋舟，载不动许多愁”写愁重难载",
+            "citation_ranks": [
+              2,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“听说双溪春好，本拟泛舟，却只怕小小舟船载不动这许多愁”对应“闻说双溪春尚好，也拟泛轻舟。只恐双溪舴艋舟，载不动许多愁”",
+            "citation_ranks": [
+              2,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "前者直说人事变迁与悲痛",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "后者把无形的愁化为有重量、可“载”之物",
+            "citation_ranks": [
+              2,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "以舟“载不动”反衬愁之深重",
+            "citation_ranks": [
+              2,
+              3
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，准确引用词句并解释其如何表现物是人非与愁重难载，所有核心事实声明均有引用支持。"
+      },
+      "error_code": null,
+      "latency_ms": 1399.338,
+      "citations": [
+        {
+          "chunk_id": 520,
+          "poem_id": 32,
+          "poem_version_id": 32,
+          "annotation_id": null,
+          "title": "武陵春·春晚",
+          "author_name": "李清照",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "风住尘香花已尽，日晚倦梳头。物是人非事事休，欲语泪先流。\n闻说双溪春尚好，也拟泛轻舟。只恐双溪舴艋舟，载不动许多愁。",
+          "score": 0.526337,
+          "rank": 2
+        },
+        {
+          "chunk_id": 522,
+          "poem_id": 32,
+          "poem_version_id": 32,
+          "annotation_id": null,
+          "title": "武陵春·春晚",
+          "author_name": "李清照",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text": "闻说双溪春尚好，也拟泛轻舟。只恐双溪舴艋舟，载不动许多愁。",
+          "score": 0.607975,
+          "rank": 3
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-dielianhua-longing",
+      "category": "natural_language",
+      "question": "柳永《蝶恋花·伫倚危楼风细细》怎样写春愁和执着相思？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "柳永《蝶恋花·伫倚危楼风细细》写春愁，先从登楼远望落笔：“伫倚危楼风细细，望极春愁，黯黯生天际。”[2] 主人公久立高楼，极目远望，春愁便从天涯暮色中黯黯而生；接着以“草色烟光残照里，无言谁会凭阑意”烘托无人理解的孤寂。[2] 上片只“伫倚危楼风细细”一句叙事，就勾出主人公形象，“风细细”又添上景物背景，使画面活跃起来。[4]\n\n写执着相思，则在苦求排遣而不得之后翻出决绝之语：本想“拟把疏狂图一醉”，可是“对酒当歌，强乐还无味”，强作欢乐也毫无意味。[2] 最终道出“衣带渐宽终不悔，为伊消得人憔悴”[2]：即使因相思日渐消瘦、形容憔悴，也决不后悔。这里的“春愁”至此才透露为一种坚贞不渝的感情，词人甚至心甘情愿为它所受折磨；“伊”既可指深爱的女子，也可指自己的人生理想。[1]",
+      "citation_count": 3,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "词作写春愁先从登楼远望落笔，引用了“伫倚危楼风细细，望极春愁，黯黯生天际”。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "主人公久立高楼，极目远望，春愁便从天涯暮色中黯黯而生。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "接着以“草色烟光残照里，无言谁会凭阑意”烘托无人理解的孤寂。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "上片只“伫倚危楼风细细”一句叙事，就勾出主人公形象。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“风细细”又添上景物背景，使画面活跃起来。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "写执着相思，则在苦求排遣而不得之后翻出决绝之语。",
+            "citation_ranks": [
+              2,
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "本想“拟把疏狂图一醉”，可是“对酒当歌，强乐还无味”，强作欢乐也毫无意味。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "最终道出“衣带渐宽终不悔，为伊消得人憔悴”。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "即使因相思日渐消瘦、形容憔悴，也决不后悔。",
+            "citation_ranks": [
+              2,
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这里的“春愁”至此才透露为一种坚贞不渝的感情。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "词人甚至心甘情愿为它所受折磨。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“伊”既可指深爱的女子，也可指自己的人生理想。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，从春愁的登楼远望、孤寂烘托和执着相思的排遣不得、决绝之语两方面展开，所有事实声明均能在所标注的引用中找到直接或合理支持。"
+      },
+      "error_code": null,
+      "latency_ms": 2358.487,
+      "citations": [
+        {
+          "chunk_id": 2626,
+          "poem_id": 148,
+          "poem_version_id": 148,
+          "annotation_id": null,
+          "title": "蝶恋花·伫倚危楼风细细",
+          "author_name": "柳永",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "伫倚危楼风细细，望极春愁，黯黯生天际。草色烟光残照里，无言谁会凭阑意。(阑 通 栏)\n拟把疏狂图一醉，对酒当歌，强乐还无味。衣带渐宽终不悔，为伊消得人憔悴。",
+          "score": 0.579199,
+          "rank": 2
+        },
+        {
+          "chunk_id": 2632,
+          "poem_id": 148,
+          "poem_version_id": 148,
+          "annotation_id": 418,
+          "title": "蝶恋花·伫倚危楼风细细",
+          "author_name": "柳永",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "上片首先说登楼引起了“春愁”：“伫倚危楼风细细。”全词只此一句叙事，便把主人公的外形像一幅剪纸那样突现出来了。“风细细”，带写一笔景物，为这幅剪影添加了一点背景，使画面立刻活跃起来了。",
+          "score": 0.574703,
+          "rank": 4
+        },
+        {
+          "chunk_id": 2636,
+          "poem_id": 148,
+          "poem_version_id": 148,
+          "annotation_id": 418,
+          "title": "蝶恋花·伫倚危楼风细细",
+          "author_name": "柳永",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "至此，作者才透露这种“春愁”是一种坚贞不渝的感情。他的满怀愁绪之所以挥之不去，正是因为他不仅不想摆脱这“春愁”的纠缠，甚至心甘情愿为“春愁”所折磨，即使渐渐形容憔悴、瘦骨伶仃，也决不后悔。“为伊消得人憔悴”才一语破的：词人的所谓“春愁”，不外是“相思”二字。（其中伊指深爱的女子，也指自己的人生理想）",
+          "score": 0.551552,
+          "rank": 1
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-yeyu-reunion",
+      "category": "natural_language",
+      "question": "李商隐《夜雨寄北》怎样写归期未定和对未来重逢的想象？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "《夜雨寄北》通过“归期未定”的现实苦况与“共剪西窗烛”的未来想象形成对照，写出深长的思念。\n\n**归期未定：以问答和景物渲染沉痛**\n\n诗一开头就是“君问归期未有期”，直接摆出归期的希望与“未有期”的失望这组不可解脱的矛盾，悲怆沉痛笼罩全篇 [4]。接着“巴山夜雨涨秋池”表面是即景点题，却把这种沉痛渲染得更形象、更浓郁：独在异乡巴山，又逢秋天深夜、夜雨绵绵，秋池水涨，仿佛涨的不是秋水，而是诗人难以解脱的痛苦 [4]。\n\n**未来重逢：以想象之景反衬眼前之苦**\n\n后两句转入想象：“何当共剪西窗烛，却话巴山夜雨时。”再次出现的“巴山夜雨”与“西窗剪烛”组成一幅温暖的动态画面，表现诗人对归期的向往和对“君”的深厚友情，给诗中增添了欢欣感 [5]。但这种欢欣只是难以卜料的期待，是示现于将来的欣慰，因而又加剧了眼前“归期未有期”的痛苦 [5]。全诗情感不断起伏、跳跃，通篇色调却和谐统一 [5]。\n\n**“君”的身份**\n\n诗中“君”关切地问着归期，诗人也盼着与“君”共剪西窗烛；这个“君”至少具备三个条件：以往过从较密、此刻仍有诗书交往、彼此心心相印 [3]。从现存李商隐诗文看，温庭筠可以成为这样的“君”，若无相反证据，大概可以说此诗是李商隐在梓州幕府时写给温庭筠的 [3]。",
+      "citation_count": 3,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "《夜雨寄北》通过“归期未定”的现实苦况与“共剪西窗烛”的未来想象形成对照，写出深长的思念。",
+            "citation_ranks": [
+              4,
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "诗一开头“君问归期未有期”直接摆出归期的希望与“未有期”的失望这组不可解脱的矛盾，悲怆沉痛笼罩全篇。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“巴山夜雨涨秋池”表面是即景点题，却把沉痛渲染得更形象、更浓郁。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "独在异乡巴山，又逢秋天深夜、夜雨绵绵，秋池水涨，仿佛涨的不是秋水，而是诗人难以解脱的痛苦。",
+            "citation_ranks": [
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "后两句转入想象：“何当共剪西窗烛，却话巴山夜雨时。”",
+            "citation_ranks": [
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "再次出现的“巴山夜雨”与“西窗剪烛”组成一幅温暖的动态画面，表现诗人对归期的向往和对“君”的深厚友情，给诗中增添了欢欣感。",
+            "citation_ranks": [
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这种欢欣只是难以卜料的期待，是示现于将来的欣慰，因而又加剧了眼前“归期未有期”的痛苦。",
+            "citation_ranks": [
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "全诗情感不断起伏、跳跃，通篇色调却和谐统一。",
+            "citation_ranks": [
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "诗中“君”关切地问着归期，诗人也盼着与“君”共剪西窗烛。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这个“君”至少具备三个条件：以往过从较密、此刻仍有诗书交往、彼此心心相印。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "从现存李商隐诗文看，温庭筠可以成为这样的“君”。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "若无相反证据，大概可以说此诗是李商隐在梓州幕府时写给温庭筠的。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，分别阐述归期未定的写法与未来重逢的想象，所有事实声明均能在所标注的引用中找到直接依据。"
+      },
+      "error_code": null,
+      "latency_ms": 2462.095,
+      "citations": [
+        {
+          "chunk_id": 794,
+          "poem_id": 53,
+          "poem_version_id": 53,
+          "annotation_id": 138,
+          "title": "夜雨寄北",
+          "author_name": "李商隐",
+          "dynasty_name": "唐",
+          "granularity": "note",
+          "text": "“君问归期未有期”，诗一开始，就摆出了不可解脱的矛盾。归期的希望与未有期的失望，两相对立。悲怆沉痛，笼罩全篇。“巴山夜雨涨秋池”，表面上看，是即景点题。但是这一景象把归期未有期的沉痛情绪，渲染得更形象、更浓郁了。独在他乡异域的巴山，是秋天，又是深夜，又是夜雨。这一情境本身就是令人伤感的。尤其是“涨秋池”三字，秋雨绵绵，把池水都涨满了。诗人抓住了这一精细的而又富于生活实感的画面，调动读者的想象，似乎秋池里涨的不是秋水，而是诗人难以解脱的痛苦。",
+          "score": 0.585343,
+          "rank": 4
+        },
+        {
+          "chunk_id": 796,
+          "poem_id": 53,
+          "poem_version_id": 53,
+          "annotation_id": 138,
+          "title": "夜雨寄北",
+          "author_name": "李商隐",
+          "dynasty_name": "唐",
+          "granularity": "note",
+          "text": "第四句显得更为精彩。“却话巴山夜雨时”，是承“共剪西窗”而来，为顺流之舟。在短小得只能有四句的绝句体裁里，毫不可惜地运用了重复句意，不能不谓之大胆。然而，再次出现的“巴山夜雨”，无单调之嫌，文意反而曲折深厚。如果说，前一句“巴山夜雨”是以景写情，那么这一句的“巴山夜雨”却是以情写景。它与“西窗剪烛”，组成一幅温暖的动态画面，表现了诗人对于归期的向往，对于“君”的深厚友情。这给诗中增添了欢欣感。这种欢欣只是一种难以卜料的期待，因而示现于将来的欣慰，又加剧了眼前归期未有期的痛苦。我们可以感受到诗人的情感不断起伏、跳跃，但是通篇的情感色调又是和谐、统一的。",
+          "score": 0.573275,
+          "rank": 5
+        },
+        {
+          "chunk_id": 793,
+          "poem_id": 53,
+          "poem_version_id": 53,
+          "annotation_id": 138,
+          "title": "夜雨寄北",
+          "author_name": "李商隐",
+          "dynasty_name": "唐",
+          "granularity": "note",
+          "text": "李商隐的一生是不幸的。他刚刚踏入仕途，就被卷进了牛、李的朋党之争中。（牛，牛僧孺；李，李德裕。朋党，官僚集团。）852年随柳仲郢入蜀，实属迫不得已。仕途多艰，妻子早逝，心境是悲凉的。几年以前，当他在徐州卢循正幕府时，他颇为踌躇满志。“且吟王粲从军乐，不赋渊明归去来。”（《赠四同舍》）到四川以后，这种乐观情绪消失了。“三年苦雾巴江水，不为离人照屋梁。”（《初起》）他断绝了与外界的交往，甚至与同府的幕僚也没有什么交谊。《夜雨寄北》，写得一往情深，而且诗寄的“君”，关切地问着他的归期，他也盼着与“君”“共剪西窗烛”。这个“君”，至少具备三个条件。一，以往过从较密；二，此刻仍有诗书交往；三，彼此心心相印。从现存的李商隐的诗文看来，有一个人可以成为这样的“君”，那就是晚唐的词人温庭筠。李商隐在徐州幕时，温曾有诗“秋日旅舍寄义山李侍御”。李商隐在四川时，也有三首诗寄赠温。温的出身较李要名贵些，是唐初宰相温彦博的裔孙，但他也同样受到牛党令狐绹的排挤和压抑，晚年才做了方城尉与国子助教。如果没有相反的证据，大概可以说，《夜雨寄北》，是李商隐在梓州幕府时写给温庭筠的。这样，或许能更为精细地品味出诗中蕴含的情感内容。",
+          "score": 0.70815,
+          "rank": 3
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-guazhou-homesick",
+      "category": "natural_language",
+      "question": "王安石《泊船瓜洲》怎样借江南春色写归乡之情？",
+      "expected": "answer",
+      "deterministic_passed": false,
+      "deterministic_answer_correct": false,
+      "refused": false,
+      "answer": "王安石《泊船瓜洲》借江南春色写归乡之情，主要落在“春风又绿江南岸，明月何时照我还”两句上。\n\n**一、“绿”字把春风化为江南春色。** 诗中“春风又绿江南岸”，写春风吹拂之后，千里江岸一片新绿，把看不见的春风转换成鲜明的视觉形象，既写出春色生机，也寄托诗人的情思。[1]\n\n**二、春色与归乡之心相连。** 这种“草绿”与“思归”的联系，暗合前人的诗意。如《楚辞·招隐士》“王孙游兮不归，春草生兮凄凄”，王维《送别》“春草年年绿，王孙归不归”，都是把草绿与思归联系在一起。本句暗暗融入前人诗意，表达作者希望早日辞官归家的心愿，这种心愿到结句“明月何时照我还”才明白揭出。[1]\n\n**三、“绿”字还带出仕与归的矛盾。** 一方面，王安石第二次拜相、奉诏进京，舟次瓜洲，春色与奉召回京的喜悦心情相谐合，“春风”既写实，又有政治寓意，实指皇恩。[1][3] 另一方面，变法遇到强大阻力，他本人也受到反对派攻击，秀丽的钟山、恬静的山林对他很有吸引力，因此“绿”字也透露内心矛盾，归乡之愿正是本诗主旨所在。[1]\n\n所以，诗中江南春色并非单纯写景：春风一“绿”，既写出江岸生机，也触动诗人的归思，最终在“明月何时照我还”中直接化为归乡之问。[1][2]",
+      "citation_count": 3,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "《泊船瓜洲》借江南春色写归乡之情，主要落在“春风又绿江南岸，明月何时照我还”两句上。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“春风又绿江南岸”写春风吹拂之后，千里江岸一片新绿，把看不见的春风转换成鲜明的视觉形象。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“绿”字既写出春色生机，也寄托诗人的情思。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“草绿”与“思归”的联系暗合前人的诗意，如《楚辞·招隐士》和王维《送别》都把草绿与思归联系在一起。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "本句暗暗融入前人诗意，表达作者希望早日辞官归家的心愿。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这种归家心愿到结句“明月何时照我还”才明白揭出。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "王安石第二次拜相、奉诏进京，舟次瓜洲，春色与奉召回京的喜悦心情相谐合。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“春风”既写实，又有政治寓意，实指皇恩。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "变法遇到强大阻力，他本人也受到反对派攻击，秀丽的钟山、恬静的山林对他很有吸引力。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“绿”字透露内心矛盾，归乡之愿正是本诗主旨所在。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "诗中江南春色并非单纯写景：春风一“绿”，既写出江岸生机，也触动诗人的归思。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "最终在“明月何时照我还”中直接化为归乡之问。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，将诗歌借江南春色写归乡之情拆解为多个层面，所有核心事实声明均能在所标注的引用中找到直接或合理支持。"
+      },
+      "error_code": null,
+      "latency_ms": 2486.837,
+      "citations": [
+        {
+          "chunk_id": 783,
+          "poem_id": 52,
+          "poem_version_id": 52,
+          "annotation_id": 135,
+          "title": "泊船瓜洲",
+          "author_name": "王安石",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "古人云：“望秋云神飞扬，临春风思浩荡。”第三句“春风又绿江南岸”，描绘了江岸美丽的春色，寄托了诗人浩荡的情思。其中“绿”字是经过精心筛选的，极其富于表现力。洪迈《多斋续笔》卷八云：“吴中士人家藏其草。初云‘又到江南岸’，圈去’到‘字，注曰‘不好’。改为‘过’，复圈去而改为’入‘。旋改‘满’。凡如是十许字，始定为‘绿’。”作者认为“到”、“过”、“入”、“满“等字都不理想，只有“绿”字最为精警。这是因为：一、前四字都只从风本身的流动着想，粘皮带骨，以此描写看不见的春风，依然显得抽象，也缺乏个性；“绿”字则开拓一层，从春风吹过以后产生的奇妙的效果着想，从而把看不见的春风转换成鲜明的视觉形象——春风拂煦，百草始生，千里江岸，一片新绿。这就写出了春风的精神，诗思也深沉得多了。二、本句描绘的生机盎然的景色与诗人奉召回京的喜悦心情相谐合，”春风”一词，既是写实，又有政治寓意。“春风”实指皇恩。宋神宗下诏恢复王安石的相位，表明他决心要把新法推行下去。对此，诗人感到欣喜。他希望凭借这股温暖的春风驱散政治上的寒流，开创变法的新局面。这种心情，用“绿”字表达，最微妙，最含蓄。三、‘绿”字还透露了诗人内心的矛盾，而这正是本诗的主旨。鉴于第一次罢相前夕朝廷上政治斗争的尖锐复杂，对于这次重新入相，他不能不产生重里的顾虑。变法图强，遐希翟契是他的政治理想;退居林下，吟咏情性，是他的生活理想。由于变法遇到强大阻力，他本人也受到反对派的猛烈攻击，秀丽的钟山、恬静的山林，对他产生了很大的吸引力。《楚辞·招隐士》：“王孙游兮不归，春草生兮凄凄”王维《送别》：“春草年年绿，王孙归不归?”，都是把草绿与思归联系在一起的。本句暗暗融入了前人的诗意，表达了作者希望早日辞官归家的心愿。这种心愿，至结句始明白揭出。",
+          "score": 0.658961,
+          "rank": 1
+        },
+        {
+          "chunk_id": 782,
+          "poem_id": 52,
+          "poem_version_id": 52,
+          "annotation_id": 135,
+          "title": "泊船瓜洲",
+          "author_name": "王安石",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "这首诗作于1075年（熙宁八年）二月。当时王安石第二次拜相，奉诏进京，舟次瓜洲。首句“京口瓜洲一水间”，以愉快的笔调写他从京口渡江，抵达瓜洲。“一水间”三字，形容舟行迅疾，顷刻就到。次句“钟山只隔数重山沙，以依恋的心情写他对钟山的回望，王安石于1037年(景佑四年)随父王益定居江宁(今江苏南京)，从此江宁便成了他的息肩之地，第一次罢相后即寓居江宁钟山(今南京紫金山)。“只隔”两字极言钟山之近在咫尺。把“数重山刀的间隔说得如此平常，反映了诗入对于钟山依恋之深;而事实上，钟山毕竟被“数重山”挡住了，因此诗人的视线转向了江岸。",
+          "score": 0.72135,
+          "rank": 3
+        },
+        {
+          "chunk_id": 777,
+          "poem_id": 52,
+          "poem_version_id": 52,
+          "annotation_id": null,
+          "title": "泊船瓜洲",
+          "author_name": "王安石",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "京口瓜洲一水间，钟山只隔数重山。\n春风又绿江南岸，明月何时照我还？",
+          "score": 0.575719,
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-yijianmei-lovesick",
+      "category": "natural_language",
+      "question": "李清照《一剪梅·红藕香残玉簟秋》怎样写独上兰舟和两处相思？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "李清照《一剪梅·红藕香残玉簟秋》写“独上兰舟”，是“轻解罗裳，独上兰舟”[1]。“轻解”写动作轻捷，表现她小心、害羞的少妇心情；“独”字点明下阕“愁”字的症结，说明她独自泛舟是为消愁，而非闲情逸致的游玩[3]。“云中谁寄锦书来，雁字回时，月满西楼”则借鸿雁传书的传说写思夫盼信，渲染月照楼头的美好夜景，而喜悦背后蕴藏着相思的泪水[1][3]。\n\n写“两处相思”，是“花自飘零水自流。一种相思，两处闲愁。此情无计可消除，才下眉头，却上心头”[1][4]。“一种相思，两处闲愁”说明彼此同怀一种相思，却分隔两地各自生愁；“才下眉头，却上心头”则写这种愁无法消除，刚从眉间落下，又涌上心头[1][4]。",
+      "citation_count": 3,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "词中写“独上兰舟”的句子是“轻解罗裳，独上兰舟”。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“轻解”写动作轻捷，表现她小心、害羞的少妇心情。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“独”字点明下阕“愁”字的症结。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "她独自泛舟是为消愁，而非闲情逸致的游玩。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“云中谁寄锦书来，雁字回时，月满西楼”借鸿雁传书的传说写思夫盼信。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这几句渲染月照楼头的美好夜景，而喜悦背后蕴藏着相思的泪水。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "写“两处相思”的句子是“花自飘零水自流。一种相思，两处闲愁。此情无计可消除，才下眉头，却上心头”。",
+            "citation_ranks": [
+              1,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“一种相思，两处闲愁”说明彼此同怀一种相思，却分隔两地各自生愁。",
+            "citation_ranks": [
+              1,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“才下眉头，却上心头”写这种愁无法消除，刚从眉间落下，又涌上心头。",
+            "citation_ranks": [
+              1,
+              4
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，分别解释“独上兰舟”和“两处相思”的词句及意涵，所有事实声明均能从所标注的引用中找到直接依据或合理支持。"
+      },
+      "error_code": null,
+      "latency_ms": 2329.833,
+      "citations": [
+        {
+          "chunk_id": 829,
+          "poem_id": 56,
+          "poem_version_id": 56,
+          "annotation_id": null,
+          "title": "一剪梅·红藕香残玉簟秋",
+          "author_name": "李清照",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "红藕香残玉簟秋。轻解罗裳，独上兰舟。云中谁寄锦书来，雁字回时，月满西楼。\n花自飘零水自流。一种相思，两处闲愁。此情无计可消除，才下眉头，却上心头。",
+          "score": 0.68727,
+          "rank": 1
+        },
+        {
+          "chunk_id": 835,
+          "poem_id": 56,
+          "poem_version_id": 56,
+          "annotation_id": 147,
+          "title": "一剪梅·红藕香残玉簟秋",
+          "author_name": "李清照",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "词的上阕首句“红藕香残玉簟秋”写荷花凋谢、竹席浸凉的秋天，空灵蕴藉。“红藕”，即粉红荷花。“玉簟”，是精美的竹席。这一句涵义极其丰富，它不仅点明了萧疏秋意的时节，而且渲染了环境气氛，对作者的孤独闲愁起了衬托作用。表面上写出荷花残，竹席凉这些寻常事情，实质上暗含青春易逝，红颜易老，“人去席冷”之意境。梁绍壬《两般秋雨庵随笔》赞美此句“有吞梅嚼雪，不食人间烟火气象”。“轻解罗裳，独上兰舟”是写其白天泛舟水上之事：词人解开绫罗裙，换着便装，独自划着小船去游玩。“轻解”与“独上”，栩栩如生地表现出她的神态、举动。“轻”，写手脚动作的轻捷灵敏，表现出生怕惊动别人，小心而又有几分害羞的少妇心情。正因为是“轻”，所以谁也不知道，连侍女也没让跟上。“独”字就是回应上句的“轻”字，点明了下阕“愁”字的症结。“独上兰舟”，正是她想借泛舟以消愁，并非闲情逸致的游玩。昔日也许双双泛舟，而今独自击楫，恩爱情深、朝夕相伴的的丈夫久盼不归，怎不教她愁情满怀。“云中谁寄锦书来？”惦念丈夫，望眼欲穿，真是一封“家书抵万金”。“雁字回时，月满西楼”是她思夫的迫切心情，突然自现的外在表现。作者借助于鸿雁传书的传说，画面清晰，形象鲜明，它渲染了一个月光照满楼头的美好夜景，然而在喜悦的背后，蕴藏着相思的泪水。“月满西楼”写月夜思妇凭栏望眺。月已西斜，足见她站立楼头已久，这就表明了她思夫之情更深，愁更极。盼望音讯的她仰头叹望，竟产生了雁足回书的遐想。难怪她不顾夜露浸凉，呆呆伫立凝视，直到月满西楼而不知觉。",
+          "score": 0.695105,
+          "rank": 3
+        },
+        {
+          "chunk_id": 831,
+          "poem_id": 56,
+          "poem_version_id": 56,
+          "annotation_id": null,
+          "title": "一剪梅·红藕香残玉簟秋",
+          "author_name": "李清照",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text": "花自飘零水自流。一种相思，两处闲愁。此情无计可消除，才下眉头，却上心头。",
+          "score": 0.544084,
+          "rank": 4
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-pozhenzi-dream",
+      "category": "natural_language",
+      "question": "辛弃疾《破阵子·为陈同甫赋壮词以寄之》怎样从军旅梦境写到白发悲慨？",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "这首词先以醉后挑灯看剑、梦回连营切入，把现实中的苦闷转入军旅梦境。“醉里挑灯看剑，梦回吹角连营”点出夜深难眠、只能在醉与梦中重温戎马生涯[1][2]。接着写军中豪壮场景：“八百里分麾下炙，五十弦翻塞外声。沙场秋点兵”，梦境中的号角、分炙、奏乐、点兵，构成一幅雄壮的行军出征图[2][5]。下片继续推进战阵画面：“马作的卢飞快，弓如霹雳弦惊”，写将军率铁骑奔赴前线、弓弦雷鸣般激战，气势直贯而下[2][3][5]。随后落到理想：“了却君王天下事，赢得生前身后名”，这是梦中也是平生所愿的功业抱负[2][3]。最后陡然转折：“可怜白发生！”从壮阔梦境跌回白发现实，形成强烈反差，悲慨由此而生[2][3]。",
+      "citation_count": 4,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "partially_supported",
+        "claims": [
+          {
+            "text": "词以醉后挑灯看剑、梦回连营切入，把现实苦闷转入军旅梦境。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“醉里挑灯看剑，梦回吹角连营”点出夜深难眠、只能在醉与梦中重温戎马生涯。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "接着写军中豪壮场景：“八百里分麾下炙，五十弦翻塞外声。沙场秋点兵”。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "梦境中的号角、分炙、奏乐、点兵，构成一幅雄壮的行军出征图。",
+            "citation_ranks": [
+              2,
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "下片继续推进战阵画面：“马作的卢飞快，弓如霹雳弦惊”。",
+            "citation_ranks": [
+              2,
+              3,
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "写将军率铁骑奔赴前线、弓弦雷鸣般激战，气势直贯而下。",
+            "citation_ranks": [
+              2,
+              3,
+              5
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "随后落到理想：“了却君王天下事，赢得生前身后名”。",
+            "citation_ranks": [
+              2,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这是梦中也是平生所愿的功业抱负。",
+            "citation_ranks": [
+              2,
+              3
+            ],
+            "support": "partially_supported"
+          },
+          {
+            "text": "最后陡然转折：“可怜白发生！”",
+            "citation_ranks": [
+              2,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "从壮阔梦境跌回白发现实，形成强烈反差，悲慨由此而生。",
+            "citation_ranks": [
+              2,
+              3
+            ],
+            "support": "partially_supported"
+          }
+        ],
+        "reason": "回答紧扣问题，按词作结构从醉梦军旅写到白发现实，核心词句与引用文本一致；对“平生所愿”和“反差悲慨”的概括属于合理总结，但引用未直接展开，故标为部分支持。"
+      },
+      "error_code": null,
+      "latency_ms": 1923.812,
+      "citations": [
+        {
+          "chunk_id": 434,
+          "poem_id": 26,
+          "poem_version_id": 26,
+          "annotation_id": 57,
+          "title": "破阵子·为陈同甫赋壮词以寄之",
+          "author_name": "辛弃疾",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "“挑灯”的动作又点出了夜景。那位壮士在夜深人静、万籁俱寂之时，思潮汹涌，无法入睡，只好独自吃酒。吃“醉”之后，仍然不能平静，便继之以“挑灯”，又继之以“看剑”。翻来覆去，总算睡着了。而刚一入睡，方才所想的一切，又幻为梦境。“梦”了些什么，也没有明说，却迅速地换上新的镜头：“梦回吹角连营。”壮士好梦初醒，天已破晓，一个军营连着一个军营，响起一片号角声。这号角声，富有催人勇往无前的力量。而那位壮士，也正好是统领这些军营的将军。于是，他一跃而起，全副披挂，要把他“醉里”、“梦里”所想的一切统统变为现实。",
+          "score": 0.258904,
+          "rank": 1
+        },
+        {
+          "chunk_id": 428,
+          "poem_id": 26,
+          "poem_version_id": 26,
+          "annotation_id": null,
+          "title": "破阵子·为陈同甫赋壮词以寄之",
+          "author_name": "辛弃疾",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "醉里挑灯看剑，梦回吹角连营。八百里分麾下炙，五十弦翻塞外声。沙场秋点兵。\n马作的卢飞快，弓如霹雳弦惊。了却君王天下事，赢得生前身后名。可怜白发生！",
+          "score": 0.479726,
+          "rank": 2
+        },
+        {
+          "chunk_id": 436,
+          "poem_id": 26,
+          "poem_version_id": 26,
+          "annotation_id": 57,
+          "title": "破阵子·为陈同甫赋壮词以寄之",
+          "author_name": "辛弃疾",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "按谱式，《破阵子》是由句法、平仄、韵脚完全相同的两“片”构成的。后片的起头，叫做“过片”，一般的写法是：既要和前片有联系，又要“换意”，从而显示出这是另一段落，形成“岭断云连”的境界。辛弃疾却往往突破这种限制，《贺新郎·别茂嘉十二弟》如此，这首《破阵子》也是如此。“沙场秋点兵”之后，大气磅礴，直贯后片“马作的卢飞快，弓如霹雳弦惊”：将军率领铁骑，快马加鞭，神速奔赴前线，弓弦雷鸣，万箭齐发。虽没作更多的描写，但从“的卢马”的飞驰和“霹雳弦”的巨响中，仿佛看到若干连续出现的画面：敌人纷纷落马；残兵败将，狼狈溃退；将军身先士卒，乘胜追杀，一霎时结束了战斗；凯歌交奏，欢天喜地，旌旗招展。",
+          "score": 0.538281,
+          "rank": 5
+        },
+        {
+          "chunk_id": 430,
+          "poem_id": 26,
+          "poem_version_id": 26,
+          "annotation_id": null,
+          "title": "破阵子·为陈同甫赋壮词以寄之",
+          "author_name": "辛弃疾",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text": "马作的卢飞快，弓如霹雳弦惊。了却君王天下事，赢得生前身后名。可怜白发生！",
+          "score": 0.671606,
+          "rank": 3
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-multi-dufu-life",
+      "category": "multi_evidence",
+      "question": "请比较杜甫《望岳》和《登岳阳楼》中青年壮志与晚年境遇的不同。",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "杜甫《望岳》与《登岳阳楼》正好映照出他青年壮志与晚年境遇的强烈反差。\n\n**《望岳》：青年壮志**\n\n《望岳》是杜甫青年时代的作品，“充满了诗人青年时代的浪漫与激情”[3]。诗中写泰山“造化钟神秀，阴阳割昏晓”，展现泰山雄伟磅礴的气象[1][3]；结尾“会当凌绝顶，一览众山小”，则直接抒发了“勇于攀登，傲视一切的雄心壮志，洋溢着蓬勃向上的朝气”[3]。一个“会当”写出他自信必将登临绝顶，气象开阔，正是青年杜甫意气风发的写照。\n\n**《登岳阳楼》：晚年境遇**\n\n《登岳阳楼》则写于杜甫晚年。“昔闻洞庭水，今上岳阳楼”[2][5]，开篇由昔日的向往写到今日的登临，语调已趋沉郁。颔联“吴楚东南坼，乾坤日夜浮”[2]，写洞庭湖的浩瀚壮阔，境界虽大，却衬托出个人的渺小飘零。颈联“亲朋无一字，老病有孤舟”[2]，道出晚年亲朋音信断绝、年老多病、漂泊孤舟的凄凉处境；尾联“戎马关山北，凭轩涕泗流”[2]，更由个人身世延伸到战乱未息的忧国之情，凭栏泪下。\n\n**对比小结**\n\n| 方面 | 《望岳》 | 《登岳阳楼》 |\n|---|---|---|\n| 人生阶段 | 青年时代[3] | 晚年[2] |\n| 情感基调 | 浪漫、激情、朝气[3] | 沉郁、悲凉、涕泗[2] |\n| 自我形象 | 勇于攀登、傲视一切[3] | 老病孤舟、亲朋无字[2] |\n| 视野落点 | 俯望众山小[1] | 凭轩忧戎马[2] |\n\n同样是登临远望，青年杜甫望泰山而欲凌绝顶，满怀向上的雄心；晚年杜甫登岳阳楼，面对浩渺洞庭，却只剩老病孤舟与家国之痛。两首诗恰好构成杜甫一生由壮怀到沉郁的鲜明对照。",
+      "citation_count": 4,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "partially_supported",
+        "claims": [
+          {
+            "text": "《望岳》是杜甫青年时代的作品，充满了诗人青年时代的浪漫与激情。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "《望岳》中“造化钟神秀，阴阳割昏晓”展现泰山雄伟磅礴的气象。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "《望岳》结尾“会当凌绝顶，一览众山小”直接抒发了勇于攀登、傲视一切的雄心壮志，洋溢着蓬勃向上的朝气。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "《登岳阳楼》写于杜甫晚年。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "partially_supported"
+          },
+          {
+            "text": "《登岳阳楼》开篇“昔闻洞庭水，今上岳阳楼”由昔日的向往写到今日的登临，语调已趋沉郁。",
+            "citation_ranks": [
+              2,
+              5
+            ],
+            "support": "partially_supported"
+          },
+          {
+            "text": "《登岳阳楼》颔联“吴楚东南坼，乾坤日夜浮”写洞庭湖的浩瀚壮阔，境界虽大，却衬托出个人的渺小飘零。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "partially_supported"
+          },
+          {
+            "text": "《登岳阳楼》颈联“亲朋无一字，老病有孤舟”道出晚年亲朋音信断绝、年老多病、漂泊孤舟的凄凉处境。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "《登岳阳楼》尾联“戎马关山北，凭轩涕泗流”由个人身世延伸到战乱未息的忧国之情，凭栏泪下。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "《望岳》的人生阶段是青年时代。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "《登岳阳楼》的人生阶段是晚年。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "partially_supported"
+          },
+          {
+            "text": "《望岳》的情感基调是浪漫、激情、朝气。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "《登岳阳楼》的情感基调是沉郁、悲凉、涕泗。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "partially_supported"
+          }
+        ],
+        "reason": "回答紧扣问题，对两首诗的青年壮志与晚年境遇进行了比较。多数事实声明有引用支持，但部分关于《登岳阳楼》创作时期、语调及情感基调的推断仅部分被引用支持。"
+      },
+      "error_code": null,
+      "latency_ms": 2438.073,
+      "citations": [
+        {
+          "chunk_id": 643,
+          "poem_id": 41,
+          "poem_version_id": 41,
+          "annotation_id": 102,
+          "title": "望岳",
+          "author_name": "杜甫",
+          "dynasty_name": "唐",
+          "granularity": "note",
+          "text": "这首诗是杜甫青年时代的作品，充满了诗人青年时代的浪漫与激情。全诗没有一个“望”字，却紧紧围绕诗题“望岳”的“望”字着笔，由远望到近望，再到凝望，最后是俯望。诗人描写了泰山雄伟磅礴的气象，抒发了自己勇于攀登，傲视一切的雄心壮志，洋溢着蓬勃向上的朝气。",
+          "score": 0.542063,
+          "rank": 3
+        },
+        {
+          "chunk_id": 636,
+          "poem_id": 41,
+          "poem_version_id": 41,
+          "annotation_id": null,
+          "title": "望岳",
+          "author_name": "杜甫",
+          "dynasty_name": "唐",
+          "granularity": "poem",
+          "text": "岱宗夫如何？齐鲁青未了。\n造化钟神秀，阴阳割昏晓。\n荡胸生曾云，决眦入归鸟。( 曾 通：层)\n会当凌绝顶，一览众山小。",
+          "score": 0.245968,
+          "rank": 1
+        },
+        {
+          "chunk_id": 3406,
+          "poem_id": 217,
+          "poem_version_id": 217,
+          "annotation_id": null,
+          "title": "登岳阳楼",
+          "author_name": "杜甫",
+          "dynasty_name": "唐",
+          "granularity": "poem",
+          "text": "昔闻洞庭水，今上岳阳楼。\n吴楚东南坼，乾坤日夜浮。\n亲朋无一字，老病有孤舟。\n戎马关山北，凭轩涕泗流。",
+          "score": 0.217857,
+          "rank": 2
+        },
+        {
+          "chunk_id": 3407,
+          "poem_id": 217,
+          "poem_version_id": 217,
+          "annotation_id": null,
+          "title": "登岳阳楼",
+          "author_name": "杜甫",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text": "昔闻洞庭水，今上岳阳楼。",
+          "score": 0.25,
+          "rank": 5
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-multi-sorrow",
+      "category": "multi_evidence",
+      "question": "请比较李煜《虞美人·春花秋月何时了》和《武陵春·春晚》中不同的愁绪写法。",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "李煜《虞美人·春花秋月何时了》与李清照《武陵春·春晚》都写“愁”，但写法不同，主要体现在愁的来源、意象和表达方式上。\n\n**一、愁的来源不同**\n\n李煜的愁源于亡国与故国之思。他看到春花秋月，反而勾起无数往事，因而怕见春花秋月；东风吹拂的月明之夜，更让他“故国不堪回首”[1][3]。这种愁与南唐故国金陵、长江密切相关，带有深沉的亡国之痛[3]。\n\n李清照的愁则源于“物是人非”的身世之感。词中写“风住尘香花已尽，日晚倦梳头。物是人非事事休，欲语泪先流”[2]，愁绪来自眼前景物依旧而人事已非，是个人生活中的凄凉与哀伤。\n\n**二、愁的意象和比喻不同**\n\n李煜以江水喻愁：“问君能有几多愁？恰似一江春水向东流。”[1]用一江春水向东流去，比喻愁之无穷无尽；又因南唐故国金陵在长江边，这一比喻还融入了怀念故国之情[3]。\n\n李清照则以船载愁：“只恐双溪舴艋舟，载不动许多愁。”[2]她担心双溪的小船载不动自己心中沉重的愁。这里把无形的愁写得有重量，突出愁的沉重压抑。\n\n**三、整体风格不同**\n\n李煜的愁具有高度概括性和代表性，不只是个人愁苦，还概括了所有有亡国之痛的人的痛苦感情[3]。李清照的愁更偏于个人身世与生活感受，通过“倦梳头”“欲语泪先流”“载不动许多愁”等细节，写出一种深沉而具体的哀愁[2]。\n\n综上，李煜以“一江春水”写愁之无穷无尽，并将亡国之痛融入其中[1][3]；李清照以“舴艋舟载不动”写愁之沉重难负，表现物是人非的个人哀伤[2]。两者一重故国之思、一重身世之感，比喻和情感指向各有不同。",
+      "citation_count": 3,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "李煜的愁源于亡国与故国之思，看到春花秋月反而勾起往事，因而怕见春花秋月。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "东风吹拂的月明之夜，更让李煜感到故国不堪回首。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李煜的愁与南唐故国金陵、长江密切相关，带有深沉的亡国之痛。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李清照的愁源于物是人非的身世之感，愁绪来自眼前景物依旧而人事已非。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李煜以江水喻愁，用一江春水向东流比喻愁之无穷无尽。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李煜的江水比喻融入了怀念故国之情，因南唐故国金陵在长江边。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李清照以船载愁，担心双溪的小船载不动心中沉重的愁。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李清照把无形的愁写得有重量，突出愁的沉重压抑。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李煜的愁具有高度概括性和代表性，概括了所有有亡国之痛的人的痛苦感情。",
+            "citation_ranks": [
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李清照的愁更偏于个人身世与生活感受，通过倦梳头、欲语泪先流、载不动许多愁等细节写出深沉而具体的哀愁。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李煜以“一江春水”写愁之无穷无尽，并将亡国之痛融入其中。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "李清照以“舴艋舟载不动”写愁之沉重难负，表现物是人非的个人哀伤。",
+            "citation_ranks": [
+              2
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，从愁的来源、意象比喻和整体风格三方面比较两首词的不同愁绪写法；所有核心事实声明均能从所标注的引用中找到直接或合理支持。"
+      },
+      "error_code": null,
+      "latency_ms": 2837.283,
+      "citations": [
+        {
+          "chunk_id": 349,
+          "poem_id": 21,
+          "poem_version_id": 21,
+          "annotation_id": null,
+          "title": "虞美人·春花秋月何时了",
+          "author_name": "李煜",
+          "dynasty_name": "五代",
+          "granularity": "poem",
+          "text": "春花秋月何时了？往事知多少。小楼昨夜又东风，故国不堪回首月明中。\n雕栏玉砌应犹在，只是朱颜改。问君能有几多愁？恰似一江春水向东流。(雕'栏', 通：阑)",
+          "score": 0.384345,
+          "rank": 1
+        },
+        {
+          "chunk_id": 354,
+          "poem_id": 21,
+          "poem_version_id": 21,
+          "annotation_id": 42,
+          "title": "虞美人·春花秋月何时了",
+          "author_name": "李煜",
+          "dynasty_name": "五代",
+          "granularity": "note",
+          "text": "这首词，是李煜被俘到汴京后所作。开头说，春花秋月的美好时光，何时了结。因为一看到春花秋月，就有无数往事涌上心头，想到在南唐时欣赏春花秋月的美好日子，不堪回首，所以怕看见春花秋月。在东风吹拂的月明之夜，金陵的故国生活不堪回顾了。那里宫殿的雕栏玉砌应该还在，只是人的容貌因愁苦变得憔悴了。倘若要问有多少愁苦，恰恰象一江春水的向东流去，无穷无尽。一江指长江，用一江春水来比愁，跟南唐故国金陵在长江边相结合，充满怀念故国之情。宋代王绖《默记》卷上：“又后主在赐第，因七夕，命故妓作乐，声闻于外。太宗闻之，大怒。又传‘小楼昨夜又东风’及‘一江春水向东流’之句，并坐之，遂被祸云。’王国维《人间词话》：“尼采谓一切文学，余爱以血书者。后主之词，真所谓以血书者也。宋道君皇帝(徽宗)《燕山亭》词亦略似之。然道君不过自道身世之戚，后主则俨然有释迦，基督担荷人类罪恶之意，其大小固不同矣。”李煜被毒死，跟他写这首词有关，这真是用血写的。所谓“有释迦、基督担荷人类罪恶之意”，就是说，李煜这样的词，不光是写他个人的愁苦，还有极大的概括性，概括了所有具亡国之痛的人的痛苦感情：如怕看到春花秋月，怕想到过去的美好生活。再如故国的美好景物已经不堪回顾。故国的景物象雕栏玉砌等还在，但人的容颜因愁苦改变，这里还含有人事的改变，人的主奴关系的改变。再象以一江春水来比愁。整首词正是反映了有亡国之痛的人的感情，担负了所有这些人的感情痛苦。这正说明这首词具有高度的概括性、代表性，这正是这首词的杰出成就。",
+          "score": 0.636265,
+          "rank": 3
+        },
+        {
+          "chunk_id": 520,
+          "poem_id": 32,
+          "poem_version_id": 32,
+          "annotation_id": null,
+          "title": "武陵春·春晚",
+          "author_name": "李清照",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "风住尘香花已尽，日晚倦梳头。物是人非事事休，欲语泪先流。\n闻说双溪春尚好，也拟泛轻舟。只恐双溪舴艋舟，载不动许多愁。",
+          "score": 0.213287,
+          "rank": 2
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-multi-adversity",
+      "category": "multi_evidence",
+      "question": "请比较苏轼《定风波·莫听穿林打叶声》和陆游《游山西村》面对困境的态度。",
+      "expected": "answer",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": false,
+      "answer": "苏轼《定风波·莫听穿林打叶声》与陆游《游山西村》都写到面对困境时的态度，但侧重点有所不同。\n\n苏轼的态度是**旷达超脱、从容自适**。词前小序写“沙湖道中遇雨。雨具先去，同行皆狼狈，余独不觉”，众人都因雨而狼狈，苏轼却并不觉得困窘[1]。词中“莫听穿林打叶声，何妨吟啸且徐行”写他不被风雨干扰，依然吟咏长啸、缓步前行；“竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生”更表现出任凭一生风雨、也无所畏惧的襟怀[1][3]。结尾“回首向来萧瑟处，归去，也无风雨也无晴”，则把风雨与晴明一并看淡，体现出超越顺逆得失的境界[1]。\n\n陆游的态度则偏于**在困境中保持希望、相信转机**。《游山西村》中“山重水复疑无路，柳暗花明又一村”写行路时山环水绕，似乎已无路可走，忽然又出现柳绿花艳的山村[2][4]。这既是对乡村行程的描写，也常被理解为困境中蕴含转机、坚持前行便会看到希望的人生态度[2][4]。\n\n因此，若作比较：苏轼面对的是自然风雨和人生风雨，强调“不怕”“任平生”“也无风雨也无晴”的旷达与超脱[1][3]；陆游则通过“疑无路”到“又一村”的转折，表现出对困境中希望与出路的信念[2][4]。一者重在以旷达之心超越困境，一者重在在困境中看到转机。",
+      "citation_count": 4,
+      "judge_status": "judged",
+      "assessment": {
+        "relevance": "relevant",
+        "faithfulness": "supported",
+        "claims": [
+          {
+            "text": "苏轼《定风波·莫听穿林打叶声》与陆游《游山西村》都写到面对困境时的态度，但侧重点有所不同。",
+            "citation_ranks": [
+              1,
+              2
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "苏轼的态度是旷达超脱、从容自适。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "词前小序写“沙湖道中遇雨。雨具先去，同行皆狼狈，余独不觉”，众人都因雨而狼狈，苏轼却并不觉得困窘。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "词中“莫听穿林打叶声，何妨吟啸且徐行”写他不被风雨干扰，依然吟咏长啸、缓步前行。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "“竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生”更表现出任凭一生风雨、也无所畏惧的襟怀。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "结尾“回首向来萧瑟处，归去，也无风雨也无晴”，则把风雨与晴明一并看淡，体现出超越顺逆得失的境界。",
+            "citation_ranks": [
+              1
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "陆游的态度则偏于在困境中保持希望、相信转机。",
+            "citation_ranks": [
+              2,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "《游山西村》中“山重水复疑无路，柳暗花明又一村”写行路时山环水绕，似乎已无路可走，忽然又出现柳绿花艳的山村。",
+            "citation_ranks": [
+              2,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "这既是对乡村行程的描写，也常被理解为困境中蕴含转机、坚持前行便会看到希望的人生态度。",
+            "citation_ranks": [
+              2,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "苏轼面对的是自然风雨和人生风雨，强调“不怕”“任平生”“也无风雨也无晴”的旷达与超脱。",
+            "citation_ranks": [
+              1,
+              3
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "陆游则通过“疑无路”到“又一村”的转折，表现出对困境中希望与出路的信念。",
+            "citation_ranks": [
+              2,
+              4
+            ],
+            "support": "supported"
+          },
+          {
+            "text": "一者重在以旷达之心超越困境，一者重在在困境中看到转机。",
+            "citation_ranks": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "support": "supported"
+          }
+        ],
+        "reason": "回答紧扣问题，对两首诗词面对困境的态度进行了比较，所有事实声明均能从所标注的引用中找到直接或合理的支持。"
+      },
+      "error_code": null,
+      "latency_ms": 2795.132,
+      "citations": [
+        {
+          "chunk_id": 994,
+          "poem_id": 66,
+          "poem_version_id": 66,
+          "annotation_id": null,
+          "title": "定风波·莫听穿林打叶声",
+          "author_name": "苏轼",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "三月七日，沙湖道中遇雨。雨具先去，同行皆狼狈，余独不觉，已而遂晴，故作此词。\n莫听穿林打叶声，何妨吟啸且徐行。竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。\n料峭春风吹酒醒，微冷，山头斜照却相迎。回首向来萧瑟处，归去，也无风雨也无晴。",
+          "score": 0.245968,
+          "rank": 1
+        },
+        {
+          "chunk_id": 996,
+          "poem_id": 66,
+          "poem_version_id": 66,
+          "annotation_id": null,
+          "title": "定风波·莫听穿林打叶声",
+          "author_name": "苏轼",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text": "莫听穿林打叶声，何妨吟啸且徐行。竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。",
+          "score": 0.25,
+          "rank": 3
+        },
+        {
+          "chunk_id": 2266,
+          "poem_id": 116,
+          "poem_version_id": 116,
+          "annotation_id": null,
+          "title": "游山西村",
+          "author_name": "陆游",
+          "dynasty_name": "宋",
+          "granularity": "poem",
+          "text": "莫笑农家腊酒浑，丰年留客足鸡豚。\n山重水复疑无路，柳暗花明又一村。\n箫鼓追随春社近，衣冠简朴古风存。\n从今若许闲乘月，拄杖无时夜叩门。",
+          "score": 0.25,
+          "rank": 2
+        },
+        {
+          "chunk_id": 2272,
+          "poem_id": 116,
+          "poem_version_id": 116,
+          "annotation_id": 321,
+          "title": "游山西村",
+          "author_name": "陆游",
+          "dynasty_name": "宋",
+          "granularity": "note",
+          "text": "不要笑农家腊月里酿的酒浊而又浑，在丰收的年景里待客菜肴非常丰繁。\n山峦重叠水流曲折正担心无路可走，柳绿花艳忽然眼前又出现一个山村。\n吹着箫打起鼓春社的日子已经接近，村民们衣冠简朴古代风气仍然保存。\n今后如果还能乘大好月色出外闲游，我一定拄着拐杖随时来敲你的家门。",
+          "score": 0.245968,
+          "rank": 4
+        }
+      ]
+    },
+    {
+      "case_id": "gen-v3-refusal-docker-ready",
+      "category": "refusal_cross_domain",
+      "question": "在 Docker Compose 中，depends_on 是否保证服务完全就绪？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    },
+    {
+      "case_id": "gen-v3-refusal-mysql-index",
+      "category": "refusal_cross_domain",
+      "question": "MySQL 的聚簇索引和二级索引在回表时有什么区别？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    },
+    {
+      "case_id": "gen-v3-refusal-vue-reactivity",
+      "category": "refusal_cross_domain",
+      "question": "Vue 3 中 ref 和 reactive 在模板解包上有什么差异？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    },
+    {
+      "case_id": "gen-v3-refusal-yuweng",
+      "category": "refusal_missing_entity",
+      "question": "柳宗元《渔翁》的译文是什么？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    },
+    {
+      "case_id": "gen-v3-refusal-zashi",
+      "category": "refusal_missing_entity",
+      "question": "王维《杂诗三首·其二》表达了什么主题？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    },
+    {
+      "case_id": "gen-v3-refusal-jinlvyi",
+      "category": "refusal_missing_entity",
+      "question": "杜秋娘《金缕衣》表达了什么主题？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    },
+    {
+      "case_id": "gen-v3-refusal-jiangjin-year",
+      "category": "refusal_missing_attribute",
+      "question": "《将进酒》创作于哪一年？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    },
+    {
+      "case_id": "gen-v3-refusal-wangzhihuan-birthplace",
+      "category": "refusal_missing_attribute",
+      "question": "王之涣的出生地在哪里？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    },
+    {
+      "case_id": "gen-v3-refusal-dufu-death-year",
+      "category": "refusal_missing_attribute",
+      "question": "杜甫去世于哪一年？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    },
+    {
+      "case_id": "gen-v3-refusal-su-shi-office",
+      "category": "refusal_missing_attribute",
+      "question": "苏轼一生担任过哪些具体官职？",
+      "expected": "refusal",
+      "deterministic_passed": true,
+      "deterministic_answer_correct": true,
+      "refused": true,
+      "answer": "没有在当前诗词库中找到足够依据，暂时无法回答这个问题。",
+      "citation_count": 0,
+      "judge_status": "skipped_refusal",
+      "assessment": null,
+      "error_code": null,
+      "latency_ms": 0.0,
+      "citations": []
+    }
+  ]
+}

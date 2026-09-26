@@ -3,6 +3,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.verify-tmp/
 .ruff_cache/
 .mypy_cache/
 .coverage
@@ -10,6 +11,7 @@ htmlcov/
 *.db
 
 node_modules/
+.pnpm-store/
 dist/
 .vite/
 coverage/
@@ -18,3 +20,22 @@ coverage/
 .vscode/
 *.log
 
+data/raw/
+data/import/generated/
+data/import/reports/
+data/eval/reports/*_after_100_corpus_*.json
+data/eval/reports/*open_corpus*.json
+
+# Local diagnostics are reproducible and are not release baseline artifacts.
+apps/api/scripts/_probe_*.py
+data/eval/_probe_*.json
+data/eval/reports/_probe_*.json
+data/eval/reports/profile_*.json
+
+# Intermediate tuning runs are reproducible; keep frozen datasets and milestone reports.
+data/eval/reports/*_after_anchor*.json
+data/eval/reports/*_after_fix*.json
+data/eval/reports/*_after_structured_fix*.json
+data/eval/reports/*_after_entity_tail.json
+data/eval/reports/*_after_quote_prompt.json
+data/eval/reports/*_next.json

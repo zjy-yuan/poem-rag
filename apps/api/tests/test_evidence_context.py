@@ -96,6 +96,9 @@ def _candidate(
     chunk_id: int,
     poem_version_id: int,
     chunk_index: int = 0,
+    text: str | None = None,
+    line_start: int = 1,
+    line_end: int = 2,
 ) -> ChunkSearchCandidate:
     return ChunkSearchCandidate(
         chunk_id=chunk_id,
@@ -106,10 +109,10 @@ def _candidate(
         annotation_type=None,
         granularity=ChunkGranularity.POEM.value,
         chunk_index=chunk_index,
-        text=f"Chunk {chunk_id}",
+        text=text or f"Chunk {chunk_id}",
         normalized_text=f"chunk{chunk_id}",
-        line_start=1,
-        line_end=2,
+        line_start=line_start,
+        line_end=line_end,
         chunk_strategy="structural-v1",
         status="ready",
         title=f"Poem {poem_version_id}",
@@ -168,7 +171,7 @@ async def test_line_matches_are_expanded_with_the_poem_context() -> None:
 
 
 @pytest.mark.asyncio
-async def test_versions_with_a_selected_poem_chunk_are_not_expanded() -> None:
+async def test_partial_poem_selection_is_completed_without_duplicates() -> None:
     retriever = FakeRetriever(
         _result(
             _evidence(
@@ -179,15 +182,20 @@ async def test_versions_with_a_selected_poem_chunk_are_not_expanded() -> None:
             _evidence(chunk_id=2, poem_version_id=7),
         )
     )
-    source = FakeContextSource([_candidate(chunk_id=9, poem_version_id=7)])
+    source = FakeContextSource(
+        [
+            _candidate(chunk_id=1, poem_version_id=7),
+            _candidate(chunk_id=9, poem_version_id=7),
+        ]
+    )
 
     result = await PoemContextRetrievalService(
         retriever,
         source,
     ).search_evidence(query="水调歌头", limit=5)
 
-    assert [item.chunk_id for item in result.items] == [1, 2]
-    assert source.calls == []
+    assert [item.chunk_id for item in result.items] == [1, 2, 9]
+    assert source.calls == [[7]]
 
 
 @pytest.mark.asyncio
@@ -217,6 +225,84 @@ async def test_expansion_prefers_the_best_ranked_poem_and_respects_the_budget() 
 
 
 @pytest.mark.asyncio
+async def test_long_poem_context_keeps_tail_chunks_within_character_budget() -> None:
+    retriever = FakeRetriever(_result(_evidence(chunk_id=1, poem_version_id=7)))
+    source = FakeContextSource(
+        [
+            _candidate(
+                chunk_id=9 + index,
+                poem_version_id=7,
+                chunk_index=index,
+                text="诗" * 20,
+                line_start=index + 1,
+                line_end=index + 1,
+            )
+            for index in range(6)
+        ]
+    )
+
+    result = await PoemContextRetrievalService(
+        retriever,
+        source,
+        max_context_chars=120,
+    ).search_evidence(query="长诗", limit=5)
+
+    assert [item.chunk_id for item in result.items] == [1, 9, 10, 11, 12, 13, 14]
+    assert result.items[-1].line_end == 6
+
+
+@pytest.mark.asyncio
+async def test_context_character_budget_caps_long_poem_context() -> None:
+    retriever = FakeRetriever(_result(_evidence(chunk_id=1, poem_version_id=7)))
+    source = FakeContextSource(
+        [
+            _candidate(
+                chunk_id=9 + index,
+                poem_version_id=7,
+                chunk_index=index,
+                text="诗" * 30,
+            )
+            for index in range(5)
+        ]
+    )
+
+    result = await PoemContextRetrievalService(
+        retriever,
+        source,
+        max_context_chars=60,
+    ).search_evidence(query="长诗", limit=5)
+
+    assert [item.chunk_id for item in result.items] == [1, 9, 10]
+
+
+@pytest.mark.asyncio
+async def test_context_chunks_rotate_across_matched_poems() -> None:
+    retriever = FakeRetriever(
+        _result(
+            _evidence(chunk_id=1, poem_version_id=7),
+            _evidence(chunk_id=2, poem_version_id=8),
+        )
+    )
+    source = FakeContextSource(
+        [
+            _candidate(chunk_id=9, poem_version_id=7, chunk_index=0),
+            _candidate(chunk_id=10, poem_version_id=8, chunk_index=0),
+            _candidate(chunk_id=11, poem_version_id=7, chunk_index=1),
+            _candidate(chunk_id=12, poem_version_id=8, chunk_index=1),
+        ]
+    )
+
+    result = await PoemContextRetrievalService(
+        retriever,
+        source,
+        max_context_chunks=3,
+        max_context_chars=1000,
+    ).search_evidence(query="明月", limit=5)
+
+    assert [item.chunk_id for item in result.items] == [1, 2, 9, 10, 11]
+
+
+@pytest.mark.asyncio
 async def test_expansion_is_skipped_when_no_context_is_available() -> None:
     retriever = FakeRetriever(_result(_evidence(chunk_id=1, poem_version_id=7)))
     source = FakeContextSource([])
@@ -235,4 +321,13 @@ def test_negative_context_budget_is_rejected() -> None:
             FakeRetriever(_result()),
             FakeContextSource([]),
             max_context_chunks=-1,
+        )
+
+
+def test_negative_context_character_budget_is_rejected() -> None:
+    with pytest.raises(ValueError):
+        PoemContextRetrievalService(
+            FakeRetriever(_result()),
+            FakeContextSource([]),
+            max_context_chars=-1,
         )

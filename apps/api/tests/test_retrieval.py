@@ -5,6 +5,7 @@ from typing import Any
 from app.core.text import normalize_content, sha256_text
 from app.models.annotation import AnnotationStatus, AnnotationType, PoemAnnotation
 from app.models.chunk import ChunkStatus
+from app.repositories.chunks import ChunkRepository
 from app.services.chunk_catalog import ChunkCatalogService
 from fastapi.testclient import TestClient
 from test_catalog import _admin_client
@@ -275,3 +276,83 @@ def test_evidence_search_escapes_wildcards_and_rejects_blank_query(
     blank = client.get("/api/v1/search/evidence", params={"q": "   "})
     assert blank.status_code == 422
     assert blank.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_lexical_candidate_selection_prioritizes_title_over_earlier_body_match(
+    client: TestClient,
+) -> None:
+    headers, dynasty, author = _create_catalog(client)
+    filler = _create_poem(
+        client,
+        headers,
+        title="秋日",
+        content="登高望远，天地苍茫。",
+        author_id=author["id"],
+        dynasty_id=dynasty["id"],
+    )
+    target = _create_poem(
+        client,
+        headers,
+        title="登高",
+        content="风急天高猿啸哀。",
+        author_id=author["id"],
+        dynasty_id=dynasty["id"],
+    )
+    _publish(client, headers, filler["id"])
+    _publish(client, headers, target["id"])
+
+    portal = client.portal
+    assert portal is not None
+    session_factory = client.app.state.session_factory
+    for poem in (filler, target):
+        versions = portal.call(_load_versions, session_factory, poem["id"])
+        _rebuild_chunks(client, versions[0].id)
+
+    async def search() -> list[str]:
+        async with session_factory() as session:
+            candidates = await ChunkRepository(session).search_lexical(
+                query="登高",
+                limit=1,
+            )
+            return [candidate.title for candidate in candidates]
+
+    assert portal.call(search) == ["登高"]
+
+
+def test_evidence_search_prioritizes_exact_title_over_body_substring(
+    client: TestClient,
+) -> None:
+    headers, dynasty, author = _create_catalog(client)
+    filler = _create_poem(
+        client,
+        headers,
+        title="秋日",
+        content="登高望远，天地苍茫。",
+        author_id=author["id"],
+        dynasty_id=dynasty["id"],
+    )
+    target = _create_poem(
+        client,
+        headers,
+        title="登高",
+        content="风急天高猿啸哀。",
+        author_id=author["id"],
+        dynasty_id=dynasty["id"],
+    )
+    _publish(client, headers, filler["id"])
+    _publish(client, headers, target["id"])
+
+    portal = client.portal
+    assert portal is not None
+    session_factory = client.app.state.session_factory
+    for poem in (filler, target):
+        versions = portal.call(_load_versions, session_factory, poem["id"])
+        _rebuild_chunks(client, versions[0].id)
+
+    response = client.get("/api/v1/search/evidence", params={"q": "登高"})
+
+    assert response.status_code == 200
+    items = response.json()["data"]
+    assert items[0]["poem_id"] == target["id"]
+    assert items[0]["title"] == "登高"
+    assert "title_phrase" in items[0]["match_types"]

@@ -4,6 +4,7 @@ import logging
 import re
 from collections.abc import AsyncIterator, Sequence
 from dataclasses import dataclass
+from time import perf_counter
 from typing import Any, Literal, TypedDict, cast
 
 from langgraph.config import get_stream_writer
@@ -143,152 +144,190 @@ class RagChatGraph:
                 yield cast(dict[str, Any], event)
 
     async def _rewrite(self, state: RagChatState) -> RagChatState:
-        rewrite = await self.rewriter.rewrite(state["query"])
-        variants = [state["query"], *rewrite.variants]
-        return {
-            "rewritten_query": " ".join(dict.fromkeys(variants)),
-            "matched_concepts": list(rewrite.matched_concepts),
-            "matched_entities": list(rewrite.matched_entities),
-        }
+        started_at = perf_counter()
+        try:
+            rewrite = await self.rewriter.rewrite(state["query"])
+            variants = [state["query"], *rewrite.variants]
+            return {
+                "rewritten_query": " ".join(dict.fromkeys(variants)),
+                "matched_concepts": list(rewrite.matched_concepts),
+                "matched_entities": list(rewrite.matched_entities),
+            }
+        finally:
+            _emit_timing("rewrite", started_at)
 
     async def _retrieve(self, state: RagChatState) -> RagChatState:
-        result = await self.retrieval.search_evidence(
-            query=state.get("rewritten_query") or state["query"],
-            limit=self.settings.chat_retrieval_limit,
-            granularities=[
-                ChunkGranularity.POEM,
-                ChunkGranularity.LINE,
-                ChunkGranularity.NOTE,
-            ],
-        )
-        get_stream_writer()(
-            {
-                "kind": "retrieval",
+        started_at = perf_counter()
+        try:
+            # The online retrieval stack owns query expansion. Passing the
+            # concatenated rewrite back into it would rewrite expanded terms again
+            # and lose the structured sub-question groups.
+            result = await self.retrieval.search_evidence(
+                query=state["query"],
+                limit=self.settings.chat_retrieval_limit,
+                granularities=[
+                    ChunkGranularity.POEM,
+                    ChunkGranularity.LINE,
+                    ChunkGranularity.NOTE,
+                ],
+            )
+            get_stream_writer()(
+                {
+                    "kind": "retrieval",
+                    "candidate_count": result.candidate_count,
+                    "selected_count": len(result.items),
+                    "strategy": result.strategy,
+                }
+            )
+            return {
+                "evidence": result.items,
                 "candidate_count": result.candidate_count,
-                "selected_count": len(result.items),
-                "strategy": result.strategy,
             }
-        )
-        return {
-            "evidence": result.items,
-            "candidate_count": result.candidate_count,
-        }
+        finally:
+            _emit_timing("retrieval", started_at)
 
     async def _assess(self, state: RagChatState) -> RagChatState:
-        evidence = state.get("evidence") or []
-        if not evidence:
-            return _assessment_state(
-                answerable=False,
-                status="skipped",
-                reason_code="no_evidence",
-            )
-        if self.provider is None:
-            return _assessment_state(
-                answerable=True,
-                status="failed_open",
-                reason_code="provider_not_configured",
-            )
-
+        started_at = perf_counter()
         try:
-            raw_assessment = await self.provider.generate(
-                _build_assessment_messages(
-                    query=state["query"],
-                    history=state.get("history") or [],
-                    evidence=evidence,
-                ),
-                max_output_tokens=self.settings.chat_assess_max_output_tokens,
-                temperature=0.0,
-                response_format="json_object",
-            )
-            assessment = EvidenceAssessment.model_validate_json(raw_assessment)
-        except Exception as exc:
-            logger.warning(
-                "Evidence assessment failed open (%s)",
-                type(exc).__name__,
-                exc_info=True,
-            )
-            return _assessment_state(
-                answerable=True,
-                status="failed_open",
-                reason_code="assessment_error",
-            )
+            evidence = state.get("evidence") or []
+            if not evidence:
+                return _assessment_state(
+                    answerable=False,
+                    status="skipped",
+                    reason_code="no_evidence",
+                )
+            if self.provider is None:
+                return _assessment_state(
+                    answerable=True,
+                    status="failed_open",
+                    reason_code="provider_not_configured",
+                )
 
-        return _assessment_state(
-            answerable=assessment.answerable,
-            status="passed" if assessment.answerable else "refused",
-            reason_code=assessment.reason_code,
-        )
+            try:
+                raw_assessment = await self.provider.generate(
+                    _build_assessment_messages(
+                        query=state["query"],
+                        history=state.get("history") or [],
+                        evidence=evidence,
+                    ),
+                    max_output_tokens=self.settings.chat_assess_max_output_tokens,
+                    temperature=0.0,
+                    response_format="json_object",
+                )
+                assessment = EvidenceAssessment.model_validate_json(raw_assessment)
+            except Exception as exc:
+                logger.warning(
+                    "Evidence assessment failed open (%s)",
+                    type(exc).__name__,
+                    exc_info=True,
+                )
+                return _assessment_state(
+                    answerable=True,
+                    status="failed_open",
+                    reason_code="assessment_error",
+                )
+
+            return _assessment_state(
+                answerable=assessment.answerable,
+                status="passed" if assessment.answerable else "refused",
+                reason_code=assessment.reason_code,
+            )
+        finally:
+            _emit_timing("assess", started_at)
 
     async def _generate(self, state: RagChatState) -> RagChatState:
-        evidence = state.get("evidence") or []
-        writer = get_stream_writer()
-        if self.provider is None:
-            raise ChatModelError(
-                "问答模型尚未配置",
-                code=ErrorCode.CHAT_MODEL_NOT_CONFIGURED,
+        started_at = perf_counter()
+        try:
+            evidence = state.get("evidence") or []
+            writer = get_stream_writer()
+            if self.provider is None:
+                raise ChatModelError(
+                    "问答模型尚未配置",
+                    code=ErrorCode.CHAT_MODEL_NOT_CONFIGURED,
+                )
+
+            messages = _build_messages(
+                query=state["query"],
+                history=state.get("history") or [],
+                evidence=evidence,
             )
+            parts: list[str] = []
+            async for delta in self.provider.stream(
+                messages,
+                max_output_tokens=self.settings.deepseek_max_output_tokens,
+            ):
+                if not delta:
+                    continue
+                parts.append(delta)
+                writer({"kind": "delta", "text": delta})
 
-        messages = _build_messages(
-            query=state["query"],
-            history=state.get("history") or [],
-            evidence=evidence,
-        )
-        parts: list[str] = []
-        async for delta in self.provider.stream(
-            messages,
-            max_output_tokens=self.settings.deepseek_max_output_tokens,
-        ):
-            if not delta:
-                continue
-            parts.append(delta)
-            writer({"kind": "delta", "text": delta})
-
-        answer = "".join(parts).strip()
-        citations = _resolve_citations(answer, evidence)
-        for citation in citations:
-            writer({"kind": "citation", "citation": citation})
-        return {
-            "answer": answer,
-            "citations": citations,
-            "finish_reason": "stop",
-            "refused": False,
-        }
-
-    async def _refuse(self, state: RagChatState) -> RagChatState:
-        get_stream_writer()({"kind": "delta", "text": NO_EVIDENCE_ANSWER})
-        return {
-            "answer": NO_EVIDENCE_ANSWER,
-            "citations": [],
-            "finish_reason": "no_evidence",
-            "refused": True,
-        }
-
-    async def _validate(self, state: RagChatState) -> RagChatState:
-        answer = (state.get("answer") or "").strip()
-        if not answer:
-            raise ChatModelError(
-                "模型返回了空回答",
-                code=ErrorCode.CHAT_EMPTY_RESPONSE,
-            )
-        citations = state.get("citations") or []
-        if state.get("evidence") and not citations and not state.get("refused"):
-            raise ChatModelError(
-                "回答缺少可追溯引用",
-                code=ErrorCode.CHAT_CITATION_MISSING,
-            )
-        get_stream_writer()(
-            {
-                "kind": "final",
+            answer = "".join(parts).strip()
+            citations = _resolve_citations(answer, evidence)
+            for citation in citations:
+                writer({"kind": "citation", "citation": citation})
+            return {
                 "answer": answer,
                 "citations": citations,
-                "finish_reason": state.get("finish_reason") or "stop",
+                "finish_reason": "stop",
+                "refused": False,
             }
-        )
-        return {"answer": answer, "citations": citations}
+        finally:
+            _emit_timing("generation", started_at)
+
+    async def _refuse(self, state: RagChatState) -> RagChatState:
+        started_at = perf_counter()
+        try:
+            get_stream_writer()({"kind": "delta", "text": NO_EVIDENCE_ANSWER})
+            return {
+                "answer": NO_EVIDENCE_ANSWER,
+                "citations": [],
+                "finish_reason": "no_evidence",
+                "refused": True,
+            }
+        finally:
+            _emit_timing("generation", started_at)
+
+    async def _validate(self, state: RagChatState) -> RagChatState:
+        started_at = perf_counter()
+        try:
+            answer = (state.get("answer") or "").strip()
+            if not answer:
+                raise ChatModelError(
+                    "模型返回了空回答",
+                    code=ErrorCode.CHAT_EMPTY_RESPONSE,
+                )
+            citations = state.get("citations") or []
+            if state.get("evidence") and not citations and not state.get("refused"):
+                raise ChatModelError(
+                    "回答缺少可追溯引用",
+                    code=ErrorCode.CHAT_CITATION_MISSING,
+                )
+            get_stream_writer()(
+                {
+                    "kind": "final",
+                    "answer": answer,
+                    "citations": citations,
+                    "finish_reason": state.get("finish_reason") or "stop",
+                }
+            )
+            return {"answer": answer, "citations": citations}
+        finally:
+            _emit_timing("validate", started_at)
 
 
 def _route_after_assessment(state: RagChatState) -> str:
     return "generate" if state.get("evidence_sufficient") else "refuse"
+
+
+def _emit_timing(stage: str, started_at: float) -> None:
+    duration_ms = max(0.0, round((perf_counter() - started_at) * 1000, 3))
+    get_stream_writer()(
+        {
+            "kind": "timing",
+            "stage": stage,
+            "duration_ms": duration_ms,
+        }
+    )
 
 
 def _assessment_state(
@@ -354,6 +393,11 @@ def _build_assessment_messages(
         "只判断提供的检索证据是否足以回答用户问题的核心事实，不判断话题是否相关。"
         "只能依据检索证据，不得使用外部知识。"
         "历史对话只用于理解代词和上下文，不能当作证据。"
+        "如果问题包含多个并列要求、多个作品或比较多个对象，"
+        "必须先拆分子问题并逐一核对证据；证据分散在多条记录中不影响可答性。"
+        "只要每个子问题都能由至少一条证据直接支持，就必须判定 answerable=true。"
+        "只有至少一个子问题缺少直接证据时，才判定 answerable=false，"
+        "并在 missing 中列出缺少的关键信息。"
         "如果证据只命中人物、朝代或主题，却没有回答问题所问的属性，"
         "必须判定 answerable=false。"
         "请只输出 JSON 对象，不要输出 Markdown 或额外说明。"
