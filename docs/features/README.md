@@ -48,6 +48,7 @@ docs/features/20260925-hybrid-retrieval-baseline.md
 25. `20260924-independent-1000-holdout-v3.md`
 26. `20260924-quality-gate.md`
 27. `20260924-generation-judge.md`
+28. `20260926-retrieval-2-rerank-v4.md`
 
 ## 2. 模板
 

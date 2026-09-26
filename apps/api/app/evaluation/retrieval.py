@@ -95,6 +95,7 @@ class RetrievalEvaluator:
                     case,
                     search_result.items,
                     latency_ms=latency_ms,
+                    top_k=top_k,
                 )
             )
 
@@ -127,6 +128,7 @@ def format_evaluation_report(report: RetrievalEvaluationReport) -> str:
         ),
         (
             f"recall_at_k={_format_optional(summary.recall_at_k)} "
+            f"ndcg_at_k={_format_optional(summary.ndcg_at_k)} "
             f"mrr={_format_optional(summary.mrr)} "
             f"hit_rate_at_k={_format_optional(summary.hit_rate_at_k)}"
         ),
@@ -153,6 +155,7 @@ def format_evaluation_report(report: RetrievalEvaluationReport) -> str:
             f"- {category}: cases={category_summary.total_cases} "
             f"pass_rate={_format_optional(category_summary.pass_rate)} "
             f"recall_at_k={_format_optional(category_summary.recall_at_k)} "
+            f"ndcg_at_k={_format_optional(category_summary.ndcg_at_k)} "
             f"mrr={_format_optional(category_summary.mrr)}"
         )
     if report.failure_case_ids:
@@ -165,6 +168,7 @@ def _evaluate_case(
     evidence: list[RetrievalEvidence],
     *,
     latency_ms: float,
+    top_k: int,
 ) -> RetrievalEvaluationCaseResult:
     snapshots = [
         RetrievalEvidenceSnapshot.from_evidence(item)
@@ -180,6 +184,7 @@ def _evaluate_case(
             passed=passed,
             retrieved_count=len(evidence),
             recall_at_k=None,
+            ndcg_at_k=None,
             reciprocal_rank=None,
             matched_gold=[],
             missing_gold=[],
@@ -187,24 +192,12 @@ def _evaluate_case(
             retrieved_evidence=snapshots,
         )
 
-    first_relevant_rank: int | None = None
-    matched_gold: list[int] = []
-    missing_gold: list[int] = []
-    for gold_index, selector in enumerate(case.gold_evidence, start=1):
-        rank = next(
-            (
-                evidence_index
-                for evidence_index, item in enumerate(evidence, start=1)
-                if matches_selector(item, selector)
-            ),
-            None,
-        )
-        if rank is None:
-            missing_gold.append(gold_index)
-            continue
-        matched_gold.append(gold_index)
-        if first_relevant_rank is None or rank < first_relevant_rank:
-            first_relevant_rank = rank
+    (
+        matched_gold,
+        missing_gold,
+        first_relevant_rank,
+        ndcg_at_k,
+    ) = _match_gold_evidence(evidence, case.gold_evidence, top_k=top_k)
 
     recall_at_k = len(matched_gold) / len(case.gold_evidence)
     reciprocal_rank = (
@@ -220,11 +213,80 @@ def _evaluate_case(
         passed=not missing_gold,
         retrieved_count=len(evidence),
         recall_at_k=round(recall_at_k, 6),
+        ndcg_at_k=round(ndcg_at_k, 6),
         reciprocal_rank=round(reciprocal_rank, 6),
         matched_gold=matched_gold,
         missing_gold=missing_gold,
         latency_ms=round(latency_ms, 3),
         retrieved_evidence=snapshots,
+    )
+
+
+def _match_gold_evidence(
+    evidence: list[RetrievalEvidence],
+    selectors: list[EvidenceSelector],
+    *,
+    top_k: int,
+) -> tuple[list[int], list[int], int | None, float]:
+    """Match each gold selector to at most one evidence item."""
+
+    candidate_gold_indexes = [
+        [
+            gold_index
+            for gold_index, selector in enumerate(selectors)
+            if matches_selector(item, selector)
+        ]
+        for item in evidence
+    ]
+    gold_to_evidence: dict[int, int] = {}
+
+    def try_assign(evidence_index: int, visited_gold_indexes: set[int]) -> bool:
+        for gold_index in candidate_gold_indexes[evidence_index]:
+            if gold_index in visited_gold_indexes:
+                continue
+            visited_gold_indexes.add(gold_index)
+            previous_evidence_index = gold_to_evidence.get(gold_index)
+            if previous_evidence_index is None or try_assign(
+                previous_evidence_index,
+                visited_gold_indexes,
+            ):
+                gold_to_evidence[gold_index] = evidence_index
+                return True
+        return False
+
+    for evidence_index in range(len(evidence)):
+        try_assign(evidence_index, set())
+
+    matched_gold = sorted(
+        gold_index + 1
+        for gold_index in gold_to_evidence
+    )
+    missing_gold = [
+        gold_index + 1
+        for gold_index in range(len(selectors))
+        if gold_index not in gold_to_evidence
+    ]
+    matched_evidence_indexes = set(gold_to_evidence.values())
+    first_relevant_rank = (
+        min(matched_evidence_indexes) + 1
+        if matched_evidence_indexes
+        else None
+    )
+    ideal_count = min(len(selectors), top_k)
+    ideal_dcg = sum(
+        1.0 / math.log2(rank + 1)
+        for rank in range(1, ideal_count + 1)
+    )
+    dcg = sum(
+        1.0 / math.log2(evidence_index + 2)
+        for evidence_index in matched_evidence_indexes
+    )
+    ndcg_at_k = dcg / ideal_dcg if ideal_dcg else 0.0
+    return (
+        matched_gold,
+        missing_gold,
+        first_relevant_rank,
+        ndcg_at_k,
     )
 
 
@@ -261,6 +323,13 @@ def _summarize(
                 result.recall_at_k
                 for result in answerable
                 if result.recall_at_k is not None
+            ]
+        ),
+        ndcg_at_k=_rounded_mean(
+            [
+                result.ndcg_at_k
+                for result in answerable
+                if result.ndcg_at_k is not None
             ]
         ),
         mrr=_rounded_mean(

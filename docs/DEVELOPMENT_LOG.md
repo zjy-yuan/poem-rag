@@ -3,7 +3,7 @@
 > 项目代号：Poem RAG  
 > 文档状态：持续开发日志 v1.0  
 > 创建日期：2026-09-19  
-> 最后更新：2026-09-25
+> 最后更新：2026-09-26
 > 技术方向：Vue 3 全栈 + Python/FastAPI + LangChain/LangGraph + RAG  
 > 默认领域：中国诗词知识库与智能问答
 
@@ -4352,3 +4352,111 @@ CSV 当前包含三条待人工评分样本：
 - 本次只调整版本元数据和本地缓存忽略规则，不修改 API、数据库、检索或生成行为。
 - GitHub 上的基线分支合并到 `main` 后，再创建并推送
   `v0.7.0-rag-eval-baseline` 标签，避免标签指向未合并提交。
+
+### [2026-09-26] Retrieval 2.0：候选扩展、离线重排与 v4 泛化集
+
+#### 本次目标
+
+- 在不修改在线问答、SSE、公开 API、数据库和前端的边界内，建立模型无关的离线 Rerank
+  接口、版本化策略和评估闭环。
+- 冻结新的未观察 `retrieval-holdout-1000-v4`，用独立样本决定是否把重排接入在线。
+- 增加 `nDCG@k` 和唯一 Gold 匹配，区分“召回正确”和“排序靠前”。
+- 验证 `expanded-hybrid-rrf-v1 -> Top-30 候选 -> Rerank -> Top-5` 是否达到切换门槛。
+
+#### 做出的决定
+
+- 先冻结 v4，再实现和调参，避免用待验证数据反向选择策略。
+- 首版使用 `deterministic-evidence-v1`，不引入模型下载、显存、外部 API 和新增费用。
+- 策略名独立为 `expanded-hybrid-rerank-v1`，默认在线策略保持
+  `expanded-hybrid-rrf-v1`。
+- v3 只作回归，v4 才作为本轮独立泛化证据。
+- Rerank 异常不静默降级到未重排结果，问题应在离线验证阶段暴露。
+- 如果 v4 不达标，保留接口和报告，不切换在线；删除组合层即可回滚。
+
+#### 完成内容
+
+- `apps/api/app/services/reranking.py`：`EvidenceReranker` 协议、
+  `DeterministicEvidenceReranker` 和 `RerankedRetrievalService`。
+- `apps/api/app/evaluation/retrieval.py`：唯一 Gold 分配、`nDCG@k` 和汇总口径。
+- `apps/api/scripts/evaluate_retrieval.py`：新增 `expanded-hybrid-rerank` 策略和
+  `--rerank-candidate-limit`，默认 30。
+- `apps/api/schemas/evaluation.py`：case 和 summary 增加 `ndcg_at_k`。
+- `apps/api/tests/test_reranking.py`、`apps/api/tests/test_retrieval_evaluation.py`：
+  覆盖排序、稳定 tie-break、候选预算、per-poem 限制、过滤透传、异常、nDCG 和 v4 契约。
+- `data/eval/retrieval_holdout_1000_v4.json`：46 条新样本，38 有答案 + 8 无答案，
+  问题与 v1/v2/v3 不相交。
+- `docs/adr/ADR-001-offline-rerank-before-online-switch.md`：记录先离线验证、后在线
+  切换的架构决策和回滚条件。
+- `docs/features/20260926-retrieval-2-rerank-v4.md`：记录设计、真实指标、失败模式
+  和最终结论。
+
+#### 真实结果
+
+v3 回归集，Top-5、`min-score=0.60`：
+
+| 策略 | 通过 | Recall@5 | nDCG@5 | MRR | 平均延迟 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `expanded-hybrid-rrf-v1` | 45/46 | 1.000000 | 0.947993 | 0.929825 | 545.027 ms | 1322.895 ms |
+| `expanded-hybrid-rerank-v1` | 43/46 | 0.947368 | 0.893808 | 0.877193 | 489.194 ms | 1367.635 ms |
+
+v4 泛化集，Top-5、`min-score=0.60`：
+
+| 策略 | 通过 | Recall@5 | nDCG@5 | MRR | 平均延迟 | P95 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `expanded-hybrid-rrf-v1` | 45/46 | 1.000000 | 0.915410 | 0.885965 | 543.553 ms | 1361.468 ms |
+| `expanded-hybrid-rerank-v1`，Top-30 候选 | 38/46 | 0.828947 | 0.776326 | 0.757456 | 550.844 ms | 1285.898 ms |
+| `expanded-hybrid-rerank-v1`，Top-10 候选 | 41/46 | 0.907895 | 0.821863 | 0.792544 | 550.525 ms | 1257.585 ms |
+| `expanded-hybrid-rerank-v1`，Top-5 候选 | 45/46 | 1.000000 | 0.860899 | 0.807895 | 552.056 ms | 1254.318 ms |
+
+结论：确定性 Reranker 明确未达到切换门槛。Top-30 和 Top-10 都损失 Recall@5；
+Top-5 不丢召回，但 nDCG@5 和 MRR 仍低于不重排基线。在线检索保持
+`expanded-hybrid-rrf-v1`，不启用 Rerank。
+
+报告：
+
+- `data/eval/reports/retrieval_holdout_1000_v3_expanded_hybrid_v0.8.json`
+- `data/eval/reports/retrieval_holdout_1000_v3_expanded_hybrid_rerank.json`
+- `data/eval/reports/retrieval_holdout_1000_v4_expanded_hybrid.json`
+- `data/eval/reports/retrieval_holdout_1000_v4_expanded_hybrid_rerank.json`
+- `data/eval/reports/retrieval_holdout_1000_v4_expanded_hybrid_rerank_c10.json`
+- `data/eval/reports/retrieval_holdout_1000_v4_expanded_hybrid_rerank_c5.json`
+
+#### 失败原因
+
+- 字符 bigram 覆盖与文本长度正相关，长注释或赏析 chunk 容易在正文问题中挤掉真正的
+  正文证据。
+- per-poem 限制只控制同作品占位数量，不能保证多证据问题所需的互补 chunk 同时进入
+  Top-5。
+- 确定性标题、作者和朝代权重不足以稳定处理结构化主题查询。
+- `no-answer-v4-lushan-location-07` 在四种候选预算下均失败，说明检索层仍不能独立
+  处理“话题命中、答案缺失”，该场景继续依赖在线 `assess` 拒答。
+
+#### 验证结果
+
+- 重排与检索评估定向测试：`22 passed, 2 warnings`。
+- Ruff：`All checks passed!`。
+- v3/v4 真实评估使用 MySQL、Qdrant `poem_chunks_v1` 和 Qwen `text-embedding-v4`，
+  未调用生成模型。
+- 完整 `.\scripts\verify.ps1` 作为提交前门禁执行。
+
+#### 问题与风险
+
+- v4 只有 46 条，只能支持本阶段策略筛选，不能声明生产级泛化能力。
+- 本轮唯一未观察集 v4 已被真实观察，后续任何基于失败样本的调整都需要另建 v5。
+- 不继续基于 v4 单条失败调整 bigram 权重、词典或阈值，否则会把泛化集变成调参集。
+- 模型型 Cross-Encoder/BGE Reranker 仍有研究价值，但必须先补齐延迟、显存、依赖源、
+  许可、失败降级和成本 ADR，不能直接替换当前在线链路。
+
+#### 回滚方式
+
+在线路径未改变，不需要运行时回滚。若后续要移除本轮离线能力，删除
+`apps/api/app/services/reranking.py`、评估脚本策略分支、对应测试和报告引用即可；
+不涉及数据库迁移、公开 API、SSE 或前端契约。
+
+#### 下一步
+
+1. 先优化候选去重、正文优先和同作品互补证据覆盖，再考虑模型型 Rerank。
+2. 模型型 Rerank 需要独立 ADR 和新的未观察 v5，不能复用 v4 作为泛化证据。
+3. 同步评估 Rerank 之外更可能影响用户感知的方向：多证据上下文预算、生成 P95、
+   缓存和在线并发。
+4. 本地质量、性能和检索策略稳定后，再启动云服务器、域名和 HTTPS 部署。

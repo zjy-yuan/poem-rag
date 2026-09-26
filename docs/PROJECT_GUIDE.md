@@ -1,7 +1,7 @@
 # 项目说明与代码导览
 
 > 项目：Poem RAG  
-> 文档状态：当前实现快照 v0.7.0-rag-eval-baseline
+> 文档状态：当前实现快照 v0.8.0-retrieval-2-evaluation
 > 更新日期：2026-09-26
 > 说明：本文件描述“现在是什么”，目标接口见 `FRONTEND_BACKEND_CONTRACT.md`
 
@@ -237,14 +237,14 @@ erDiagram
 | 旧向量清理与 Qdrant 对账 | 未实现 | 尚未实现旧版本点清理、active index 切换和跨库全量对账 |
 | Hybrid RRF 检索 | 已实现（在线策略） | 加权 `hybrid-rrf-v1` 融合 `expanded-lexical-v1` 与 Dense 候选，按查询来源权重和排名去重融合；v1 回归集 Top-5 为 50/50、Recall@5 `1.0`、MRR `0.887698`；v2 独立 holdout 为 45/46、Recall@5 `1.0`、MRR `0.907895`；v3 独立 holdout 为 45/46、Recall@5 `1.0`、MRR `0.929825`。公开 HTTP 检索仍不暴露策略参数 |
 | 查询改写与多查询 RRF | 已实现（在线分支与降级策略） | `expanded-lexical-v1` 用可审查词典扩展月亮、思乡、元宵、怀人、白发夸张和已知作者实体，保留原查询并用加权 RRF 融合多路召回；显式标题会保留完整作品槽位，多标题查询优先完整作品块，结构化主题查询保留正文候选，多证据问题会限制单个作品占用的候选槽位；v2 独立 holdout Top-5 为 38/46，v3 为 44/46 |
-| 重排 | 未实现 | 已有 `lexical-baseline-v1`、`dense-baseline-v1`、`hybrid-rrf-v1` 和 `expanded-lexical-v1` 四条可比较路径；开放语料评估已暴露多证据覆盖和领域内拒答失败 |
+| 重排 | 离线框架已实现；确定性策略未达切换门槛；在线未启用 | 新增 `EvidenceReranker`、`RerankedRetrievalService`、`expanded-hybrid-rerank-v1` 和 nDCG@k；`deterministic-evidence-v1` 在 v4 泛化集为 38/46、Recall@5 `0.828947`、nDCG@5 `0.776326`、MRR `0.757456`，低于不重排基线的 45/46、`1.0`、`0.915410`、`0.885965`，因此仅保留离线实验能力 |
 | 会话与消息持久化 | 已实现 | 会话、消息和引用快照写入 MySQL；按用户隔离会话所有权 |
 | DeepSeek Chat Provider | 已实现（Provider 层） | 支持 OpenAI-compatible 流式与非流式 JSON chat completions、超时、错误映射和空回答检测；真实 `deepseek-chat` 流式与 JSON 烟测、真实 MySQL + SSE 基础联调均已通过 |
 | LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；在线检索使用 `expanded-lexical-v1 + Dense + RRF`，基础设施故障时降级到 `expanded-lexical-v1`；命中作品追加诗词级父级上下文，长文本按作品轮转并受 40 chunks / 4800 字符预算约束；`assess` 用 LLM 结构化判定可答性，无证据或判定不可答时走 `refuse` 且不调用生成模型；判定异常 fail-open |
 | 在线 RAG 可观测性 | 已实现 | 图节点在 `finally` 中发出内部 `timing`，`ChatService` 聚合 `rewrite/retrieval/assess/generation/validate`、TTFT、候选数、策略和判定状态；流结束记录请求级日志。`timing` 不进入公开 SSE，`done` 仍为 `{finish_reason, latency_ms}`；`CHAT_QUERY_VARIANT_LIMIT` 默认 `8`、范围 `1-20` |
 | 在线检索资源复用与批量 Embedding | 已实现 | Embedding Provider 和 Qdrant 客户端在应用 `lifespan` 中创建并共享，流结束不再重复初始化；`BatchEvidenceRetriever` 协议让一次查询的全部变体合并为一次 Embedding 调用，跨变体向量 ID 回查合并为一次 MySQL 查询。Qdrant 搜索仍按变体串行，因为 `AsyncSession` 不能并发复用。同一 v2 回归集下检索仍为 45/46、MRR `0.907895`，平均延迟 `874.575 ms -> 483.760 ms`、P95 `2770.212 ms -> 1239.925 ms` |
 | SSE 引用问答 | 已实现 | `meta -> retrieval -> delta* -> citation* -> done/error`；持久化最终消息和引用，无证据时不调用模型 |
-| RAG 评估体系 | 已实现（检索层 + 生成层 + 离线 judge/校准） | v1 回归集 50 条中 `expanded-lexical-v1` 为 48/50、Hybrid 为 40/50、在线组合为 50/50；生成回归集 28 条为 `28/28`、拒答 `7/7`。v2 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、MRR `0.907895`，生成 26 条为 `26/26`、拒答 `10/10`、引用 P/R 均为 `1.0`。v3 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、MRR `0.929825`，生成 26 条为 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`。v3 的可答样本进一步由独立 LLM judge 复核：16/16 完成、0 错误、忠实度通过率 `0.8125`、相关性 `1.0`、claim 支撑率 `0.950920`；首次人工校准覆盖 3/16，`judge_stricter=3`。三批样本都已参与失败观察或修复，只能作为回归集 |
+| RAG 评估体系 | 已实现（检索层 + 生成层 + 离线 judge/校准） | v1 回归集 50 条中 `expanded-lexical-v1` 为 48/50、Hybrid 为 40/50、在线组合为 50/50；生成回归集 28 条为 `28/28`、拒答 `7/7`。v2 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、MRR `0.907895`，生成 26 条为 `26/26`、拒答 `10/10`、引用 P/R 均为 `1.0`。v3 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、nDCG@5 `0.947993`、MRR `0.929825`，生成 26 条为 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`。v4 检索 holdout 46 条（38 有答案 + 8 无答案）首次用于 Rerank 泛化验证：不重排基线为 45/46、Recall@5 `1.0`、nDCG@5 `0.915410`、MRR `0.885965`；`deterministic-evidence-v1` 未达标，已拒绝在线启用。v3 的可答样本进一步由独立 LLM judge 复核：16/16 完成、0 错误、忠实度通过率 `0.8125`、相关性 `1.0`、claim 支撑率 `0.950920`；首次人工校准覆盖 3/16，`judge_stricter=3`。四批样本都已参与失败观察或策略筛选，只能作为回归集 |
 | 云服务器部署 | 未实现 | 核心 RAG 闭环后再处理域名和 HTTPS |
 
 ## 9. 如何追踪一个功能
@@ -427,6 +427,30 @@ v2 样本同样已经参与失败诊断，只能作为回归集。
 有答案准确率 `0.9375`、拒答 `10/10`、引用 P/R `1.0 / 1.0`，唯一失败为
 `gen-v3-guazhou-homesick`，缺少距离铺垫事实。v3 已经完成真实观察，后续只能作为
 回归集，新的泛化结论必须使用 v4。
+
+第四批 `retrieval-holdout-1000-v4`（46 条，38 有答案 + 8 无答案）首次用于离线
+Rerank 泛化验证，`nDCG@5` 与唯一 Gold 匹配口径同时加入评估。复现命令：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py `
+  --dataset data\eval\retrieval_holdout_1000_v4.json `
+  --strategy expanded-hybrid --top-k 5 --min-score 0.60 `
+  --json-output data\eval\reports\retrieval_holdout_1000_v4_expanded_hybrid.json
+
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py `
+  --dataset data\eval\retrieval_holdout_1000_v4.json `
+  --strategy expanded-hybrid-rerank --top-k 5 --min-score 0.60 `
+  --rerank-candidate-limit 30 `
+  --json-output data\eval\reports\retrieval_holdout_1000_v4_expanded_hybrid_rerank.json
+```
+
+同集结果：不重排基线为 45/46、Recall@5 `1.0`、nDCG@5 `0.915410`、MRR `0.885965`、
+平均延迟 `543.553 ms`、P95 `1361.468 ms`；`deterministic-evidence-v1` 为 38/46、
+Recall@5 `0.828947`、nDCG@5 `0.776326`、MRR `0.757456`、平均延迟 `550.844 ms`、
+P95 `1285.898 ms`。Top-10 和 Top-5 候选消融仍分别只有 41/46 和 45/46，MRR/nDCG
+低于基线，因此拒绝在线启用。Rerank 代码只保留为离线实验能力，在线策略仍为
+`expanded-hybrid-rrf-v1`；v4 已观察，后续再验证需冻结 v5。详细边界见
+`docs/features/20260926-retrieval-2-rerank-v4.md`。
 
 完成在线 RAG 可观测性和变体上限后，同一 v2 回归集再次运行在线组合，检索为 45/46、
 平均延迟 `738.465 ms`、P95 `1970.978 ms`；生成为 `26/26`、拒答 `10/10`、引用

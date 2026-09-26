@@ -14,7 +14,14 @@ if str(APP_ROOT) not in sys.path:
 DEFAULT_DATASET = (
     PROJECT_ROOT / "data" / "eval" / "retrieval_open_corpus_v1.json"
 )
-DENSE_STRATEGIES = frozenset({"dense", "hybrid", "expanded-hybrid"})
+DENSE_STRATEGIES = frozenset(
+    {
+        "dense",
+        "hybrid",
+        "expanded-hybrid",
+        "expanded-hybrid-rerank",
+    }
+)
 
 if TYPE_CHECKING:
     from app.schemas.evaluation import RetrievalEvaluationReport
@@ -26,6 +33,7 @@ async def run_evaluation(
     *,
     strategy: str,
     min_score: float | None = None,
+    rerank_candidate_limit: int = 30,
 ) -> RetrievalEvaluationReport:
     from app.ai.providers.qdrant import create_qdrant_vector_store
     from app.ai.providers.qwen_embedding import create_qwen_embedding_provider
@@ -43,7 +51,14 @@ async def run_evaluation(
         LexiconQueryRewriter,
         RepositoryQueryEntityResolver,
     )
+    from app.services.reranking import (
+        DeterministicEvidenceReranker,
+        RerankedRetrievalService,
+    )
     from app.services.retrieval import RetrievalService
+
+    if rerank_candidate_limit < top_k:
+        raise ValueError("rerank_candidate_limit cannot be smaller than top_k")
 
     dataset = load_evaluation_dataset(dataset_path)
     settings = get_settings()
@@ -77,10 +92,10 @@ async def run_evaluation(
                     entity_resolver=RepositoryQueryEntityResolver(session),
                     max_variants=settings.chat_query_variant_limit,
                 )
-            elif strategy == "expanded-hybrid":
+            elif strategy in {"expanded-hybrid", "expanded-hybrid-rerank"}:
                 embedding_provider = create_qwen_embedding_provider(settings)
                 vector_store = create_qdrant_vector_store(settings)
-                retrieval = ExpandedRetrievalService(
+                expanded_hybrid = ExpandedRetrievalService(
                     HybridRetrievalService(
                         RetrievalService(session),
                         DenseRetrievalService(
@@ -95,6 +110,14 @@ async def run_evaluation(
                     entity_resolver=RepositoryQueryEntityResolver(session),
                     max_variants=settings.chat_query_variant_limit,
                 )
+                if strategy == "expanded-hybrid-rerank":
+                    retrieval = RerankedRetrievalService(
+                        expanded_hybrid,
+                        DeterministicEvidenceReranker(),
+                        candidate_limit=rerank_candidate_limit,
+                    )
+                else:
+                    retrieval = expanded_hybrid
             else:
                 embedding_provider = create_qwen_embedding_provider(settings)
                 vector_store = create_qdrant_vector_store(settings)
@@ -148,7 +171,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--strategy",
-        choices=("lexical", "dense", "hybrid", "expanded", "expanded-hybrid"),
+        choices=(
+            "lexical",
+            "dense",
+            "hybrid",
+            "expanded",
+            "expanded-hybrid",
+            "expanded-hybrid-rerank",
+        ),
         default="lexical",
         help="Retrieval strategy to evaluate. Default: lexical",
     )
@@ -158,9 +188,16 @@ def main() -> None:
         default=None,
         help=(
             "Dense 余弦相似度下限，低于该值的候选在检索层丢弃。"
-            "只对 dense、hybrid 和 expanded-hybrid 生效；"
+            "只对 dense、hybrid、expanded-hybrid 和 "
+            "expanded-hybrid-rerank 生效；"
             "默认读取 CHAT_DENSE_MIN_SCORE"
         ),
+    )
+    parser.add_argument(
+        "--rerank-candidate-limit",
+        type=int,
+        default=30,
+        help="Rerank 上游候选数，必须不小于 --top-k。Default: 30",
     )
     parser.add_argument(
         "--json-output",
@@ -173,6 +210,8 @@ def main() -> None:
         parser.error("--top-k must be at least 1")
     if args.min_score is not None and not 0.0 <= args.min_score <= 1.0:
         parser.error("--min-score must be between 0 and 1")
+    if args.rerank_candidate_limit < args.top_k:
+        parser.error("--rerank-candidate-limit must be at least --top-k")
     from app.core.config import get_settings
 
     effective_min_score = resolve_min_score(
@@ -186,6 +225,7 @@ def main() -> None:
             args.top_k,
             strategy=args.strategy,
             min_score=args.min_score,
+            rerank_candidate_limit=args.rerank_candidate_limit,
         )
     )
     from app.evaluation.retrieval import format_evaluation_report

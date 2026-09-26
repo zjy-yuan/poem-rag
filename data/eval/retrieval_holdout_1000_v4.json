@@ -1,0 +1,580 @@
+{
+  "version": "retrieval-holdout-1000-v4",
+  "description": "基于 chinese-gushiwen 1000 首开放语料的第四批独立检索 holdout。问题文本与 v1/v2/v3 全部不相交，金标准作品标题不复用旧集。覆盖名句、短语、标题、作者、朝代、多证据、自然语言、长诗尾部、结构化筛选，以及跨域、领域内缺实体和缺属性拒答。该集创建后冻结；若用于样本级修复，必须另建 v5 复核泛化。",
+  "cases": [
+    {
+      "id": "exact-v4-yuanri-bamboo-01",
+      "category": "exact_quote",
+      "question": "爆竹声中一岁除，春风送暖入屠苏。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "元日",
+          "author_name": "王安石",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text_contains": "爆竹声中一岁除，春风送暖入屠苏"
+        }
+      ]
+    },
+    {
+      "id": "exact-v4-qingming-rain-02",
+      "category": "exact_quote",
+      "question": "清明时节雨纷纷，路上行人欲断魂。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "清明",
+          "author_name": "杜牧",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text_contains": "清明时节雨纷纷，路上行人欲断魂"
+        }
+      ]
+    },
+    {
+      "id": "exact-v4-jingyesi-moon-03",
+      "category": "exact_quote",
+      "question": "举头望明月，低头思故乡。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "静夜思",
+          "author_name": "李白",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text_contains": "举头望明月，低头思故乡"
+        }
+      ]
+    },
+    {
+      "id": "exact-v4-chunri-spring-04",
+      "category": "exact_quote",
+      "question": "等闲识得东风面，万紫千红总是春。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春日",
+          "author_name": "朱熹",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text_contains": "等闲识得东风面，万紫千红总是春"
+        }
+      ]
+    },
+    {
+      "id": "exact-v4-lushan-waterfall-05",
+      "category": "exact_quote",
+      "question": "飞流直下三千尺，疑是银河落九天。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "望庐山瀑布",
+          "author_name": "李白",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text_contains": "飞流直下三千尺，疑是银河落九天"
+        }
+      ]
+    },
+    {
+      "id": "exact-v4-zhushi-rock-06",
+      "category": "exact_quote",
+      "question": "千磨万击还坚劲，任尔东西南北风。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "竹石",
+          "author_name": "郑燮",
+          "dynasty_name": "清",
+          "granularity": "line",
+          "text_contains": "千磨万击还坚劲，任尔东西南北风"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v4-youzhoutai-time-01",
+      "category": "phrase",
+      "question": "前不见古人，后不见来者",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "登幽州台歌",
+          "author_name": "陈子昂",
+          "granularity": "line",
+          "text_contains": "前不见古人，后不见来者"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v4-qiuci-autumn-02",
+      "category": "phrase",
+      "question": "自古逢秋悲寂寥，我言秋日胜春朝",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "秋词",
+          "author_name": "刘禹锡",
+          "granularity": "line",
+          "text_contains": "自古逢秋悲寂寥，我言秋日胜春朝"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v4-xiaochu-lotus-03",
+      "category": "phrase",
+      "question": "接天莲叶无穷碧，映日荷花别样红",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "晓出净慈寺送林子方",
+          "author_name": "杨万里",
+          "granularity": "line",
+          "text_contains": "接天莲叶无穷碧，映日荷花别样红"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v4-xilin-mountain-04",
+      "category": "phrase",
+      "question": "不识庐山真面目，只缘身在此山中",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "题西林壁",
+          "author_name": "苏轼",
+          "granularity": "line",
+          "text_contains": "不识庐山真面目，只缘身在此山中"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v4-longbiao-moon-05",
+      "category": "phrase",
+      "question": "我寄愁心与明月，随风直到夜郎西",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "闻王昌龄左迁龙标遥有此寄",
+          "author_name": "李白",
+          "granularity": "line",
+          "text_contains": "我寄愁心与明月，随风直到夜郎西"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v4-zaochun-rain-06",
+      "category": "phrase",
+      "question": "天街小雨润如酥，草色遥看近却无",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "早春呈水部张十八员外 / 初春小雨",
+          "author_name": "韩愈",
+          "granularity": "line",
+          "text_contains": "天街小雨润如酥，草色遥看近却无"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v4-tianjingsha-road-07",
+      "category": "phrase",
+      "question": "古道西风瘦马，夕阳西下，断肠人在天涯",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "天净沙·秋思",
+          "author_name": "马致远",
+          "granularity": "line",
+          "text_contains": "断肠人在天涯"
+        }
+      ]
+    },
+    {
+      "id": "title-v4-tianjingsha-qiust-01",
+      "category": "title",
+      "question": "天净沙·秋思",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "天净沙·秋思",
+          "author_name": "马致远",
+          "dynasty_name": "元"
+        }
+      ]
+    },
+    {
+      "id": "title-v4-furonglou-02",
+      "category": "title",
+      "question": "芙蓉楼送辛渐",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "芙蓉楼送辛渐",
+          "author_name": "王昌龄",
+          "dynasty_name": "唐"
+        }
+      ]
+    },
+    {
+      "id": "title-v4-wangyuehuaiyuan-03",
+      "category": "title",
+      "question": "望月怀远 / 望月怀古",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "望月怀远 / 望月怀古",
+          "author_name": "张九龄",
+          "dynasty_name": "唐"
+        }
+      ]
+    },
+    {
+      "id": "title-v4-yinjiu-04",
+      "category": "title",
+      "question": "饮酒·其五",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "饮酒·其五",
+          "author_name": "陶渊明",
+          "dynasty_name": "魏晋"
+        }
+      ]
+    },
+    {
+      "id": "author-v4-liuyuxi-01",
+      "category": "author",
+      "question": "刘禹锡",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "刘禹锡"
+        }
+      ]
+    },
+    {
+      "id": "author-v4-taoyuanming-02",
+      "category": "author",
+      "question": "陶渊明",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "陶渊明"
+        }
+      ]
+    },
+    {
+      "id": "author-v4-qinguan-03",
+      "category": "author",
+      "question": "秦观",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "秦观"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-v4-han-01",
+      "category": "dynasty",
+      "question": "汉代乐府诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "汉"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-v4-nanbeichao-02",
+      "category": "dynasty",
+      "question": "南北朝乐府民歌",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "南北朝"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-v4-jin-03",
+      "category": "dynasty",
+      "question": "金代词人作品",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "金"
+        }
+      ]
+    },
+    {
+      "id": "multi-v4-yuanri-qingming-01",
+      "category": "multi_evidence",
+      "question": "《元日》的迎春喜庆与《清明》的雨中行旅如何形成不同节日氛围",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "元日",
+          "author_name": "王安石",
+          "text_contains": "总把新桃换旧符"
+        },
+        {
+          "poem_title": "清明",
+          "author_name": "杜牧",
+          "text_contains": "路上行人欲断魂"
+        }
+      ]
+    },
+    {
+      "id": "multi-v4-lushan-xilin-02",
+      "category": "multi_evidence",
+      "question": "《望庐山瀑布》的雄奇想象和《题西林壁》的观景哲理有什么不同",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "望庐山瀑布",
+          "author_name": "李白",
+          "text_contains": "疑是银河落九天"
+        },
+        {
+          "poem_title": "题西林壁",
+          "author_name": "苏轼",
+          "text_contains": "只缘身在此山中"
+        }
+      ]
+    },
+    {
+      "id": "multi-v4-qiuci-tianjingsha-03",
+      "category": "multi_evidence",
+      "question": "《秋词》的昂扬秋意和《天净沙·秋思》的羁旅愁思怎样对照",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "秋词",
+          "author_name": "刘禹锡",
+          "text_contains": "便引诗情到碧霄"
+        },
+        {
+          "poem_title": "天净沙·秋思",
+          "author_name": "马致远",
+          "text_contains": "断肠人在天涯"
+        }
+      ]
+    },
+    {
+      "id": "natural-v4-yinjiu-chrysanthemum-01",
+      "category": "natural_language",
+      "question": "陶渊明《饮酒·其五》怎样写采菊与远离尘嚣的心境",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "饮酒·其五",
+          "author_name": "陶渊明",
+          "text_contains": "采菊东篱下，悠然见南山"
+        }
+      ]
+    },
+    {
+      "id": "natural-v4-zhushi-integrity-02",
+      "category": "natural_language",
+      "question": "郑燮《竹石》怎样借扎根破岩表现坚韧不屈",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "竹石",
+          "author_name": "郑燮",
+          "text_contains": "立根原在破岩中"
+        }
+      ]
+    },
+    {
+      "id": "natural-v4-jihai-fallen-flower-03",
+      "category": "natural_language",
+      "question": "龚自珍《己亥杂诗·其五》怎样借落花表达奉献",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "己亥杂诗·其五",
+          "author_name": "龚自珍",
+          "text_contains": "落红不是无情物，化作春泥更护花"
+        }
+      ]
+    },
+    {
+      "id": "natural-v4-choule-tian-yangzhou-04",
+      "category": "natural_language",
+      "question": "刘禹锡《酬乐天扬州初逢席上见赠》怎样由沉舟病树写出新生",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "酬乐天扬州初逢席上见赠",
+          "author_name": "刘禹锡",
+          "text_contains": "沉舟侧畔千帆过，病树前头万木春"
+        }
+      ]
+    },
+    {
+      "id": "natural-v4-queqiaoxian-love-05",
+      "category": "natural_language",
+      "question": "秦观《鹊桥仙·纤云弄巧》怎样写七夕相会和长久爱情",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "鹊桥仙·纤云弄巧",
+          "author_name": "秦观",
+          "text_contains": "两情若是久长时，又岂在朝朝暮暮"
+        }
+      ]
+    },
+    {
+      "id": "long-v4-guanju-pursuit-01",
+      "category": "long_form",
+      "question": "《关雎》后半怎样写君子对淑女的追求与迎娶想象",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "关雎",
+          "author_name": "佚名",
+          "text_contains": "窈窕淑女，钟鼓乐之"
+        }
+      ]
+    },
+    {
+      "id": "long-v4-jianjia-pursuit-02",
+      "category": "long_form",
+      "question": "《蒹葭》怎样表现追寻伊人的可望而不可即",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "蒹葭",
+          "author_name": "佚名",
+          "text_contains": "溯游从之，宛在水中央"
+        }
+      ]
+    },
+    {
+      "id": "long-v4-baixuege-tail-03",
+      "category": "long_form",
+      "question": "《白雪歌送武判官归京》结尾怎样写目送友人远去",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "白雪歌送武判官归京",
+          "author_name": "岑参",
+          "text_contains": "山回路转不见君，雪上空留马行处"
+        }
+      ]
+    },
+    {
+      "id": "long-v4-jiangchengzi-dream-04",
+      "category": "long_form",
+      "question": "《江城子·乙卯正月二十日夜记梦》结尾怎样写梦中相逢后的哀思",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "江城子·乙卯正月二十日夜记梦",
+          "author_name": "苏轼",
+          "text_contains": "料得年年肠断处，明月夜，短松冈"
+        }
+      ]
+    },
+    {
+      "id": "long-v4-guanyimai-tail-05",
+      "category": "long_form",
+      "question": "《观刈麦》结尾怎样从农人辛劳转向诗人的自省",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "观刈麦",
+          "author_name": "白居易",
+          "text_contains": "念此私自愧，尽日不能忘"
+        }
+      ]
+    },
+    {
+      "id": "structured-v4-libai-lushan-01",
+      "category": "structured_filter",
+      "question": "唐代李白写庐山瀑布雄奇想象的七言诗",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "望庐山瀑布",
+          "author_name": "李白",
+          "dynasty_name": "唐",
+          "text_contains": "疑是银河落九天"
+        }
+      ]
+    },
+    {
+      "id": "structured-v4-luyou-plum-02",
+      "category": "structured_filter",
+      "question": "宋代陆游借梅花写坚贞不屈的词",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "卜算子·咏梅",
+          "author_name": "陆游",
+          "dynasty_name": "宋",
+          "text_contains": "零落成泥碾作尘，只有香如故"
+        }
+      ]
+    },
+    {
+      "id": "no-answer-v4-kubernetes-hpa-01",
+      "category": "no_answer_cross_domain",
+      "question": "Kubernetes HPA 如何根据自定义指标扩容",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v4-tcp-syn-02",
+      "category": "no_answer_cross_domain",
+      "question": "TCP 三次握手为什么需要半连接队列",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v4-react-rsc-03",
+      "category": "no_answer_cross_domain",
+      "question": "React Server Components 的流式渲染原理是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v4-afanggong-04",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "杜牧《阿房宫赋》的赏析是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v4-shangui-05",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "屈原《九歌·山鬼》的译文是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v4-jingyesi-year-06",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "《静夜思》创作于哪一年",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v4-lushan-location-07",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "李白创作《望庐山瀑布》时住在哪里",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v4-taoyuanming-courtesy-08",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "陶渊明的字和号分别是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    }
+  ]
+}

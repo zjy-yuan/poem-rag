@@ -30,6 +30,7 @@
 24. 在线检索完成资源复用与批量 Embedding：Embedding Provider 和 Qdrant 客户端改为进程级共享，一次查询的所有变体合并为一次 Embedding 调用，跨变体向量 ID 回查合并为一次 MySQL 查询。同一 v2 回归集下检索仍为 45/46、MRR `0.907895`，平均延迟从 `874.575 ms` 降到 `483.760 ms`、P95 从 `2770.212 ms` 降到 `1239.925 ms`；`evaluate_retrieval.py` 的 `--min-score` 默认改为读取线上 `CHAT_DENSE_MIN_SCORE`。
 25. 第三批独立 holdout v3（检索 46 条、生成 26 条）已完成真实复核：在线检索组合为 45/46、Recall@5 `1.0`、MRR `0.929825`，生成层为 25/26、拒答 `10/10`、引用 P/R `1.0 / 1.0`。v3 完成观察后同样冻结为回归集，后续泛化验证必须新建 v4。
 26. 生成质量 LLM-as-judge 已作为离线增量实现：读取已有生成报告，对 16 条可答样本执行独立调用，v3 结果为 `judge_errors=0`、忠实度通过率 `0.8125`、回答相关性 `1.0`、claim 支撑率 `0.950920`；拒答样本跳过 judge，并支持导出人工盲评 Markdown、填写评分 CSV 后自动计算人工与 judge 的一致率及偏严/偏松方向。首次定向校准复核 3/16 条，`judge_stricter=3`，说明 judge 对隐含文学解释偏保守，但该高难子集不能代表总体准确率。
+27. Retrieval 2.0 离线评估已完成：新增 `nDCG@k`、唯一 Gold 匹配、`EvidenceReranker` 协议和 `expanded-hybrid-rerank-v1`，并冻结 46 条 v4 泛化集。`deterministic-evidence-v1` 在 v4 上为 38/46、Recall@5 `0.828947`、nDCG@5 `0.776326`、MRR `0.757456`，低于不重排基线的 45/46、`1.0`、`0.915410`、`0.885965`，因此拒绝在线启用；Rerank 仅保留为离线实验能力，在线策略仍为 `expanded-hybrid-rrf-v1`。
 
 ## 文档入口
 

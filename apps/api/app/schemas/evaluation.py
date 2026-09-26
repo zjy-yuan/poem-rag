@@ -110,6 +110,7 @@ class RetrievalEvaluationCaseResult(BaseModel):
     passed: bool
     retrieved_count: int
     recall_at_k: float | None
+    ndcg_at_k: float | None
     reciprocal_rank: float | None
     matched_gold: list[int]
     missing_gold: list[int]
@@ -124,6 +125,7 @@ class RetrievalEvaluationSummary(BaseModel):
     passed_cases: int
     pass_rate: float
     recall_at_k: float | None
+    ndcg_at_k: float | None
     mrr: float | None
     hit_rate_at_k: float | None
     answerable_no_result_rate: float | None

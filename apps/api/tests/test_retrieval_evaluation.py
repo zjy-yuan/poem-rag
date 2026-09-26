@@ -49,6 +49,12 @@ HOLDOUT_1000_V3_DATASET_PATH = (
     / "eval"
     / "retrieval_holdout_1000_v3.json"
 )
+HOLDOUT_1000_V4_DATASET_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "data"
+    / "eval"
+    / "retrieval_holdout_1000_v4.json"
+)
 EVALUATE_RETRIEVAL_SCRIPT_PATH = (
     Path(__file__).resolve().parents[1] / "scripts" / "evaluate_retrieval.py"
 )
@@ -176,6 +182,7 @@ async def test_evaluator_reports_recall_mrr_and_no_evidence_accuracy() -> None:
     assert report.summary.unanswerable_cases == 1
     assert report.summary.passed_cases == 3
     assert report.summary.recall_at_k == 1.0
+    assert report.summary.ndcg_at_k == 0.815465
     assert report.summary.mrr == 0.75
     assert report.summary.unanswerable_accuracy == 1.0
     assert report.summary.refusal_precision == 1.0
@@ -183,7 +190,38 @@ async def test_evaluator_reports_recall_mrr_and_no_evidence_accuracy() -> None:
     assert report.summary.refusal_f1 == 1.0
     assert report.results[0].matched_gold == [1]
     assert report.results[1].matched_gold == [1]
+    assert report.results[1].ndcg_at_k == 0.63093
     assert report.results[1].reciprocal_rank == 0.5
+
+
+@pytest.mark.asyncio
+async def test_evaluator_assigns_each_gold_selector_at_most_once() -> None:
+    dataset = RetrievalEvaluationDataset(
+        version="test-unique-gold-v1",
+        description="One evidence item must not satisfy duplicate gold selectors.",
+        cases=[
+            RetrievalEvaluationCase(
+                id="holdout-unique-gold-01",
+                category="phrase",
+                question="床前明月光",
+                expected="evidence",
+                gold_evidence=[
+                    EvidenceSelector(poem_title="静夜思"),
+                    EvidenceSelector(poem_title="静夜思"),
+                ],
+            )
+        ],
+    )
+
+    report = await RetrievalEvaluator(
+        FakeRetrieval(suppressed_phrases=("不存在的关键词",))
+    ).evaluate(dataset, top_k=5)
+
+    assert report.results[0].matched_gold == [1]
+    assert report.results[0].missing_gold == [2]
+    assert report.results[0].recall_at_k == 0.5
+    assert report.results[0].reciprocal_rank == 1.0
+    assert report.results[0].ndcg_at_k == 0.613147
 
 
 @pytest.mark.asyncio
@@ -429,6 +467,98 @@ def test_holdout_1000_v3_gold_evidence_exists_in_converted_corpus(
             assert matches, f"{case.id} 的金标准无法在当前转换后语料中定位"
 
 
+def test_holdout_1000_v4_dataset_has_expected_coverage() -> None:
+    dataset = load_evaluation_dataset(HOLDOUT_1000_V4_DATASET_PATH)
+    previous_datasets = [
+        load_evaluation_dataset(HOLDOUT_1000_DATASET_PATH),
+        load_evaluation_dataset(HOLDOUT_1000_V2_DATASET_PATH),
+        load_evaluation_dataset(HOLDOUT_1000_V3_DATASET_PATH),
+    ]
+    answerable = [case for case in dataset.cases if case.expected == "evidence"]
+    unanswerable = [
+        case for case in dataset.cases if case.expected == "no_evidence"
+    ]
+    previous_titles = {
+        selector.poem_title
+        for previous_dataset in previous_datasets
+        for case in previous_dataset.cases
+        for selector in case.gold_evidence
+        if selector.poem_title is not None
+    }
+    current_titles = {
+        selector.poem_title
+        for case in dataset.cases
+        for selector in case.gold_evidence
+        if selector.poem_title is not None
+    }
+
+    assert dataset.version == "retrieval-holdout-1000-v4"
+    assert len(dataset.cases) == 46
+    assert len(answerable) == 38
+    assert len(unanswerable) == 8
+    assert len({case.id for case in dataset.cases}) == len(dataset.cases)
+    assert len({case.question for case in dataset.cases}) == len(dataset.cases)
+    assert {case.question for case in dataset.cases}.isdisjoint(
+        {
+            case.question
+            for previous_dataset in previous_datasets
+            for case in previous_dataset.cases
+        }
+    )
+    assert current_titles.isdisjoint(previous_titles)
+
+    categories = {case.category for case in dataset.cases}
+    assert {
+        "exact_quote",
+        "phrase",
+        "title",
+        "author",
+        "dynasty",
+        "multi_evidence",
+        "natural_language",
+        "long_form",
+        "structured_filter",
+        "no_answer_cross_domain",
+        "no_answer_in_domain_missing_entity",
+        "no_answer_in_domain_missing_attribute",
+    } <= categories
+
+
+def test_holdout_1000_v4_gold_evidence_exists_in_converted_corpus(
+    converted_corpus_records: list[dict[str, object]],
+) -> None:
+    dataset = load_evaluation_dataset(HOLDOUT_1000_V4_DATASET_PATH)
+    records = converted_corpus_records
+
+    for case in dataset.cases:
+        for selector in case.gold_evidence:
+            matches = [
+                record
+                for record in records
+                if selector.poem_title is None
+                or record["title"] == selector.poem_title
+            ]
+            if selector.author_name is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if record["author_name"] == selector.author_name
+                ]
+            if selector.dynasty_name is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if record["dynasty_name"] == selector.dynasty_name
+                ]
+            if selector.text_contains is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if selector.text_contains in record["content"]
+                ]
+            assert matches, f"{case.id} 的金标准无法在当前转换后语料中定位"
+
+
 def test_retrieval_dataset_rejects_duplicate_questions() -> None:
     case = RetrievalEvaluationCase(
         id="holdout-duplicate-01",
@@ -469,6 +599,11 @@ def test_retrieval_evaluation_uses_configured_dense_min_score() -> None:
         min_score=0.42,
         configured_min_score=0.6,
     ) == 0.42
+    assert module.resolve_min_score(
+        strategy="expanded-hybrid-rerank",
+        min_score=None,
+        configured_min_score=0.6,
+    ) == 0.6
     assert module.resolve_min_score(
         strategy="expanded",
         min_score=None,
