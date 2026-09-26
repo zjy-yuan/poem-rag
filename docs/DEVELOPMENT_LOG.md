@@ -4325,3 +4325,30 @@ CSV 当前包含三条待人工评分样本：
 
 - CI 不再替代本地扩库后的 holdout 对照校验；发布前仍需在本机保留或重新生成第三方语料并
   执行完整门禁。
+
+### [2026-09-26] 统一 v0.7.0 RAG 评估基线发布元数据
+
+#### 本次目标
+
+- 消除项目指南、FastAPI OpenAPI 元数据和前端包版本之间的版本漂移。
+- 在不改变业务行为的前提下，为 RAG 评估基线建立统一的发布标识。
+
+#### 变更
+
+- `docs/PROJECT_GUIDE.md`：快照标记更新为 `v0.7.0-rag-eval-baseline`。
+- `apps/api/app/main.py`：FastAPI 应用版本更新为 `0.7.0`。
+- `apps/web/package.json`：前端包版本更新为 `0.7.0`。
+- `.gitignore`：忽略 pnpm 在项目根目录生成的本地内容仓库 `.pnpm-store/`。
+
+#### 验证
+
+- `.\scripts\verify.ps1` 通过。
+- 后端 Ruff 通过，pytest `203 passed, 3 warnings`。
+- 前端 typecheck 通过，Vitest `9 passed`，生产构建通过。
+- `git diff --check` 通过。
+
+#### 风险与后续
+
+- 本次只调整版本元数据和本地缓存忽略规则，不修改 API、数据库、检索或生成行为。
+- GitHub 上的基线分支合并到 `main` 后，再创建并推送
+  `v0.7.0-rag-eval-baseline` 标签，避免标签指向未合并提交。

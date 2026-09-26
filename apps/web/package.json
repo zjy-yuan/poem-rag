@@ -1,7 +1,7 @@
 {
   "name": "poem-rag-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -31,4 +31,3 @@
   },
   "packageManager": "pnpm@11.9.0"
 }
-
