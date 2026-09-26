@@ -6,7 +6,8 @@ param(
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $python = Join-Path $projectRoot ".venv\Scripts\python.exe"
-$pytestTemp = Join-Path $projectRoot ".verify-tmp\pytest"
+$pytestRunId = [guid]::NewGuid().ToString("N")
+$pytestTemp = Join-Path $projectRoot ".verify-tmp\pytest-$pytestRunId"
 
 if (-not $BackendOnly -and -not $FrontendOnly) {
     $runBackend = $true
@@ -59,5 +60,8 @@ try {
     }
 }
 finally {
+    if (Test-Path -LiteralPath $pytestTemp) {
+        Remove-Item -LiteralPath $pytestTemp -Recurse -Force -ErrorAction SilentlyContinue
+    }
     Pop-Location
 }
