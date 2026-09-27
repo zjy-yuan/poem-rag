@@ -193,7 +193,15 @@ erDiagram
 2. `messages`：用户/助手消息、流式状态、模型、延迟和错误码。
 3. `message_citations`：回答引用的作品、版本、注释、chunk、文本和排名快照。
 
-尚未实现但已进入目标的模型包括意象和评估数据。结构化切块、MySQL 词法检索、Embedding Provider、Qdrant 最小索引闭环、Dense/Hybrid 在线检索已经实现；真实库现有 1008 首已发布作品、1009 个作品版本和 12415 个 chunks。固定来源的 1000 首分层语料完成 902 个新建和 98 个未变化导入，所有 chunks 均已使用 1024 维 Qwen 向量写入 Qdrant。在线问答使用 Hybrid RRF，并在基础设施故障时降级到查询扩展词法检索；不能把向量数据塞入现有 `poems.content`。
+领域标签治理已经实现 `domain_labels`、`domain_label_aliases` 和
+`poem_version_domain_labels`，并提供管理 API、审核状态机和公开 approved 读取；
+离线审计可统计覆盖率、审核积压和治理风险。更广义的标签金标准、标签精度评估和
+在线结构化过滤仍未实现。结构化切块、MySQL 词法检索、Embedding Provider、Qdrant
+最小索引闭环、Dense/Hybrid 在线检索已经实现；真实库现有 1008 首已发布作品、
+1009 个作品版本和 12415 个 chunks。固定来源的 1000 首分层语料完成 902 个新建和
+98 个未变化导入，所有 chunks 均已使用 1024 维 Qwen 向量写入 Qdrant。在线问答
+使用 Hybrid RRF，并在基础设施故障时降级到查询扩展词法检索；不能把向量数据塞入
+现有 `poems.content`。
 
 ## 7. 前端页面地图
 
@@ -223,6 +231,7 @@ erDiagram
 | 用户注册登录与权限 | 已实现 | JWT、Refresh Token、管理员依赖 |
 | 朝代、作者、分类、标签 | 已实现 | 管理接口和公开读取 |
 | 领域标签治理 | 已实现（后端、管理页与诗词编辑弹窗） | `domain_labels`、别名和版本级关联支持 CRUD、合并、审核状态机及公开 approved 读取；Vue 管理页支持标签库筛选维护、关联筛选与审核，诗词编辑弹窗支持当前版本关联创建和审核；尚未接入在线过滤或重排 |
+| 领域标签离线审计 | 已实现 | 只读统计当前已发布作品的标签覆盖率、审核积压、来源构成、数量分布和治理风险；真实 1008 首语料当前在线标签覆盖率为 `0.0`，18 个 active 标签尚无在线可见关联，尚不能进入在线过滤 |
 | 诗词 CRUD 与发布状态 | 已实现 | 草稿、发布、撤回、软删除、恢复 |
 | 诗词公开浏览与基础搜索 | 已实现 | 基于 MySQL 的目录查询 |
 | MySQL 迁移与种子 | 已实现 | Alembic head 为 `20260927_0008`；真实 MySQL 已完成 `0006 -> 0007` 往返和 `0007 -> 0008` 升级，`alembic check` 无待生成操作 |
@@ -278,6 +287,8 @@ erDiagram
 .\.venv\Scripts\python.exe -m ruff check apps\api
 .\.venv\Scripts\python.exe apps\api\scripts\import_corpus.py --input data\import\example_corpus_v1.json --dry-run
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --top-k 5
+.\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
+  --json-output data\eval\reports\domain_label_audit_20260927.json
 ```
 
 固定来源 1000 首语料转换、导入与索引：

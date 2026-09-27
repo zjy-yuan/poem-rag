@@ -5487,3 +5487,58 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
 2. 尚未实现“从上一版本复制标签”的批量操作，复制后仍必须进入 `pending`。
 3. 标签仍未接入在线检索、过滤或重排。下一步应先在 1000 首语料上建立标签覆盖率、
    审核积压和人工金标准质量指标，再决定是否启用结构化过滤。
+
+### [2026-09-27] 领域标签离线语料审计
+
+#### 本次目标
+
+- 在当前真实语料上建立领域标签覆盖率、审核积压、来源构成和治理风险的只读
+  统计口径。
+- 用真实 MySQL 数据确认当前是否具备进入在线标签过滤的基础。
+- 不创建标签关联、不修改审核状态、不接入在线检索、过滤或重排。
+
+#### 做出的决定
+
+- 审计范围固定为已发布且未删除作品的当前 `PoemVersion`，避免草稿、旧版本和已删除
+  作品污染覆盖率。
+- 在线可见标签沿用公开读取规则：只计算当前版本的 `approved` 记录，并把合法合并
+  标签解析到同维度 active 目标。
+- 审计同时输出 10 类治理风险：非当前版本关联、非发布/已删除作品关联、approved
+  关联指向 merged/deprecated 标签、active 标签无在线关联、公开数据集/AI 关联缺来源、
+  AI 关联缺模型或任务版本、非法合并目标、`origin_ref` 与生成方式不一致、跨维度
+  同别名。
+- 当前审计只回答“覆盖和治理是否就绪”，不替代后续人工金标准的 precision、recall
+  和 macro F1 评估。
+
+#### 完成内容
+
+- `apps/api/app/schemas/domain_label_evaluation.py`：定义审计范围、维度覆盖率、
+  审核构成、数量分布和治理风险的 Pydantic 报告结构。
+- `apps/api/app/evaluation/domain_labels.py`：实现只读 `DomainLabelAuditor` 和控制台
+  摘要格式化。
+- `apps/api/scripts/audit_domain_labels.py`：新增 CLI，支持 `--json-output` 保存完整
+  报告。
+- `apps/api/tests/test_domain_label_audit.py`：覆盖当前版本过滤、合并解析、审核构成、
+  deprecated/merged 风险、非法合并和 AI 来源元数据风险。
+- `data/eval/reports/domain_label_audit_20260927.json`：保存首个真实语料审计结果。
+- `docs/features/20260927-domain-annotation-schema.md`、`docs/PROJECT_GUIDE.md` 和
+  `README.md`：记录审计命令、指标口径和当前零覆盖结论。
+
+#### 验证结果
+
+- Ruff 通过：`All checks passed!`。
+- 领域标签审计定向测试通过：`2 passed, 2 warnings`。
+- 真实 MySQL 审计：已发布作品 `1008`、当前版本 `1008`、标签关联 `0`、
+  `approved` `0`、在线标签覆盖率 `0.0`、标签库 `18 active`。
+- `active_labels_without_online_visible_assignments=18`，其余治理风险均为 `0`。
+- 完整 `.\scripts\verify.ps1` 通过：后端 `289 passed, 1 skipped, 3 warnings`，
+  前端 typecheck 通过，Vitest `9 passed`，生产构建通过。
+- 构建仍只有既存的主包超过 `500 kB` 警告，本轮未新增构建错误。
+
+#### 风险与下一步
+
+1. 当前没有任何领域标签关联，`0.0` 覆盖率不是“标签质量差”，而是尚未开始标注。
+2. 审计不会验证标签是否正确，只验证覆盖与治理结构；缺少人工金标准前不能计算标签
+   precision、recall 或 macro F1。
+3. 在线标签过滤继续关闭。下一步先设计少量可审核的人工或公开数据集标签导入，
+   标注后重新运行审计，再评估结构化过滤或重排。

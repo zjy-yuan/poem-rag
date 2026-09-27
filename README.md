@@ -38,6 +38,7 @@
 30. Embedding 精确缓存已实现为默认关闭的可选组合层：按原始文本、模型、配置维度和 `documents/query` 用途隔离缓存，批内去重并对 Redis 读写 fail-open。真实检索加假生成 Provider 的 104 次请求中，冷缓存命中率 `0.770408`、逻辑调用 `96`、物理 HTTP 调用 `24`、错误 `0`；热缓存复跑命中率 `1.0`、物理 HTTP 调用 `0`，两次均 `104/104` 成功。当前不缓存检索结果、回答、Prompt 或 Chat 响应。
 31. 索引任务控制面已实现为默认关闭的异步能力：管理员可创建、列表、查询、重试和取消运行，支持 `Idempotency-Key`、Celery + Redis 入队、Worker 租约/心跳、过期重领、数据库统一重试上限和协作式取消；Celery Beat 补偿扫描可重新投递超时 `pending` 和过期租约运行；active index 已通过 MySQL pointer 原子发布，尚未实现事务 outbox 和生产监控。
 32. 旧向量清理与 Qdrant 对账已实现为默认 dry-run 的运维 CLI：分页盘点 Qdrant 点并分类 live、终态孤儿候选、活跃保护、未知和缺失；`--apply` 会先锁定作品发布目标、二次查询 MySQL 引用，只删除仍未被引用的终态运行点。真实库 dry-run 为 12415/12415 一一对应、0 个孤儿点；真实删除路径已在临时 collection 验证并清理，正式 collection 仍只允许 dry-run。
+33. 领域标签离线审计已实现为只读 CLI：统计当前已发布作品的标签覆盖率、审核状态、生成来源、每作品标签数量分布和治理风险，并输出完整 JSON 报告。真实 1008 首语料当前有 0 条标签关联、在线标签覆盖率 `0.0`，18 个 active 标签尚无在线可见关联；该结果仅说明治理与审计基础可用，不能进入在线标签过滤或重排。
 
 ## 文档入口
 
@@ -51,6 +52,15 @@
 
 接口的实际运行时定义以 FastAPI `/openapi.json` 和 `/docs` 为准，目标契约以
 `docs/FRONTEND_BACKEND_CONTRACT.md` 为准。两者不一致时应先修复差异，再继续扩展功能。
+
+领域标签离线审计：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
+  --json-output data\eval\reports\domain_label_audit_20260927.json
+```
+
+该命令只读 MySQL，不创建标签关联、不执行审核、不修改向量索引，也不接入在线检索。
 
 ## 本地开发
 

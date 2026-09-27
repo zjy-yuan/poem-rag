@@ -1,6 +1,6 @@
 # 领域标注 Schema 设计与治理边界
 
-> 状态：迁移、受控标签种子、管理 API、管理页和诗词编辑弹窗治理已实现；在线检索尚未接入
+> 状态：迁移、受控标签种子、管理 API、管理页、诗词编辑弹窗治理和离线语料审计已实现；在线检索尚未接入
 > 创建日期：2026-09-27
 > 最近更新：2026-09-27
 > 关联任务：为意象、情感、题材和典故建立可追溯、可审核的版本级标签
@@ -214,16 +214,47 @@ ai:deepseek-chat:domain-label-v1
 合并只允许同维度 active 目标，且不允许多级合并链。公开数据集和 AI 标签必须提供
 `origin_ref`；AI 标签还必须提供 `model_name` 和 `task_version`。
 
-## 10. RAG 与评估
+## 10. RAG 接入与标签评估
 
-未来接入顺序：
+### 10.1 离线覆盖率与治理审计（已实现）
+
+审计脚本只读取当前已发布且未删除作品的 `PoemVersion`，输出标签覆盖率、审核构成、
+标签来源、每作品标签数量分布，以及非当前版本、非法合并、元数据缺失和跨维度别名
+等治理风险。它不会写入标签、改变审核状态或影响在线检索。
+
+复现命令：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
+  --json-output data\eval\reports\domain_label_audit_20260927.json
+```
+
+2026-09-27 真实 MySQL 审计结果：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 已发布作品 / 当前版本 | 1008 / 1008 |
+| 有任一标签关联的作品 | 0 |
+| 有 `approved` 关联的作品 | 0 |
+| 有在线可见标签的作品 | 0 |
+| 在线标签覆盖率 | `0.0` |
+| 标签库 | `18 active` |
+| 从未在线可见的 active 标签 | 18 |
+
+除“active 标签尚无在线可见关联”外，其余治理风险均为 `0`。这说明表结构、审核状态机
+和审计口径已经可用，但当前 1008 首已发布语料尚未建立领域标签关联，不能进入在线
+标签过滤或重排。
+
+### 10.2 在线接入顺序
+
+完成标签金标准与覆盖率建设后，按以下顺序接入：
 
 1. 查询改写把“想家的诗”映射为 `emotion:思乡`、`imagery:月`、`theme:羁旅`。
 2. 结构化过滤先按 approved 标签缩小候选，再执行现有混合检索。
 3. 重排可以按标签匹配度加权，但标签不能覆盖正文证据。
 4. 生成回答仍必须引用 chunks；标签只辅助检索，不作为事实引用。
 
-评估指标：
+### 10.3 评估指标
 
 - 标签层：按维度统计 precision、recall、macro F1 和人工严重错误率。
 - 检索层：标签过滤前后 Recall@5、MRR、nDCG@5 和拒答准确率。
@@ -259,7 +290,8 @@ ai:deepseek-chat:domain-label-v1
 - [x] 创建 Alembic 迁移
 - [x] 建立初始受控标签和别名种子
 - [x] 实现管理端录入与审核
-- [ ] 接入离线标签评估
+- [x] 接入离线标签覆盖率与治理审计
+- [ ] 建立人工标签金标准并计算 precision、recall 和 macro F1
 - [ ] 再决定是否用于在线过滤和重排
 
 实现记录：
@@ -287,6 +319,12 @@ ai:deepseek-chat:domain-label-v1
   Ruff、前端 typecheck、Vitest `9 passed` 和生产构建均通过。
 - MySQL 不允许带 `ON DELETE SET NULL` 的外键列同时参与 CHECK 约束；因此
   `merged_into_id <> id` 不在数据库层检查，继续按设计由服务层限制。
+- `apps/api/app/schemas/domain_label_evaluation.py`、`apps/api/app/evaluation/domain_labels.py`：
+  定义离线审计报告结构，并统计当前语料覆盖率、审核积压、来源构成和治理风险。
+- `apps/api/scripts/audit_domain_labels.py`：新增只读审计 CLI，支持完整 JSON 报告输出。
+- `apps/api/tests/test_domain_label_audit.py`：覆盖当前版本范围、合并标签解析、审核
+  构成、非法合并和来源元数据风险。
+- `data/eval/reports/domain_label_audit_20260927.json`：保存首个真实语料审计结果。
 
 ## 14. 决策与变更记录
 
