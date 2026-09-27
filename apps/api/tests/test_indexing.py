@@ -9,6 +9,7 @@ from app.ai.providers.vector_store import VectorPoint
 from app.core.errors import AppError, ErrorCode
 from app.models.chunk import ChunkStatus, PoemChunk
 from app.models.index_run import IndexRunStage, IndexRunStatus, PoemIndexRun
+from app.models.poem import Poem
 from app.repositories.chunks import ChunkRepository
 from app.services.indexing import IndexingService
 from fastapi.testclient import TestClient
@@ -108,10 +109,12 @@ def test_indexing_service_embeds_upserts_and_marks_chunks_ready(
         index
     )
 
-    async def load_state() -> tuple[PoemIndexRun, list[PoemChunk]]:
+    async def load_state() -> tuple[PoemIndexRun, list[PoemChunk], Poem]:
         async with session_factory() as session:
             run = await session.get(PoemIndexRun, run_id)
             assert run is not None
+            poem_row = await session.get(Poem, poem["id"])
+            assert poem_row is not None
             chunks = list(
                 (
                     await session.execute(
@@ -123,9 +126,9 @@ def test_indexing_service_embeds_upserts_and_marks_chunks_ready(
                 .scalars()
                 .all()
             )
-            return run, chunks
+            return run, chunks, poem_row
 
-    run, chunks = portal.call(load_state)
+    run, chunks, poem_row = portal.call(load_state)
 
     assert run.status == IndexRunStatus.SUCCEEDED.value
     assert run.stage == IndexRunStage.UPSERT.value
@@ -137,10 +140,16 @@ def test_indexing_service_embeds_upserts_and_marks_chunks_ready(
     assert len(set(vector_ids)) == 3
     assert store.ensured_dimensions == [8]
     assert len(store.upserts) == 1
+    assert all(
+        point.payload["index_run_id"] == run_id
+        for point in store.upserts[0]
+    )
     assert all(chunk.status == ChunkStatus.READY.value for chunk in chunks)
     assert all(chunk.vector_id in vector_ids for chunk in chunks)
     assert all(chunk.embedding_model == "fake-embedding" for chunk in chunks)
     assert all(chunk.embedding_dimension == 8 for chunk in chunks)
+    assert all(chunk.index_run_id == run.id for chunk in chunks)
+    assert poem_row.active_index_run_id == run.id
 
 
 def test_indexing_service_rejects_inconsistent_vector_dimension(
@@ -297,6 +306,8 @@ def test_indexing_service_compensates_when_database_write_fails(
         vector_ids: list[str],
         embedding_model: str,
         embedding_dimension: int,
+        index_run_id: int,
+        poem_version_id: int,
     ) -> None:
         raise RuntimeError("database write failed")
 
@@ -318,9 +329,11 @@ def test_indexing_service_compensates_when_database_write_fails(
     upserted_ids = [point.id for point in store.upserts[0]]
     assert store.deleted == [upserted_ids]
 
-    async def load_state() -> tuple[PoemIndexRun | None, list[PoemChunk]]:
+    async def load_state() -> tuple[PoemIndexRun | None, list[PoemChunk], Poem]:
         async with session_factory() as session:
             run = await session.scalar(select(PoemIndexRun))
+            poem_row = await session.get(Poem, poem["id"])
+            assert poem_row is not None
             chunks = list(
                 (
                     await session.execute(
@@ -332,10 +345,12 @@ def test_indexing_service_compensates_when_database_write_fails(
                 .scalars()
                 .all()
             )
-            return run, chunks
+            return run, chunks, poem_row
 
-    run, chunks = portal.call(load_state)
+    run, chunks, poem_row = portal.call(load_state)
     assert run is not None
     assert run.status == IndexRunStatus.FAILED.value
     assert all(chunk.status == ChunkStatus.PENDING.value for chunk in chunks)
     assert all(chunk.vector_id is None for chunk in chunks)
+    assert all(chunk.index_run_id is None for chunk in chunks)
+    assert poem_row.active_index_run_id is None

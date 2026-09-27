@@ -50,6 +50,11 @@ class Poem(Base, TimestampMixin):
         nullable=False,
     )
     version_no: Mapped[int] = mapped_column(Integer, default=1, server_default="1", nullable=False)
+    active_index_run_id: Mapped[int | None] = mapped_column(
+        Integer,
+        index=True,
+        nullable=True,
+    )
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), index=True, nullable=True

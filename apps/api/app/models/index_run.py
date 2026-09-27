@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
@@ -30,6 +30,13 @@ class IndexRunStage(StrEnum):
 
 class PoemIndexRun(Base, TimestampMixin):
     __tablename__ = "poem_index_runs"
+    __table_args__ = (
+        Index(
+            "ix_poem_index_runs_status_lease_expires_at",
+            "status",
+            "lease_expires_at",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     poem_version_id: Mapped[int] = mapped_column(
@@ -55,6 +62,17 @@ class PoemIndexRun(Base, TimestampMixin):
     embedding_dimension: Mapped[int | None] = mapped_column(Integer, nullable=True)
     vector_collection: Mapped[str | None] = mapped_column(String(150), nullable=True)
     config_snapshot: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    idempotency_key: Mapped[str | None] = mapped_column(
+        String(128),
+        unique=True,
+        index=True,
+        nullable=True,
+    )
+    celery_task_id: Mapped[str | None] = mapped_column(
+        String(155),
+        index=True,
+        nullable=True,
+    )
     chunk_count: Mapped[int] = mapped_column(
         Integer,
         default=0,
@@ -67,6 +85,32 @@ class PoemIndexRun(Base, TimestampMixin):
         server_default="0",
         nullable=False,
     )
+    attempt_count: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        server_default="0",
+        nullable=False,
+    )
+    max_attempts: Mapped[int] = mapped_column(
+        Integer,
+        default=3,
+        server_default="3",
+        nullable=False,
+    )
+    lease_owner: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    heartbeat_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    cancel_requested_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    error_code: Mapped[str | None] = mapped_column(String(80), nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_by_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"),

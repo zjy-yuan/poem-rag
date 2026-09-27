@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import __version__
 from app.api.v1.router import api_router
 from app.core.config import Settings, get_settings
 from app.core.errors import install_exception_handlers
@@ -16,6 +17,7 @@ from app.services.chat import (
     ChatRetrievalResources,
     create_chat_retrieval_resources,
 )
+from app.services.task_queue import create_index_task_queue
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -46,7 +48,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     application = FastAPI(
         title=app_settings.app_name,
-        version="0.7.0",
+        version=__version__,
         debug=app_settings.debug,
         lifespan=lifespan,
     )
@@ -54,6 +56,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.state.db_engine = engine
     application.state.session_factory = session_factory
     application.state.chat_retrieval_resources = None
+    application.state.index_task_queue = create_index_task_queue(app_settings)
 
     application.add_middleware(RequestIdMiddleware)
     application.add_middleware(

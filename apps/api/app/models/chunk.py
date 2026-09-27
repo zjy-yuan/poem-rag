@@ -65,6 +65,11 @@ class PoemChunk(Base, TimestampMixin):
     vector_id: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
     embedding_model: Mapped[str | None] = mapped_column(String(150), nullable=True)
     embedding_dimension: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    index_run_id: Mapped[int | None] = mapped_column(
+        ForeignKey("poem_index_runs.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
     chunk_strategy: Mapped[str] = mapped_column(
         String(100),
         default="structural-v1",

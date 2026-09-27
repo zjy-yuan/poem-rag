@@ -5,7 +5,18 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Row, Select, and_, case, func, or_, select, update
+from sqlalchemy import (
+    Row,
+    Select,
+    and_,
+    case,
+    func,
+    literal,
+    or_,
+    select,
+    union_all,
+    update,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
@@ -66,31 +77,40 @@ class ChunkSearchCandidate:
     published_at: datetime | None
 
 
+@dataclass(frozen=True, slots=True)
+class LexicalSearchRequest:
+    query: str
+    limit: int
+    granularities: tuple[str, ...] = ()
+    author_id: int | None = None
+    dynasty_id: int | None = None
+
+
 def _candidate_statement() -> Select[Any]:
     """Select the public chunk columns shared by every candidate query."""
 
     return (
         select(
-            PoemChunk.id,
-            PoemChunk.vector_id,
-            PoemChunk.poem_id,
-            PoemChunk.poem_version_id,
-            PoemChunk.annotation_id,
-            PoemAnnotation.annotation_type,
-            PoemChunk.granularity,
-            PoemChunk.chunk_index,
-            PoemChunk.text,
-            PoemChunk.normalized_text,
-            PoemChunk.line_start,
-            PoemChunk.line_end,
-            PoemChunk.chunk_strategy,
-            PoemChunk.status,
-            Poem.title,
-            Poem.author_id,
-            Author.name,
-            Poem.dynasty_id,
-            Dynasty.name,
-            Poem.published_at,
+            PoemChunk.id.label("chunk_id"),
+            PoemChunk.vector_id.label("vector_id"),
+            PoemChunk.poem_id.label("poem_id"),
+            PoemChunk.poem_version_id.label("poem_version_id"),
+            PoemChunk.annotation_id.label("annotation_id"),
+            PoemAnnotation.annotation_type.label("annotation_type"),
+            PoemChunk.granularity.label("granularity"),
+            PoemChunk.chunk_index.label("chunk_index"),
+            PoemChunk.text.label("text"),
+            PoemChunk.normalized_text.label("normalized_text"),
+            PoemChunk.line_start.label("line_start"),
+            PoemChunk.line_end.label("line_end"),
+            PoemChunk.chunk_strategy.label("chunk_strategy"),
+            PoemChunk.status.label("status"),
+            Poem.title.label("title"),
+            Poem.author_id.label("author_id"),
+            Author.name.label("author_name"),
+            Poem.dynasty_id.label("dynasty_id"),
+            Dynasty.name.label("dynasty_name"),
+            Poem.published_at.label("published_at"),
         )
         .select_from(PoemChunk)
         .join(Poem, Poem.id == PoemChunk.poem_id)
@@ -126,6 +146,21 @@ def _candidate_from_row(row: Row[Any]) -> ChunkSearchCandidate:
     )
 
 
+def _published_index_filter() -> ColumnElement[bool]:
+    """Keep only the chunks published by the poem's active index run.
+
+    ``poem.active_index_run_id`` is written in the same transaction that marks
+    a run's chunks ready. Poems without a pointer predate that mechanism, so
+    they keep the legacy version-based visibility; once a run is published,
+    half-written chunks from a newer version or a newer run stay invisible.
+    """
+
+    return or_(
+        Poem.active_index_run_id.is_(None),
+        PoemChunk.index_run_id == Poem.active_index_run_id,
+    )
+
+
 class ChunkRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
@@ -139,48 +174,16 @@ class ChunkRepository:
         author_id: int | None = None,
         dynasty_id: int | None = None,
     ) -> list[ChunkSearchCandidate]:
-        normalized_content_query = normalize_content(query)
-        normalized_lookup_query = normalize_lookup(query)
-        lexical_filters: list[ColumnElement[bool]] = []
-
-        if normalized_content_query:
-            content_pattern = _like_pattern(normalized_content_query)
-            lexical_filters.append(
-                func.lower(PoemChunk.normalized_text).like(content_pattern, escape="\\")
-            )
-        if normalized_lookup_query:
-            metadata_pattern = _like_pattern(normalized_lookup_query)
-            lexical_filters.extend(
-                [
-                    func.lower(Poem.title).like(metadata_pattern, escape="\\"),
-                    func.lower(Author.name).like(metadata_pattern, escape="\\"),
-                    func.lower(Dynasty.name).like(metadata_pattern, escape="\\"),
-                ]
-            )
-
-        filters: list[ColumnElement[bool]] = [
-            Poem.status == PoemStatus.PUBLISHED.value,
-            Poem.deleted_at.is_(None),
-            PoemVersion.version_no == Poem.version_no,
-            PoemChunk.status.in_(
-                [ChunkStatus.PENDING.value, ChunkStatus.READY.value]
-            ),
-            or_(
-                PoemChunk.granularity != ChunkGranularity.NOTE.value,
-                and_(
-                    PoemChunk.annotation_id.is_not(None),
-                    PoemAnnotation.status == AnnotationStatus.PUBLISHED.value,
-                ),
-            ),
-        ]
-        if granularities:
-            filters.append(PoemChunk.granularity.in_(granularities))
-        if author_id is not None:
-            filters.append(Poem.author_id == author_id)
-        if dynasty_id is not None:
-            filters.append(Poem.dynasty_id == dynasty_id)
-        if lexical_filters:
-            filters.append(or_(*lexical_filters))
+        (
+            normalized_content_query,
+            normalized_lookup_query,
+            filters,
+        ) = _lexical_filters(
+            query=query,
+            granularities=granularities,
+            author_id=author_id,
+            dynasty_id=dynasty_id,
+        )
 
         statement = (
             _candidate_statement()
@@ -196,6 +199,74 @@ class ChunkRepository:
         )
         rows = (await self.session.execute(statement)).all()
         return [_candidate_from_row(row) for row in rows]
+
+    async def search_lexical_batch(
+        self,
+        requests: Sequence[LexicalSearchRequest],
+    ) -> list[list[ChunkSearchCandidate]]:
+        """Run independent lexical searches in one database round trip."""
+
+        if not requests:
+            return []
+        if any(request.limit < 1 for request in requests):
+            raise ValueError("limit must be at least 1")
+
+        branches: list[Select[Any]] = []
+        for query_index, request in enumerate(requests):
+            (
+                normalized_content_query,
+                normalized_lookup_query,
+                filters,
+            ) = _lexical_filters(
+                query=request.query,
+                granularities=request.granularities,
+                author_id=request.author_id,
+                dynasty_id=request.dynasty_id,
+            )
+            branches.append(
+                _candidate_statement()
+                .add_columns(
+                    literal(query_index).label("query_index"),
+                    _lexical_priority(
+                        normalized_content_query=normalized_content_query,
+                        normalized_lookup_query=normalized_lookup_query,
+                    ).label("lexical_priority"),
+                )
+                .where(*filters)
+            )
+
+        unioned = union_all(*branches).subquery("lexical_candidates")
+        ranked = select(
+            *unioned.c,
+            func.row_number()
+            .over(
+                partition_by=unioned.c.query_index,
+                order_by=(unioned.c.lexical_priority, unioned.c.chunk_id),
+            )
+            .label("variant_rank"),
+        ).subquery("ranked_lexical_candidates")
+        variant_limits = case(
+            {
+                query_index: request.limit
+                for query_index, request in enumerate(requests)
+            },
+            value=ranked.c.query_index,
+            else_=0,
+        )
+        statement = (
+            select(ranked)
+            .where(ranked.c.variant_rank <= variant_limits)
+            .order_by(ranked.c.query_index, ranked.c.variant_rank)
+        )
+        rows = (await self.session.execute(statement)).all()
+
+        results: list[list[ChunkSearchCandidate]] = [
+            [] for _ in requests
+        ]
+        for row in rows:
+            query_index = int(row._mapping["query_index"])
+            results[query_index].append(_candidate_from_row(row))
+        return results
 
     async def list_public_by_vector_ids(
         self,
@@ -215,6 +286,7 @@ class ChunkRepository:
             Poem.status == PoemStatus.PUBLISHED.value,
             Poem.deleted_at.is_(None),
             PoemVersion.version_no == Poem.version_no,
+            _published_index_filter(),
             or_(
                 PoemChunk.granularity != ChunkGranularity.NOTE.value,
                 and_(
@@ -257,6 +329,7 @@ class ChunkRepository:
                 Poem.status == PoemStatus.PUBLISHED.value,
                 Poem.deleted_at.is_(None),
                 PoemVersion.version_no == Poem.version_no,
+                _published_index_filter(),
             )
             .order_by(
                 PoemChunk.poem_version_id,
@@ -358,11 +431,24 @@ class ChunkRepository:
         vector_ids: Sequence[str],
         embedding_model: str,
         embedding_dimension: int,
-    ) -> None:
+        index_run_id: int,
+        poem_version_id: int,
+    ) -> int:
+        """Mark chunks ready and publish the poem's active index pointer.
+
+        Both writes happen in the caller's transaction, so retrieval never
+        observes a run whose chunks are partially written. The pointer only
+        moves when the run still indexes the poem's active version: a run that
+        finishes after the poem moved on to a newer version must not hide that
+        newer version.
+
+        Returns the number of poems whose pointer moved to ``index_run_id``.
+        """
+
         if len(chunk_ids) != len(vector_ids):
             raise ValueError("chunk_ids and vector_ids must have the same length")
         if not chunk_ids:
-            return
+            return 0
         await self.session.execute(
             update(PoemChunk)
             .where(PoemChunk.id.in_(chunk_ids))
@@ -376,15 +462,89 @@ class ChunkRepository:
                 ),
                 embedding_model=embedding_model,
                 embedding_dimension=embedding_dimension,
+                index_run_id=index_run_id,
                 status=ChunkStatus.READY.value,
             )
         )
+        active_version_no = (
+            select(PoemVersion.version_no)
+            .where(PoemVersion.id == poem_version_id)
+            .scalar_subquery()
+        )
+        poem_id = (
+            select(PoemChunk.poem_id)
+            .where(PoemChunk.id == chunk_ids[0])
+            .scalar_subquery()
+        )
+        result = await self.session.execute(
+            update(Poem)
+            .where(
+                Poem.id == poem_id,
+                Poem.version_no == active_version_no,
+            )
+            .values(active_index_run_id=index_run_id)
+        )
         await self.session.flush()
+        return int(result.rowcount or 0)
 
 
 def _like_pattern(value: str) -> str:
     escaped = value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     return f"%{escaped}%"
+
+
+def _lexical_filters(
+    *,
+    query: str,
+    granularities: Sequence[str] | None,
+    author_id: int | None,
+    dynasty_id: int | None,
+) -> tuple[str, str, list[ColumnElement[bool]]]:
+    normalized_content_query = normalize_content(query)
+    normalized_lookup_query = normalize_lookup(query)
+    lexical_filters: list[ColumnElement[bool]] = []
+
+    if normalized_content_query:
+        content_pattern = _like_pattern(normalized_content_query)
+        lexical_filters.append(
+            func.lower(PoemChunk.normalized_text).like(content_pattern, escape="\\")
+        )
+    if normalized_lookup_query:
+        metadata_pattern = _like_pattern(normalized_lookup_query)
+        lexical_filters.extend(
+            [
+                func.lower(Poem.title).like(metadata_pattern, escape="\\"),
+                func.lower(Author.name).like(metadata_pattern, escape="\\"),
+                func.lower(Dynasty.name).like(metadata_pattern, escape="\\"),
+            ]
+        )
+
+    filters: list[ColumnElement[bool]] = [
+        Poem.status == PoemStatus.PUBLISHED.value,
+        Poem.deleted_at.is_(None),
+        PoemVersion.version_no == Poem.version_no,
+        _published_index_filter(),
+        PoemChunk.status.in_(
+            [ChunkStatus.PENDING.value, ChunkStatus.READY.value]
+        ),
+        or_(
+            PoemChunk.granularity != ChunkGranularity.NOTE.value,
+            and_(
+                PoemChunk.annotation_id.is_not(None),
+                PoemAnnotation.status == AnnotationStatus.PUBLISHED.value,
+            ),
+        ),
+    ]
+    if granularities:
+        filters.append(PoemChunk.granularity.in_(granularities))
+    if author_id is not None:
+        filters.append(Poem.author_id == author_id)
+    if dynasty_id is not None:
+        filters.append(Poem.dynasty_id == dynasty_id)
+    if lexical_filters:
+        filters.append(or_(*lexical_filters))
+
+    return normalized_content_query, normalized_lookup_query, filters
 
 
 def _lexical_priority(
