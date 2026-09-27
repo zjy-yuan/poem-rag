@@ -2,6 +2,13 @@ import { requestData, requestPage } from './http'
 import type {
   Author,
   CategoryType,
+  DomainLabel,
+  DomainLabelAssignment,
+  DomainLabelDimension,
+  DomainLabelGenerationMethod,
+  DomainLabelReviewAction,
+  DomainLabelReviewStatus,
+  DomainLabelStatus,
   Dynasty,
   Paginated,
   Poem,
@@ -53,6 +60,36 @@ export interface CategoryPayload {
   parent_id: number | null
   sort_order: number
   is_active: boolean
+}
+
+export interface DomainLabelPayload {
+  dimension: DomainLabelDimension
+  canonical_name: string
+  description: string | null
+  aliases: string[]
+}
+
+export interface DomainLabelUpdatePayload {
+  canonical_name?: string
+  description?: string | null
+  status?: DomainLabelStatus
+  merged_into_id?: number | null
+  aliases?: string[]
+}
+
+export interface DomainLabelListParams {
+  page?: number
+  page_size?: number
+  dimension?: DomainLabelDimension
+  status?: DomainLabelStatus
+  q?: string
+}
+
+export interface DomainLabelAssignmentListParams {
+  page?: number
+  page_size?: number
+  review_status?: DomainLabelReviewStatus
+  generation_method?: DomainLabelGenerationMethod
 }
 
 export const adminApi = {
@@ -204,6 +241,55 @@ export const adminApi = {
     return requestData<null>({
       method: 'DELETE',
       url: `/admin/categories/${categoryId}`,
+    })
+  },
+
+  listDomainLabels(params: DomainLabelListParams = {}): Promise<Paginated<DomainLabel>> {
+    return requestPage<DomainLabel>({
+      method: 'GET',
+      url: '/admin/domain-labels',
+      params,
+    })
+  },
+
+  createDomainLabel(payload: DomainLabelPayload): Promise<DomainLabel> {
+    return requestData<DomainLabel>({
+      method: 'POST',
+      url: '/admin/domain-labels',
+      data: payload,
+    })
+  },
+
+  updateDomainLabel(
+    labelId: number,
+    payload: DomainLabelUpdatePayload,
+  ): Promise<DomainLabel> {
+    return requestData<DomainLabel>({
+      method: 'PATCH',
+      url: `/admin/domain-labels/${labelId}`,
+      data: payload,
+    })
+  },
+
+  listDomainLabelAssignments(
+    labelId: number,
+    params: DomainLabelAssignmentListParams = {},
+  ): Promise<Paginated<DomainLabelAssignment>> {
+    return requestPage<DomainLabelAssignment>({
+      method: 'GET',
+      url: `/admin/domain-labels/${labelId}/assignments`,
+      params,
+    })
+  },
+
+  reviewDomainLabelAssignment(
+    assignmentId: number,
+    action: DomainLabelReviewAction,
+  ): Promise<DomainLabelAssignment> {
+    return requestData<DomainLabelAssignment>({
+      method: 'POST',
+      url: `/admin/domain-label-assignments/${assignmentId}/review`,
+      data: { action },
     })
   },
 }

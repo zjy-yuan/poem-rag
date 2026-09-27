@@ -274,6 +274,9 @@ ai:deepseek-chat:domain-label-v1
   和 `apps/api/app/api/v1/poems.py` 暴露管理端与公开读取路由。
 - `apps/api/tests/test_domain_labels.py` 覆盖权限、CRUD、别名、幂等、审核、公开
   可见性、AI 元数据、非法流转、合并和废弃。
+- `apps/web/src/views/AdminDomainLabelView.vue`、`apps/web/src/api/admin.ts` 和
+  `apps/web/src/types/api.ts` 增加领域标签管理页、API 方法和类型，支持标签库
+  筛选维护、合并/废弃、作品版本关联筛选和审核动作。
 - 真实 MySQL 升级到 `20260927_0008`，`alembic check` 返回
   `No new upgrade operations detected.`。
 - MySQL 不允许带 `ON DELETE SET NULL` 的外键列同时参与 CHECK 约束；因此

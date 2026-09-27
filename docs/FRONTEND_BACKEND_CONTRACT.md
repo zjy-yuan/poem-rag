@@ -181,6 +181,7 @@ apps/web/src/
 | `admin-poem-edit` | `/admin/poems/:poemId/edit` | 编辑诗词 | 管理员 |
 | `admin-authors` | `/admin/authors` | 作者管理 | 管理员 |
 | `admin-categories` | `/admin/categories` | 分类管理 | 管理员 |
+| `admin-domain-labels` | `/admin/domain-labels` | 领域标签治理 | 管理员 |
 | `admin-imports` | `/admin/imports` | 导入任务 | 管理员 |
 | `admin-users` | `/admin/users` | 用户管理 | 管理员，P1 |
 | `forbidden` | `/403` | 无权限 | 公开 |
@@ -414,7 +415,7 @@ active 目标，并按 `manual > public_dataset > ai` 去重。
 | GET | `/api/v1/admin/domain-labels` | 分页查询标签，支持维度和状态过滤 |
 | POST | `/api/v1/admin/domain-labels` | 创建标签和别名 |
 | PATCH | `/api/v1/admin/domain-labels/{label_id}` | 更新名称、别名、废弃或合并标签 |
-| GET | `/api/v1/admin/domain-labels/{label_id}/assignments` | 查询某标签的作品版本关联 |
+| GET | `/api/v1/admin/domain-labels/{label_id}/assignments` | 查询某标签的作品版本关联，支持审核状态和来源过滤 |
 | POST | `/api/v1/admin/poems/{poem_id}/domain-labels` | 为当前版本新增待审核标签 |
 | POST | `/api/v1/admin/domain-label-assignments/{assignment_id}/review` | 审核、驳回、归档或重新评估标签关联 |
 
@@ -2009,3 +2010,4 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 | 2026-09-27 | 新增 active index MySQL pointer 原子发布、chunk 运行标签和历史回填 | 新增 `0007` 字段和检索过滤；不增加公开 HTTP 接口，pointer 为空时保留历史可见性 | 真实 MySQL `0006 -> 0007` 往返、1008 个 pointer/12410 个 chunk 回填、完整门禁后端 `274 passed, 3 warnings` |
 | 2026-09-27 | 新增 Qdrant 旧点 GC 与 MySQL/Qdrant 对账 CLI | 不修改公开 HTTP API、SSE、迁移和在线检索；默认 dry-run，apply 在发布锁内二次确认引用 | 定向测试 `24 passed, 3 warnings`、Ruff 通过；真实库 12415/12415 dry-run 一致，`--apply` 未对真实数据执行 |
 | 2026-09-27 | 新增领域标签管理 API、版本级审核状态机和公开 approved 标签读取 | 新增 `0008` 三张表和公开/管理接口；不接入在线检索、查询改写或重排 | 定向测试 `5 passed, 2 warnings`、Ruff 通过；完整门禁后端 `287 passed, 1 skipped, 3 warnings`、前端类型检查/测试/构建通过 |
+| 2026-09-27 | 新增领域标签管理页，支持标签库维护、合并/废弃、作品版本关联筛选与审核 | 只使用现有管理 API 和后台交互语言；不接在线过滤，不增加 HTTP 契约 | 完整 `.\scripts\verify.ps1` 通过：后端 `287 passed, 1 skipped, 3 warnings`、Ruff、前端 typecheck、Vitest `9 passed` 和生产构建通过 |

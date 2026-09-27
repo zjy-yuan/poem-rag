@@ -68,6 +68,12 @@ export const routes: RouteRecordRaw[] = [
         meta: { title: '目录管理', requiresAuth: true, roles: ['admin'] },
       },
       {
+        path: 'admin/domain-labels',
+        name: 'admin-domain-labels',
+        component: () => import('@/views/AdminDomainLabelView.vue'),
+        meta: { title: '领域标签', requiresAuth: true, roles: ['admin'] },
+      },
+      {
         path: 'admin',
         redirect: '/admin/poems',
       },

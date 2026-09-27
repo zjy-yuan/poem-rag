@@ -2,6 +2,11 @@ export type UserRole = 'user' | 'admin'
 export type UserStatus = 'active' | 'disabled'
 export type PoemStatus = 'draft' | 'published' | 'archived'
 export type CategoryType = 'work_type' | 'form' | 'style' | 'theme'
+export type DomainLabelDimension = 'imagery' | 'emotion' | 'theme' | 'allusion'
+export type DomainLabelStatus = 'active' | 'merged' | 'deprecated'
+export type DomainLabelGenerationMethod = 'manual' | 'public_dataset' | 'ai'
+export type DomainLabelReviewStatus = 'pending' | 'approved' | 'rejected' | 'archived'
+export type DomainLabelReviewAction = 'approve' | 'reject' | 'archive' | 'reassess'
 
 export interface ApiErrorDetail {
   field?: string
@@ -76,6 +81,49 @@ export interface PoemCategory {
 export interface PoemTag {
   id: number
   name: string
+}
+
+export interface DomainLabelAlias {
+  id: number
+  alias: string
+  source_id: number | null
+  created_at: string
+}
+
+export interface DomainLabel {
+  id: number
+  dimension: DomainLabelDimension
+  canonical_name: string
+  normalized_name: string
+  description: string | null
+  status: DomainLabelStatus
+  merged_into_id: number | null
+  aliases: DomainLabelAlias[]
+  created_at: string
+  updated_at: string
+}
+
+export interface DomainLabelAssignment {
+  id: number
+  poem_id: number
+  poem_version_id: number
+  version_no: number
+  label: DomainLabel
+  generation_method: DomainLabelGenerationMethod
+  origin_ref: string
+  confidence: number | null
+  review_status: DomainLabelReviewStatus
+  evidence_text: string | null
+  line_start: number | null
+  line_end: number | null
+  model_name: string | null
+  task_version: string | null
+  created_by_id: number | null
+  reviewed_by_id: number | null
+  reviewed_at: string | null
+  archived_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface Poem {
