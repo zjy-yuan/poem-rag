@@ -8,6 +8,7 @@ from app.core.text import normalize_lookup
 from app.models.domain_label import (
     DomainLabel,
     DomainLabelAlias,
+    DomainLabelStatus,
     PoemVersionDomainLabel,
 )
 from app.models.poem import Poem, PoemStatus
@@ -107,6 +108,33 @@ class DomainLabelRepository:
         )
         result = await self.session.execute(statement)
         return result.scalar_one_or_none()
+
+    async def list_active_labels_by_name(
+        self,
+        *,
+        dimension: str,
+        normalized_name: str,
+    ) -> list[DomainLabel]:
+        """Resolve a canonical name or alias to active labels in one dimension."""
+        statement = (
+            select(DomainLabel)
+            .where(
+                DomainLabel.dimension == dimension,
+                DomainLabel.status == DomainLabelStatus.ACTIVE.value,
+                (
+                    (DomainLabel.normalized_name == normalized_name)
+                    | DomainLabel.id.in_(
+                        select(DomainLabelAlias.domain_label_id).where(
+                            DomainLabelAlias.normalized_alias == normalized_name
+                        )
+                    )
+                ),
+            )
+            .options(self._label_options())
+            .order_by(DomainLabel.id.asc())
+        )
+        result = await self.session.execute(statement)
+        return list(result.scalars().unique())
 
     def create_label(
         self,

@@ -1,0 +1,143 @@
+{
+  "version": "manual-review-5-v1",
+  "source": {
+    "source_key": "project-manual-review",
+    "source_name": "项目人工审核样本",
+    "source_url": null,
+    "license_note": "项目内人工标注样本，仅用于验证领域标签导入与审核流程。"
+  },
+  "generation_method": "manual",
+  "poem_source_key": "aopao-chinese-gushiwen",
+  "records": [
+    {
+      "external_id": "5b9a0254367d5caccce1aa1a",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "月",
+          "evidence_text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+          "line_start": 1,
+          "line_end": 2
+        },
+        {
+          "dimension": "emotion",
+          "name": "思乡",
+          "evidence_text": "低头思故乡",
+          "line_start": 2,
+          "line_end": 2
+        },
+        {
+          "dimension": "theme",
+          "name": "羁旅",
+          "evidence_text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+          "line_start": 1,
+          "line_end": 2
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a120c367d5c5b84062a98",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "落花",
+          "evidence_text": "花落知多少",
+          "line_start": 2,
+          "line_end": 2
+        },
+        {
+          "dimension": "emotion",
+          "name": "伤春",
+          "evidence_text": "夜来风雨声，花落知多少。",
+          "line_start": 2,
+          "line_end": 2
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1430367d5cab18668605",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "夕阳",
+          "evidence_text": "白日依山尽",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "dimension": "theme",
+          "name": "登临",
+          "evidence_text": "欲穷千里目，更上一层楼。",
+          "line_start": 2,
+          "line_end": 2
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a0136367d5c96f4cd2953",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "月",
+          "evidence_text": "明月几时有？把酒问青天。",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "dimension": "emotion",
+          "name": "离别",
+          "evidence_text": "人有悲欢离合，月有阴晴圆缺，此事古难全。",
+          "line_start": 8,
+          "line_end": 8
+        },
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "evidence_text": "但愿人长久，千里共婵娟。",
+          "line_start": 9,
+          "line_end": 9
+        },
+        {
+          "dimension": "theme",
+          "name": "中秋",
+          "evidence_text": "明月几时有？把酒问青天。",
+          "line_start": 1,
+          "line_end": 1
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a0330367d5ca0f8313617",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "夕阳",
+          "evidence_text": "夕阳西下",
+          "line_start": 2,
+          "line_end": 2
+        },
+        {
+          "dimension": "emotion",
+          "name": "思乡",
+          "evidence_text": "断肠人在天涯",
+          "line_start": 2,
+          "line_end": 2
+        },
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "evidence_text": "断肠人在天涯",
+          "line_start": 2,
+          "line_end": 2
+        },
+        {
+          "dimension": "theme",
+          "name": "羁旅",
+          "evidence_text": "古道西风瘦马。\n夕阳西下，断肠人在天涯。",
+          "line_start": 1,
+          "line_end": 2
+        }
+      ]
+    }
+  ]
+}

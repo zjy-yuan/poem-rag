@@ -5542,3 +5542,62 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
    precision、recall 或 macro F1。
 3. 在线标签过滤继续关闭。下一步先设计少量可审核的人工或公开数据集标签导入，
    标注后重新运行审计，再评估结构化过滤或重排。
+
+### [2026-09-27] 领域标签批量导入与首批样本
+
+#### 本次目标
+
+- 让已审核或公开数据集标签能够批量进入版本级治理流程，不再依赖逐条管理 API 或
+  前端弹窗录入。
+- 在不绕过审核的前提下，用少量真实样本验证来源定位、别名解析、幂等、失败隔离和
+  dry-run 预检。
+- 导入后重新运行审计，确认在线可见性与在线检索边界没有被意外打开。
+
+#### 做出的决定
+
+- 导入记录使用 `PoemSource(source_key, external_id)` 定位作品，不使用本地自增
+  `poem_id`，保证数据集可在不同环境和重复执行时稳定重放。
+- 标签名称按维度解析规范标签或别名；同一维度存在多个候选时判定歧义并拒绝，不做
+  静默选择。
+- `origin_ref` 基于解析后的规范标签归一化名构造，避免“月亮/月”等别名重复写入。
+- 所有新关联固定为 `pending`；导入不会自动批准、拒绝或覆盖已有审核状态。
+- 单条记录使用独立 savepoint；坏记录不会影响其他记录，CLI 输出逐条状态。
+- AI 数据集必须提供 `model_name` 和 `task_version`；人工或公开数据集允许不提供。
+- dry-run 连接真实数据库执行只读预检，不写入、不提交、不改变审核状态。
+
+#### 完成内容
+
+- `apps/api/app/schemas/domain_label_import.py`：定义导入来源、标签、记录、数据集和
+  报告 Schema，校验重复 `external_id`、行号范围、AI 元数据和 `origin_ref` 长度。
+- `apps/api/app/repositories/domain_labels.py`：新增按维度和归一化名称解析 active
+  规范标签及别名的查询。
+- `apps/api/app/services/domain_label_import.py`：实现来源定位、当前版本读取、标签
+  解析、幂等写入、savepoint 失败隔离和 dry-run。
+- `apps/api/scripts/import_domain_labels.py`：新增 CLI，支持 `--input`、`--dry-run`
+  和可选完整 JSON 报告。
+- `apps/api/tests/test_domain_label_import.py`：覆盖 dry-run 只读、规范标签与别名、
+  来源和版本绑定、幂等保留审核状态、失败隔离、歧义拒绝、AI 元数据和样本可解析。
+- `data/import/example_domain_labels_v1.json`：新增 5 首人工审核样本，共 15 条标签。
+- `README.md`、`docs/PROJECT_GUIDE.md` 和
+  `docs/features/20260927-domain-annotation-schema.md`：同步导入契约、命令、状态和
+  真实结果。
+
+#### 验证结果
+
+- 定向 Ruff：`All checks passed!`。
+- 领域标签导入定向测试：`9 passed, 2 warnings`。
+- 真实 MySQL dry-run：`5 records / 15 labels / 0 failed`，未写入关联。
+- 真实 MySQL 首次导入：`5 created / 15 created assignments / 0 failed`。
+- 真实 MySQL 重复导入：`5 unchanged / 15 unchanged assignments / 0 failed`。
+- 导入后审计：1008 首已发布作品中 5 首存在关联，15 条均为 `pending`，`approved`
+  为 0，在线标签覆盖率仍为 `0.0`，其余治理风险为 0。
+- 导入报告：`data/eval/reports/domain_label_import_20260927.json`；dry-run 报告：
+  `data/eval/reports/domain_label_import_dry_run_20260927.json`；导入后审计：
+  `data/eval/reports/domain_label_audit_20260927_after_import.json`。
+
+#### 风险与下一步
+
+1. 首批样本只验证导入机制，不证明标签质量；仍需人工审核并建立金标准，计算
+   precision、recall 和 macro F1。
+2. 当前只支持 JSON 离线导入，没有 HTTP 导入任务、进度查询或失败重试界面。
+3. 在线标签过滤和重排继续关闭，标签必须完成审核且质量达标后才能进入检索链路。

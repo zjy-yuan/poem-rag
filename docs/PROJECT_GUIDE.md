@@ -231,7 +231,8 @@ erDiagram
 | 用户注册登录与权限 | 已实现 | JWT、Refresh Token、管理员依赖 |
 | 朝代、作者、分类、标签 | 已实现 | 管理接口和公开读取 |
 | 领域标签治理 | 已实现（后端、管理页与诗词编辑弹窗） | `domain_labels`、别名和版本级关联支持 CRUD、合并、审核状态机及公开 approved 读取；Vue 管理页支持标签库筛选维护、关联筛选与审核，诗词编辑弹窗支持当前版本关联创建和审核；尚未接入在线过滤或重排 |
-| 领域标签离线审计 | 已实现 | 只读统计当前已发布作品的标签覆盖率、审核积压、来源构成、数量分布和治理风险；真实 1008 首语料当前在线标签覆盖率为 `0.0`，18 个 active 标签尚无在线可见关联，尚不能进入在线过滤 |
+| 领域标签批量导入 | 已实现（CLI） | JSON 数据集按 `PoemSource(source_key, external_id)` 定位作品，解析规范标签和别名后写入当前 `PoemVersion` 的 `pending` 关联；`origin_ref` 保证幂等，记录级失败隔离，dry-run 只做数据库预检；5 首人工样本首次创建 15 条关联，重复导入 15 条 `unchanged` |
+| 领域标签离线审计 | 已实现 | 只读统计当前已发布作品的标签覆盖率、审核积压、来源构成、数量分布和治理风险；导入 5 首人工样本后，1008 首语料有 5 首作品存在关联、15 条均为 `pending`，在线标签覆盖率仍为 `0.0`，尚不能进入在线过滤 |
 | 诗词 CRUD 与发布状态 | 已实现 | 草稿、发布、撤回、软删除、恢复 |
 | 诗词公开浏览与基础搜索 | 已实现 | 基于 MySQL 的目录查询 |
 | MySQL 迁移与种子 | 已实现 | Alembic head 为 `20260927_0008`；真实 MySQL 已完成 `0006 -> 0007` 往返和 `0007 -> 0008` 升级，`alembic check` 无待生成操作 |
@@ -286,9 +287,12 @@ erDiagram
 .\.venv\Scripts\python.exe -m pytest -q
 .\.venv\Scripts\python.exe -m ruff check apps\api
 .\.venv\Scripts\python.exe apps\api\scripts\import_corpus.py --input data\import\example_corpus_v1.json --dry-run
+.\.venv\Scripts\python.exe apps\api\scripts\import_domain_labels.py `
+  --input data\import\example_domain_labels_v1.json `
+  --dry-run
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --top-k 5
 .\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
-  --json-output data\eval\reports\domain_label_audit_20260927.json
+  --json-output data\eval\reports\domain_label_audit_20260927_after_import.json
 ```
 
 固定来源 1000 首语料转换、导入与索引：

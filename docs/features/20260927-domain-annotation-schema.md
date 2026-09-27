@@ -226,26 +226,61 @@ ai:deepseek-chat:domain-label-v1
 
 ```powershell
 .\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
-  --json-output data\eval\reports\domain_label_audit_20260927.json
+  --json-output data\eval\reports\domain_label_audit_20260927_after_import.json
 ```
 
-2026-09-27 真实 MySQL 审计结果：
+2026-09-27 首批人工样本导入后的真实 MySQL 审计结果：
 
 | 指标 | 结果 |
 | --- | ---: |
 | 已发布作品 / 当前版本 | 1008 / 1008 |
-| 有任一标签关联的作品 | 0 |
+| 有任一标签关联的作品 | 5 |
 | 有 `approved` 关联的作品 | 0 |
 | 有在线可见标签的作品 | 0 |
 | 在线标签覆盖率 | `0.0` |
 | 标签库 | `18 active` |
+| 当前关联 | 15 `pending` |
 | 从未在线可见的 active 标签 | 18 |
 
-除“active 标签尚无在线可见关联”外，其余治理风险均为 `0`。这说明表结构、审核状态机
-和审计口径已经可用，但当前 1008 首已发布语料尚未建立领域标签关联，不能进入在线
-标签过滤或重排。
+除“active 标签尚无在线可见关联”外，其余治理风险均为 `0`。这说明表结构、审核状态机、
+批量导入和审计口径已经可用，但当前关联尚未审核，在线标签覆盖率仍为 `0.0`，不能进入
+在线标签过滤或重排。
 
-### 10.2 在线接入顺序
+### 10.2 批量导入契约（已实现）
+
+批量导入使用 `DomainLabelImportDataset` JSON，核心边界如下：
+
+- 作品使用 `poem_source_key + external_id` 定位，不依赖本地自增 `poem_id`，便于重复
+  导入同一公开数据集。
+- 标签名称按维度解析规范名和别名；同一维度命中多个 active 标签时判定歧义并拒绝，
+  不做任意选择。
+- 标签关联写入作品当前 `PoemVersion`，并记录作品的 `PoemSource`；新版本不会自动
+  继承旧版本标签。
+- `origin_ref` 使用解析后的规范标签名构造，因此“月亮”和“月”不会重复写入同一语义
+  关联。
+- 相同 `(poem_version_id, domain_label_id, origin_ref)` 视为 `unchanged`，不会覆盖已有
+  的 `approved`、`rejected` 或归档状态。
+- AI 数据集必须提供 `model_name` 和 `task_version`；所有新关联固定进入 `pending`。
+- 每条记录使用独立 savepoint；单条坏记录不会回滚其他成功记录。
+- dry-run 连接真实数据库执行只读预检，返回“将会创建”的数量，但不写入、不提交、
+  不改变审核状态。
+
+复现命令：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\import_domain_labels.py `
+  --input data\import\example_domain_labels_v1.json `
+  --dry-run
+.\.venv\Scripts\python.exe apps\api\scripts\import_domain_labels.py `
+  --input data\import\example_domain_labels_v1.json
+```
+
+首批样本覆盖 5 首作品、15 条标签关联；首次导入为 `5 created / 15 assignments`，
+重复导入为 `5 unchanged / 15 assignments`。导入结果保存于
+`data/eval/reports/domain_label_import_20260927.json`，导入后审计保存于
+`data/eval/reports/domain_label_audit_20260927_after_import.json`。
+
+### 10.3 在线接入顺序
 
 完成标签金标准与覆盖率建设后，按以下顺序接入：
 
@@ -254,7 +289,7 @@ ai:deepseek-chat:domain-label-v1
 3. 重排可以按标签匹配度加权，但标签不能覆盖正文证据。
 4. 生成回答仍必须引用 chunks；标签只辅助检索，不作为事实引用。
 
-### 10.3 评估指标
+### 10.4 评估指标
 
 - 标签层：按维度统计 precision、recall、macro F1 和人工严重错误率。
 - 检索层：标签过滤前后 Recall@5、MRR、nDCG@5 和拒答准确率。
@@ -291,6 +326,7 @@ ai:deepseek-chat:domain-label-v1
 - [x] 建立初始受控标签和别名种子
 - [x] 实现管理端录入与审核
 - [x] 接入离线标签覆盖率与治理审计
+- [x] 实现领域标签批量导入、dry-run、别名解析和幂等写入
 - [ ] 建立人工标签金标准并计算 precision、recall 和 macro F1
 - [ ] 再决定是否用于在线过滤和重排
 
@@ -325,6 +361,18 @@ ai:deepseek-chat:domain-label-v1
 - `apps/api/tests/test_domain_label_audit.py`：覆盖当前版本范围、合并标签解析、审核
   构成、非法合并和来源元数据风险。
 - `data/eval/reports/domain_label_audit_20260927.json`：保存首个真实语料审计结果。
+- `apps/api/app/schemas/domain_label_import.py`：定义导入数据集、标签、记录和报告
+  契约，并校验 AI 元数据、重复作品、行号和 `origin_ref` 长度。
+- `apps/api/app/services/domain_label_import.py`：按来源定位作品，解析规范标签或别名，
+  写入当前版本 `pending` 关联，使用 savepoint 隔离坏记录并保持幂等。
+- `apps/api/scripts/import_domain_labels.py`：新增批量导入 CLI，支持 `--dry-run` 和
+  完整 JSON 报告输出。
+- `apps/api/tests/test_domain_label_import.py`：覆盖 dry-run 只读、规范标签与别名
+  解析、来源与版本绑定、幂等且不覆盖审核、失败隔离、歧义拒绝和 AI 元数据。
+- `data/import/example_domain_labels_v1.json`：5 首人工审核样本，共 15 条标签。
+- `data/eval/reports/domain_label_import_20260927.json` 和
+  `data/eval/reports/domain_label_audit_20260927_after_import.json`：保存真实导入与
+  导入后审计结果。
 
 ## 14. 决策与变更记录
 
@@ -337,3 +385,5 @@ ai:deepseek-chat:domain-label-v1
 | 2026-09-27 | 先冻结契约，再按迁移、种子和管理 API 小切片实现 | 每步都可回滚和验证，避免一次性接入在线检索 |
 | 2026-09-27 | 标签库治理与作品版本关联治理分两个入口 | 标签名称/合并/废弃属于全局词典，关联创建与审核更贴近具体诗词版本 |
 | 2026-09-27 | 诗词编辑弹窗只读写当前 `PoemVersion` 的关联 | 避免旧版本标签被误用于新正文，版本变化后必须重新确认 |
+| 2026-09-27 | 批量导入只创建 `pending` 关联，不提供自动批准 | 公开数据集和 AI 标签都可能出错，审核状态不能被导入流程绕过 |
+| 2026-09-27 | 使用来源键和外部 ID 定位作品 | 本地自增 ID 不可跨环境复用，公开数据集需要可重复导入 |

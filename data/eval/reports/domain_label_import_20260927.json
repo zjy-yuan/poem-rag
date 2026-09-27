@@ -1,0 +1,76 @@
+{
+  "dry_run": false,
+  "dataset_version": "manual-review-5-v1",
+  "source_key": "project-manual-review",
+  "poem_source_key": "aopao-chinese-gushiwen",
+  "generation_method": "manual",
+  "total_records": 5,
+  "created_records": 5,
+  "unchanged_records": 0,
+  "failed_records": 0,
+  "created_assignments": 15,
+  "unchanged_assignments": 0,
+  "failed_assignments": 0,
+  "records": [
+    {
+      "external_id": "5b9a0254367d5caccce1aa1a",
+      "status": "created",
+      "poem_id": 15,
+      "version_id": 15,
+      "version_no": 1,
+      "label_count": 3,
+      "created_labels": 3,
+      "unchanged_labels": 0,
+      "failed_labels": 0,
+      "message": null
+    },
+    {
+      "external_id": "5b9a120c367d5c5b84062a98",
+      "status": "created",
+      "poem_id": 163,
+      "version_id": 163,
+      "version_no": 1,
+      "label_count": 2,
+      "created_labels": 2,
+      "unchanged_labels": 0,
+      "failed_labels": 0,
+      "message": null
+    },
+    {
+      "external_id": "5b9a1430367d5cab18668605",
+      "status": "created",
+      "poem_id": 170,
+      "version_id": 170,
+      "version_no": 1,
+      "label_count": 2,
+      "created_labels": 2,
+      "unchanged_labels": 0,
+      "failed_labels": 0,
+      "message": null
+    },
+    {
+      "external_id": "5b9a0136367d5c96f4cd2953",
+      "status": "created",
+      "poem_id": 9,
+      "version_id": 9,
+      "version_no": 1,
+      "label_count": 4,
+      "created_labels": 4,
+      "unchanged_labels": 0,
+      "failed_labels": 0,
+      "message": null
+    },
+    {
+      "external_id": "5b9a0330367d5ca0f8313617",
+      "status": "created",
+      "poem_id": 111,
+      "version_id": 111,
+      "version_no": 1,
+      "label_count": 4,
+      "created_labels": 4,
+      "unchanged_labels": 0,
+      "failed_labels": 0,
+      "message": null
+    }
+  ]
+}
