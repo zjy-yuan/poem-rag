@@ -1,0 +1,134 @@
+{
+  "generated_at": "2026-09-27T12:07:59.123261Z",
+  "scope": {
+    "published_poem_count": 1008,
+    "current_version_count": 1008,
+    "published_poems_without_current_version": 0
+  },
+  "coverage": {
+    "current_poems_with_any_assignment": 5,
+    "current_poems_with_any_approved_assignment": 5,
+    "current_poems_with_online_visible_label": 5,
+    "current_poems_without_any_assignment": 1003,
+    "current_poems_without_online_visible_label": 1003,
+    "any_assignment_coverage_rate": 0.00496,
+    "approved_assignment_coverage_rate": 0.00496,
+    "online_visible_coverage_rate": 0.00496,
+    "dimensions": {
+      "imagery": {
+        "dimension": "imagery",
+        "total_label_count": 6,
+        "active_label_count": 6,
+        "approved_assignment_count": 5,
+        "online_label_count": 3,
+        "covered_poem_count": 5,
+        "coverage_rate": 0.00496,
+        "average_online_label_count_per_covered_poem": 2.8
+      },
+      "emotion": {
+        "dimension": "emotion",
+        "total_label_count": 5,
+        "active_label_count": 5,
+        "approved_assignment_count": 6,
+        "online_label_count": 5,
+        "covered_poem_count": 4,
+        "coverage_rate": 0.003968,
+        "average_online_label_count_per_covered_poem": 3.0
+      },
+      "theme": {
+        "dimension": "theme",
+        "total_label_count": 5,
+        "active_label_count": 5,
+        "approved_assignment_count": 3,
+        "online_label_count": 3,
+        "covered_poem_count": 3,
+        "coverage_rate": 0.002976,
+        "average_online_label_count_per_covered_poem": 3.333333
+      },
+      "allusion": {
+        "dimension": "allusion",
+        "total_label_count": 2,
+        "active_label_count": 2,
+        "approved_assignment_count": 0,
+        "online_label_count": 0,
+        "covered_poem_count": 0,
+        "coverage_rate": 0.0,
+        "average_online_label_count_per_covered_poem": 0.0
+      }
+    }
+  },
+  "review": {
+    "current_assignment_count": 15,
+    "review_status_counts": {
+      "pending": 0,
+      "approved": 14,
+      "rejected": 0,
+      "archived": 1
+    },
+    "generation_method_counts": {
+      "manual": 15,
+      "public_dataset": 0,
+      "ai": 0
+    },
+    "review_status_by_generation_method": {
+      "manual": {
+        "pending": 0,
+        "approved": 14,
+        "rejected": 0,
+        "archived": 1
+      },
+      "public_dataset": {
+        "pending": 0,
+        "approved": 0,
+        "rejected": 0,
+        "archived": 0
+      },
+      "ai": {
+        "pending": 0,
+        "approved": 0,
+        "rejected": 0,
+        "archived": 0
+      }
+    },
+    "label_status_counts": {
+      "active": 18,
+      "merged": 0,
+      "deprecated": 0
+    }
+  },
+  "distributions": {
+    "current_assignments_per_poem": {
+      "minimum": 0,
+      "maximum": 4,
+      "mean": 0.014881,
+      "p50": 0.0,
+      "p90": 0.0
+    },
+    "approved_assignments_per_poem": {
+      "minimum": 0,
+      "maximum": 4,
+      "mean": 0.013889,
+      "p50": 0.0,
+      "p90": 0.0
+    },
+    "online_visible_labels_per_poem": {
+      "minimum": 0,
+      "maximum": 4,
+      "mean": 0.013889,
+      "p50": 0.0,
+      "p90": 0.0
+    }
+  },
+  "risks": {
+    "non_current_version_assignments": 0,
+    "unpublished_or_deleted_poem_assignments": 0,
+    "approved_assignments_with_merged_labels": 0,
+    "approved_assignments_with_deprecated_labels": 0,
+    "active_labels_without_online_visible_assignments": 7,
+    "public_or_ai_assignments_without_source": 0,
+    "ai_assignments_missing_metadata": 0,
+    "invalid_merge_targets": 0,
+    "origin_ref_generation_method_mismatches": 0,
+    "cross_dimension_aliases": 0
+  }
+}

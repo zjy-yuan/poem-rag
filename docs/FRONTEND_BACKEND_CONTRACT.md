@@ -2030,3 +2030,4 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 | 2026-09-27 | 新增领域标签管理页，支持标签库维护、合并/废弃、作品版本关联筛选与审核 | 只使用现有管理 API 和后台交互语言；不接在线过滤，不增加 HTTP 契约 | 完整 `.\scripts\verify.ps1` 通过：后端 `287 passed, 1 skipped, 3 warnings`、Ruff、前端 typecheck、Vitest `9 passed` 和生产构建通过 |
 | 2026-09-27 | 新增诗词当前版本标签关联列表接口，并在诗词编辑弹窗中接入关联创建与审核 | 新增管理员只读 GET 接口；仅查询当前 `PoemVersion`，不修改公开契约和在线检索 | 完整 `.\scripts\verify.ps1` 通过：后端 `287 passed, 1 skipped, 3 warnings`、Ruff、前端 typecheck、Vitest `9 passed` 和生产构建通过 |
 | 2026-09-27 | 领域标签审核请求支持在 `pending -> approve/reject` 时修正证据文本和行号 | 新增可选字段，不改变既有 `{action}` 请求；仅审核修正路径变化，不接入在线过滤 | 领域标签定向测试 `5 passed, 2 warnings`；真实 MySQL 审核 15 条后审计 `approved=15`、在线覆盖率 `0.004960` |
+| 2026-09-27 | 领域标签人工复查归档序号 3，并新增排除该标签的 v2 重放数据集 | 不修改 HTTP/SSE/状态机；通过既有 `approved -> archived` 退审，v2 沿用批次号保持 `origin_ref` 幂等 | 真实 MySQL 最终 `approved=14`、`archived=1`、在线覆盖率 `0.004960`；v2 dry-run 为 14 条 `unchanged` |

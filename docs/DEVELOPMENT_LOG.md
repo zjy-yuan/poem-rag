@@ -5658,3 +5658,57 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
    recall 或 macro F1。
 3. 下一步应扩大标签样本并建立标签评估集；在未验证标签质量前，在线过滤和重排继续
    保持关闭。
+
+### [2026-09-27] 首批领域标签人工复查与退审
+
+#### 本次目标
+
+- 对首批 15 条领域标签的执行结果进行第二层人工复查，区分“语义正确”和“证据不足”。
+- 不删除历史证据、不直接改库，通过既有 `approved -> archived` 状态流转处理错误标签。
+- 为新环境提供不会重新引入错误标签的重放数据集，并以真实审计结果更新文档。
+
+#### 做出的决定
+
+- 序号 3 的《静夜思》`theme:羁旅` 证据只能支持“望月思乡”，诗中缺少“客居、旅途、
+  他乡、天涯、漂泊、行旅”等直接证据，因此归档为 `archived`。
+- 不新增或替换主题标签；“思乡”已经由序号 2 的 `emotion:思乡` 正确覆盖。
+- `v1` 数据集保留为人工复查历史输入；新增 `v2` 文件移除错误标签，并沿用
+  `manual-review-5-v1` 批次号，避免因更改 `origin_ref` 而重复写入关联。
+- 在线标签过滤和重排继续保持关闭。
+
+#### 完成内容
+
+- `docs/reviews/20260927-domain-label-first-batch-review.md`：记录 14 条通过、1 条
+  需修改，以及序号 3 的归档决定和复查人。
+- 真实 MySQL：通过 `DomainLabelService.review_assignment()` 将序号 3 从
+  `approved` 归档为 `archived`；当前没有 active `admin` 用户，`reviewed_by_id`
+  保持为空，`reviewed_at` 和 `archived_at` 正常记录。
+- `data/import/example_domain_labels_v2.json`：新增 5 首作品、14 条标签的重放数据，
+  移除已归档的《静夜思》`theme:羁旅`。
+- `apps/api/tests/test_domain_label_import.py`：同时校验 v1 历史数据集和 v2 重放
+  数据集，确认 v2 的《静夜思》只保留 `imagery:月` 与 `emotion:思乡`。
+- `data/eval/reports/domain_label_audit_20260927_human_review.json`：保存人工复查后
+  的真实审计结果。
+- `README.md`、`docs/PROJECT_GUIDE.md`、`docs/FRONTEND_BACKEND_CONTRACT.md` 和
+  `docs/features/20260927-domain-annotation-schema.md`：同步最终状态、覆盖率、v2
+  重放路径和人工复查边界。
+
+#### 验证结果
+
+- 领域标签导入定向测试：`10 passed, 3 warnings`。
+- v2 真实 MySQL dry-run：`5 unchanged / 14 unchanged assignments / 0 failed`，
+  未写入关联、未改变审核状态。
+- 人工复查后审计：1008 首已发布作品中有 5 首拥有在线可见标签，在线标签覆盖率
+  `0.004960`；`approved=14`、`archived=1`、`pending=0`、`rejected=0`。
+- `imagery` 为 5 条关联、3 个在线标签、覆盖 5 首；`emotion` 为 6 条关联、
+  5 个在线标签、覆盖 4 首；`theme` 为 3 条关联、3 个在线标签、覆盖 3 首；
+  `allusion` 仍为 0 条。
+- 除 7 个 active 标签尚无在线可见关联外，其余治理风险均为 `0`。
+
+#### 风险与下一步
+
+1. 当前样本仍只有 5/1008 首作品，人工复查不能替代规模化标签金标准。
+2. `theme:思乡` 当前不在受控主题标签库中，后续新增标签前必须以检索需求、审核规范
+   和单独评估为准，不能因为一次样本直接扩表。
+3. 下一步应建立覆盖各维度的离线金标准，并计算 precision、recall 和 macro F1；
+   未达到阈值前不接入在线过滤或重排。

@@ -31,6 +31,7 @@ EXAMPLE_DATASET_PATH = (
     / "import"
     / "example_domain_labels_v1.json"
 )
+REPLAY_DATASET_PATH = EXAMPLE_DATASET_PATH.with_name("example_domain_labels_v2.json")
 
 
 def _corpus_dataset(*, external_id: str = POEM_EXTERNAL_ID) -> CorpusImportDataset:
@@ -436,3 +437,26 @@ def test_example_domain_label_dataset_is_valid() -> None:
 
     assert dataset.poem_source_key == "aopao-chinese-gushiwen"
     assert len(dataset.records) == 5
+
+
+def test_reviewed_domain_label_dataset_is_valid() -> None:
+    payload = json.loads(REPLAY_DATASET_PATH.read_text(encoding="utf-8"))
+
+    dataset = DomainLabelImportDataset.model_validate(payload)
+
+    assert dataset.version == "manual-review-5-v1"
+    assert dataset.poem_source_key == "aopao-chinese-gushiwen"
+    assert len(dataset.records) == 5
+    assert sum(len(record.labels) for record in dataset.records) == 14
+    quiet_night = next(
+        record
+        for record in dataset.records
+        if record.external_id == "5b9a0254367d5caccce1aa1a"
+    )
+    assert {
+        (label.dimension.value, label.name)
+        for label in quiet_night.labels
+    } == {
+        ("imagery", "月"),
+        ("emotion", "思乡"),
+    }
