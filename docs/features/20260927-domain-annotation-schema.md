@@ -382,6 +382,23 @@ theme `3/8`、allusion `0/4`。allusion 尚无金标准样本，其单维度 P/R
 朝代分层。当前不在看过候选后调整规则，以免破坏盲标边界。完整契约见
 [领域标签独立盲标采样](20260927-independent-domain-label-sampling.md)。
 
+### 10.6 独立人工盲标工作区（已实现，待人工填写）
+
+人工标注不再直接修改冻结采样清单，而是写入独立草稿。初始化命令生成 24 首空白记录
+和只包含正文、来源、受控标签库及空白标注位的审阅稿：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --init
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --validate
+```
+
+草稿绑定采样清单版本、生成时间和文件 SHA-256，必须精确覆盖清单中的全部
+`external_id`，标签必须能解析到对应维度的 active 规范标签，证据行号不得超出冻结
+正文范围。`--init` 拒绝覆盖已有草稿；`--validate` 可在填写过程中运行，输出
+reviewed、pending、标签数和维度计数。当前草稿为 24 首全部 `pending`、0 条标签，
+不调用模型、不连接 MySQL，也不代表 v2 金标准已经完成。完整契约见
+[领域标签独立人工盲标工作区](20260927-domain-label-annotation-workspace.md)。
+
 ## 11. 测试计划
 
 | 层级 | 覆盖内容 |

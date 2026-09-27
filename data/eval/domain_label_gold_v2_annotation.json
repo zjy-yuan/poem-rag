@@ -1,0 +1,153 @@
+{
+  "version": "domain-label-gold-v2-annotation",
+  "source_manifest_version": "domain-label-gold-v2-sampling",
+  "source_manifest_sha256": "6888e0c79748dff90a14005592845f9ae501992cef7d93b38d8e8ef84838fe15",
+  "source_manifest_generated_at": "2026-09-27T13:16:10.011476Z",
+  "status": "pending",
+  "records": [
+    {
+      "external_id": "5b9a1458367d5cab1866870c",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a1430367d5cab18668603",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a04a1367d5cae5c9bff58",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a17d8367d5c0f40d22a57",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a120a367d5c5b84062a89",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a0651367d5c98b4e02a21",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a0255367d5caccce1aa1c",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a147f367d5cab1866880f",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a145e367d5cab1866873b",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a0f31367d5c3b48e948fa",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a186a367d5c0f40d22e25",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a191c367d5c0f40d232d5",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a1461367d5cab1866874d",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a1868367d5c0f40d22e15",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a18d2367d5c0f40d230df",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a19fb367d5c0f40d238ae",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a1866367d5c0f40d22e0c",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a17ee367d5c0f40d22aeb",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a1817367d5c0f40d22bf6",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a1430367d5cab18668600",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a144e367d5cab186686cc",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a1802367d5c0f40d22b71",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a1476367d5cab186687d5",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    },
+    {
+      "external_id": "5b9a1877367d5c0f40d22e79",
+      "annotation_status": "pending",
+      "labels": [],
+      "review_note": null
+    }
+  ]
+}

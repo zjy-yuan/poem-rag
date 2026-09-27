@@ -206,7 +206,10 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
 `14/0/0`；allusion 尚无金标准，不能把该结果解释为标签器泛化精度。独立盲标采样已
 在 v1 之外冻结 24 首候选，按唐代诗、宋代作品、其他朝代、长文本或词曲四层各取
 6 首；清单排除 v1 的 5 个 `external_id`，人工标签位全部空白，当前只代表待标注
-候选池，尚未形成 v2 金标准。
+候选池，尚未形成 v2 金标准。独立人工盲标工作区把待填写草稿与冻结采样文件分离，
+草稿绑定采样版本、生成时间和文件 SHA-256，并校验精确覆盖、受控标签、证据行号边界
+和完成状态；当前生成 24 首全 `pending` 草稿，不调用模型、不连接 MySQL，也不代填
+任何人工标签。
 结构化切块、MySQL 词法检索、Embedding Provider、Qdrant 最小索引
 闭环、Dense/Hybrid 在线检索已经实现；真实库现有 1008 首已发布作品、1009 个作品
 版本和 12415 个 chunks。固定来源的 1000 首分层语料完成 902 个新建和 98 个未变化
@@ -246,6 +249,7 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
 | 领域标签离线审计 | 已实现 | 只读统计当前已发布作品的标签覆盖率、审核积压、来源构成、数量分布和治理风险；人工复查后 `approved=14`、`archived=1`、在线覆盖率 `0.004960`、7 个 active 标签尚无在线可见关联，尚不能进入在线过滤 |
 | 领域标签金标准评估 | 已实现（CLI，默认只读） | 校验内容哈希、标签解析和证据行号后，按 `(external_id, label_id)` 计算 micro P/R/F1、有金标准维度的 macro P/R/F1、critical 漏标率、证据错误率和维度覆盖缺口；首批 5 首、14 条标签结果为 `1.0 / 1.0 / 1.0`、TP/FP/FN `14/0/0`，但样本同源且 allusion 为 `0/4`，只证明链路一致，不证明泛化精度 |
 | 领域标签独立盲标采样 | 已实现（CLI，待人工标注） | 排除 v1 的 5 首后，从 1008 首已发布作品按四层各 6 首采样，使用固定种子、作者上限和正文哈希校验；输出 24 首全空白标签位清单，不写数据库、不生成标签，也不改变在线检索策略 |
+| 领域标签独立人工盲标工作区 | 已实现（CLI，待人工填写） | 从冻结采样清单生成 24 首空白草稿和只含正文/来源的审阅稿；草稿绑定清单版本、生成时间和 SHA-256，并校验精确覆盖、受控标签、证据行号和 `ready_for_review` 完整性；不调用模型、不连接 MySQL、不代填金标准 |
 | 诗词 CRUD 与发布状态 | 已实现 | 草稿、发布、撤回、软删除、恢复 |
 | 诗词公开浏览与基础搜索 | 已实现 | 基于 MySQL 的目录查询 |
 | MySQL 迁移与种子 | 已实现 | Alembic head 为 `20260927_0008`；真实 MySQL 已完成 `0006 -> 0007` 往返和 `0007 -> 0008` 升级，`alembic check` 无待生成操作 |
@@ -304,6 +308,8 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
   --input data\import\example_domain_labels_v2.json `
   --dry-run
 .\.venv\Scripts\python.exe apps\api\scripts\prepare_domain_label_gold_sampling.py
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --init
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --validate
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --top-k 5
 .\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
   --json-output data\eval\reports\domain_label_audit_20260927_human_review.json

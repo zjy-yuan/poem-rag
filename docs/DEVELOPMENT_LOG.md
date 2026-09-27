@@ -5891,3 +5891,66 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
 3. 人工标注需要严格按证据行号和 `critical` 规则执行，避免把作品常识或模型记忆
    当成原文证据。
 4. 在线标签过滤和重排继续保持关闭；v2 覆盖和质量达标后再设计单独实验。
+
+### [2026-09-27] 领域标签独立人工盲标工作区
+
+#### 本次目标
+
+- 为已冻结的 24 首独立盲标候选建立不覆盖原始采样清单的人工填写工作区。
+- 在填写过程中持续校验清单绑定、作品覆盖、受控标签和证据行号，避免人工结果与
+  AI 预测、导入标签或错误正文版本混用。
+- 只准备空白草稿和审阅材料，不代填任何人工金标准，也不接入在线标签策略。
+
+#### 做出的决定
+
+- 冻结的 `data/eval/domain_label_gold_v2_sampling.json` 保持只读，人工结果写入
+  独立的 `domain_label_gold_v2_annotation.json`。
+- 草稿绑定采样清单版本、生成时间和文件字节 SHA-256；清单变化后旧草稿必须失效。
+- 草稿必须精确覆盖 24 个 `external_id`，不能漏填或追加作品。
+- 标签必须属于对应维度的受控标签库；证据 `line_start`、`line_end` 必须位于冻结
+  正文行数内，空行仍计入行号。
+- 单个作品完成复核后允许没有标签；只有全部作品 reviewed 且至少存在一条标签时，
+  草稿才能进入 `ready_for_review`。
+- Markdown 审阅稿只展示正文、来源和空白标注位，不展示任何预测、标签 JSON 字段或
+  在线审核结果，保持人工盲标属性。
+
+#### 完成内容
+
+- `apps/api/app/schemas/domain_label_annotation.py`：定义草稿级状态、逐作品状态、
+  标签唯一性和 `ready_for_review` 完整性规则。
+- `apps/api/app/evaluation/domain_label_annotation.py`：实现确定性草稿、清单哈希
+  绑定、精确覆盖、受控标签、证据行号边界、Markdown 导出和摘要格式化。
+- `apps/api/scripts/manage_domain_label_annotation.py`：新增 `--init` 和
+  `--validate`；初始化拒绝覆盖已有人工文件。
+- `apps/api/tests/test_domain_label_annotation.py`：覆盖确定性、盲标、哈希绑定、
+  24 首覆盖、状态规则、受控标签、重复标签、证据越界和预测防泄漏。
+- `data/eval/domain_label_gold_v2_annotation.json`：生成 24 首空白草稿，全部
+  `pending`、0 条标签，绑定采样清单 SHA-256
+  `6888e0c79748dff90a14005592845f9ae501992cef7d93b38d8e8ef84838fe15`。
+- `docs/reviews/20260927-domain-label-v2-annotation.md`：生成人工审阅稿，只包含
+  正文、来源和空白标注位。
+- `docs/features/20260927-domain-label-annotation-workspace.md`：记录目标、非目标、
+  契约、数据设计、测试计划、风险和人工完成后的冻结边界。
+- `README.md`、`docs/PROJECT_GUIDE.md`、`docs/features/README.md` 和
+  `docs/features/20260927-domain-annotation-schema.md`：同步命令、当前状态和说明。
+
+#### 验证结果
+
+- 定向 Ruff：`All checks passed!`。
+- 领域标签标注与采样定向测试：`16 passed, 2 warnings`；警告来自既存 LangGraph
+  和 Starlette 依赖。
+- 初始化命令：`records=24 reviewed=0 pending=24 labels=0 critical=0`，四个维度
+  标签数均为 `0`。
+- `--validate`：同一空白草稿校验通过，绑定清单哈希与冻结清单一致。
+- 完整 `.\scripts\verify.ps1` 通过：后端 `328 passed, 1 skipped, 3 warnings`，
+  Ruff、前端 typecheck、Vitest `9 passed` 和 Vite 生产构建均通过；仅保留既存的主包
+  超过 `500 kB` 警告。
+
+#### 风险与下一步
+
+1. 当前草稿全部为空，只证明工作区和校验链路可用，不能证明标签质量或独立泛化能力。
+2. 人工标注必须逐首依据冻结正文填写，作品常识、作者生平、模型记忆和检索预测均不能
+   作为证据。
+3. 下一阶段由用户完成 24 首人工标注和独立复核，再将结果转换为
+   `domain-label-gold-v2`，另行冻结正文哈希、证据、critical 规则和维度目标。
+4. 在线标签过滤和重排继续保持关闭；独立金标准建立并达到覆盖门槛后再设计实验。
