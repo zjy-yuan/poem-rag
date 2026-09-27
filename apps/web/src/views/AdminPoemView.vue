@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 import AdminNav from '@/components/AdminNav.vue'
+import PoemDomainLabelPanel from '@/components/PoemDomainLabelPanel.vue'
 import { adminApi, type PoemPayload } from '@/api/admin'
 import { getErrorMessage } from '@/api/http'
 import type {
@@ -599,6 +600,12 @@ onMounted(() => {
               <span>标签</span>
               <input v-model="form.tagText" type="text" placeholder="多个标签用逗号分隔" />
             </label>
+            <PoemDomainLabelPanel
+              v-if="editingPoemId !== null"
+              class="admin-form__span-2"
+              :poem-id="editingPoemId"
+              :version-no="editingVersion"
+            />
           </template>
 
           <p v-if="editorError" class="form-error admin-form__span-2" role="alert">

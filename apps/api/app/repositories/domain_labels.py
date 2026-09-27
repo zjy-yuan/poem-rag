@@ -139,7 +139,41 @@ class DomainLabelRepository:
             filters.append(PoemVersionDomainLabel.review_status == review_status)
         if generation_method is not None:
             filters.append(PoemVersionDomainLabel.generation_method == generation_method)
+        return await self._list_assignments(
+            filters=filters,
+            page=page,
+            page_size=page_size,
+        )
 
+    async def list_version_assignments(
+        self,
+        *,
+        version_id: int,
+        page: int,
+        page_size: int,
+        review_status: str | None = None,
+        generation_method: str | None = None,
+    ) -> tuple[list[PoemVersionDomainLabel], int]:
+        filters: list[object] = [
+            PoemVersionDomainLabel.poem_version_id == version_id
+        ]
+        if review_status is not None:
+            filters.append(PoemVersionDomainLabel.review_status == review_status)
+        if generation_method is not None:
+            filters.append(PoemVersionDomainLabel.generation_method == generation_method)
+        return await self._list_assignments(
+            filters=filters,
+            page=page,
+            page_size=page_size,
+        )
+
+    async def _list_assignments(
+        self,
+        *,
+        filters: list[object],
+        page: int,
+        page_size: int,
+    ) -> tuple[list[PoemVersionDomainLabel], int]:
         total = await self.session.scalar(
             select(func.count(PoemVersionDomainLabel.id)).where(*filters)
         )

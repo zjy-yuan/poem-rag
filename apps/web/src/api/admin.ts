@@ -92,6 +92,18 @@ export interface DomainLabelAssignmentListParams {
   generation_method?: DomainLabelGenerationMethod
 }
 
+export interface DomainLabelAssignmentPayload {
+  domain_label_id: number
+  generation_method: DomainLabelGenerationMethod
+  origin_ref: string | null
+  confidence: number | null
+  evidence_text: string | null
+  line_start: number | null
+  line_end: number | null
+  model_name: string | null
+  task_version: string | null
+}
+
 export const adminApi = {
   listPoems(params: AdminPoemListParams = {}): Promise<Paginated<Poem>> {
     return requestPage<Poem>({
@@ -279,6 +291,28 @@ export const adminApi = {
       method: 'GET',
       url: `/admin/domain-labels/${labelId}/assignments`,
       params,
+    })
+  },
+
+  listPoemDomainLabelAssignments(
+    poemId: number,
+    params: DomainLabelAssignmentListParams = {},
+  ): Promise<Paginated<DomainLabelAssignment>> {
+    return requestPage<DomainLabelAssignment>({
+      method: 'GET',
+      url: `/admin/poems/${poemId}/domain-labels`,
+      params,
+    })
+  },
+
+  createPoemDomainLabelAssignment(
+    poemId: number,
+    payload: DomainLabelAssignmentPayload,
+  ): Promise<DomainLabelAssignment> {
+    return requestData<DomainLabelAssignment>({
+      method: 'POST',
+      url: `/admin/poems/${poemId}/domain-labels`,
+      data: payload,
     })
   },
 

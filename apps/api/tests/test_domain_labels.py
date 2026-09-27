@@ -329,6 +329,24 @@ def test_domain_label_admin_review_contract(client: TestClient) -> None:
     assert assignments["meta"]["total"] == 1
     assert assignments["data"][0]["poem_id"] == poem_id
 
+    poem_assignments = client.get(
+        f"/api/v1/admin/poems/{poem_id}/domain-labels",
+        headers=headers,
+        params={"review_status": "approved"},
+    )
+    assert poem_assignments.status_code == 200
+    poem_assignments_body = poem_assignments.json()
+    assert poem_assignments_body["meta"]["total"] == 1
+    assert poem_assignments_body["data"][0]["id"] == assignment["id"]
+    assert poem_assignments_body["data"][0]["version_no"] == 1
+
+    pending_poem_assignments = client.get(
+        f"/api/v1/admin/poems/{poem_id}/domain-labels",
+        headers=headers,
+        params={"review_status": "pending"},
+    ).json()
+    assert pending_poem_assignments["meta"]["total"] == 0
+
     target_response = client.post(
         "/api/v1/admin/domain-labels",
         headers=headers,

@@ -5435,3 +5435,55 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
    入口，再推进离线标签评估。
 3. 领域标签治理覆盖 1000 首语料后，应统计待审核积压、合并冲突和各维度覆盖率，
    再决定是否进入结构化检索过滤。
+
+### [2026-09-27] 诗词版本级领域标签治理入口
+
+#### 本次目标
+
+- 在诗词编辑流程中直接查看当前版本的领域标签关联，不再要求管理员切换到标签库
+  反查作品。
+- 支持人工、公开数据集和 AI 三种来源的版本级关联录入，并沿用统一审核状态机。
+- 保持标签绑定的版本边界：新版本不自动继承旧版本标签，公开读取仍只使用
+  `approved`。
+
+#### 做出的决定
+
+- 新增管理员只读接口
+  `GET /api/v1/admin/poems/{poem_id}/domain-labels`，固定查询当前
+  `PoemVersion`，支持分页、审核状态和生成方式过滤。
+- 诗词编辑弹窗负责当前作品的关联创建与审核；全局标签库页面继续负责标签名称、
+  别名、合并和废弃，避免两类治理动作混在同一张表中。
+- 前端只允许选择 `active` 标签；公开数据集必须填写来源键，AI 标签必须填写来源键、
+  模型名和任务版本，服务端仍执行最终校验。
+- 面板内的 `Enter` 拦截只作用于文本输入和下拉选择，避免误提交外层诗词表单，同时
+  保留按钮键盘操作和文本域换行。
+
+#### 完成内容
+
+- `apps/api/app/repositories/domain_labels.py`：抽取通用关联列表查询，新增按当前
+  版本查询关联的分页方法。
+- `apps/api/app/services/domain_labels.py`：新增当前版本关联列表用例，版本不存在时
+  返回 `POEM_VERSION_NOT_FOUND`。
+- `apps/api/app/api/v1/admin/poems.py`：新增管理员当前版本关联列表接口。
+- `apps/api/tests/test_domain_labels.py`：覆盖按审核状态筛选、分页元数据、版本号和
+  权限路径。
+- `apps/web/src/api/admin.ts`：增加版本级关联列表、创建方法和请求 payload 类型。
+- `apps/web/src/components/PoemDomainLabelPanel.vue`：新增关联列表、来源录入、
+  行号/置信度/证据/AI 元数据和审核动作组件。
+- `apps/web/src/views/AdminPoemView.vue`：在编辑弹窗接入版本级领域标签面板。
+- `docs/FRONTEND_BACKEND_CONTRACT.md`、`docs/PROJECT_GUIDE.md` 和
+  `docs/features/20260927-domain-annotation-schema.md`：同步接口、页面状态和治理边界。
+
+#### 验证结果
+
+- 完整 `.\scripts\verify.ps1` 通过。
+- 后端 Ruff 通过；后端测试 `287 passed, 1 skipped, 3 warnings`。
+- 前端 typecheck 通过；Vitest `9 passed`；Vite 生产构建通过。
+- 构建仍只有既存的主包超过 `500 kB` 警告，本轮未新增构建错误。
+
+#### 风险与下一步
+
+1. 当前版本关联列表一次最多读取 100 条；受控标签库扩大后需要补搜索或服务端选择器。
+2. 尚未实现“从上一版本复制标签”的批量操作，复制后仍必须进入 `pending`。
+3. 标签仍未接入在线检索、过滤或重排。下一步应先在 1000 首语料上建立标签覆盖率、
+   审核积压和人工金标准质量指标，再决定是否启用结构化过滤。

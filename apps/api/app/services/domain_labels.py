@@ -175,6 +175,37 @@ class DomainLabelService:
             page_size=page_size,
         )
 
+    async def list_poem_assignments(
+        self,
+        *,
+        poem_id: int,
+        page: int,
+        page_size: int,
+        review_status: str | None = None,
+        generation_method: str | None = None,
+    ) -> PageResult[DomainLabelAssignmentRead]:
+        version = await self.repository.get_current_version(poem_id)
+        if version is None:
+            raise AppError(
+                status_code=404,
+                code=ErrorCode.POEM_VERSION_NOT_FOUND,
+                message="诗词当前版本不存在",
+            )
+
+        assignments, total = await self.repository.list_version_assignments(
+            version_id=version.id,
+            page=page,
+            page_size=page_size,
+            review_status=review_status,
+            generation_method=generation_method,
+        )
+        return PageResult(
+            items=[self._serialize_assignment(item) for item in assignments],
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+
     async def create_assignment(
         self,
         poem_id: int,

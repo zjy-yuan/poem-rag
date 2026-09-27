@@ -1,6 +1,6 @@
 # 领域标注 Schema 设计与治理边界
 
-> 状态：迁移、受控标签种子和管理 API 已实现；在线检索尚未接入
+> 状态：迁移、受控标签种子、管理 API、管理页和诗词编辑弹窗治理已实现；在线检索尚未接入
 > 创建日期：2026-09-27
 > 最近更新：2026-09-27
 > 关联任务：为意象、情感、题材和典故建立可追溯、可审核的版本级标签
@@ -33,7 +33,7 @@
 ## 3. 非目标
 
 - 不调用 LLM 自动抽取标签。
-- 不新增前端审核页面。
+- 本切片不新增前端审核页面；后续已由独立管理页和诗词编辑弹窗补齐治理入口。
 - 不把标签直接作为问答答案证据。
 - 不把长注释、译文或赏析塞入标签表。
 - 不用 JSON 字段把多个领域标签和审核信息混在一条记录中。
@@ -187,7 +187,7 @@ ai:deepseek-chat:domain-label-v1
 ## 8. 版本、删除与合并策略
 
 1. 标签绑定 `poem_version_id`，新的正文版本不自动继承旧标签。
-2. 管理端可以提供“从上一版本复制”操作，但复制结果默认进入 `pending`。
+2. 后续管理端可以提供“从上一版本复制”操作，但复制结果必须默认进入 `pending`。
 3. 标签合并时保留原标签记录，将其 `merged_into_id` 指向目标标签。
 4. 作品版本删除时关联标签通过外键级联删除。
 5. 标签被合并或废弃时，历史关联不删除，以便复现旧评估。
@@ -206,6 +206,7 @@ ai:deepseek-chat:domain-label-v1
 | POST | `/api/v1/admin/domain-labels` | 创建受控标签和别名 | 已实现 |
 | PATCH | `/api/v1/admin/domain-labels/{label_id}` | 更新名称、别名、废弃或合并标签 | 已实现 |
 | GET | `/api/v1/admin/domain-labels/{label_id}/assignments` | 查询某标签的作品版本关联 | 已实现 |
+| GET | `/api/v1/admin/poems/{poem_id}/domain-labels` | 查询作品当前版本的全部标签关联 | 已实现 |
 | POST | `/api/v1/admin/poems/{poem_id}/domain-labels` | 为当前版本新增待审核标签 | 已实现 |
 | POST | `/api/v1/admin/domain-label-assignments/{assignment_id}/review` | 审核、驳回、归档或重新评估 | 已实现 |
 
@@ -277,8 +278,13 @@ ai:deepseek-chat:domain-label-v1
 - `apps/web/src/views/AdminDomainLabelView.vue`、`apps/web/src/api/admin.ts` 和
   `apps/web/src/types/api.ts` 增加领域标签管理页、API 方法和类型，支持标签库
   筛选维护、合并/废弃、作品版本关联筛选和审核动作。
+- `apps/web/src/components/PoemDomainLabelPanel.vue` 和
+  `apps/web/src/views/AdminPoemView.vue` 在诗词编辑弹窗中增加当前版本标签关联
+  列表、人工/公开数据集/AI 来源录入和审核动作，新增关联统一进入 `pending`。
 - 真实 MySQL 升级到 `20260927_0008`，`alembic check` 返回
   `No new upgrade operations detected.`。
+- 完整 `.\scripts\verify.ps1` 通过：后端 `287 passed, 1 skipped, 3 warnings`、
+  Ruff、前端 typecheck、Vitest `9 passed` 和生产构建均通过。
 - MySQL 不允许带 `ON DELETE SET NULL` 的外键列同时参与 CHECK 约束；因此
   `merged_into_id <> id` 不在数据库层检查，继续按设计由服务层限制。
 
@@ -291,3 +297,5 @@ ai:deepseek-chat:domain-label-v1
 | 2026-09-27 | 人工、公开数据集和 AI 记录并存 | 保留来源差异，读取时再按优先级合并 |
 | 2026-09-27 | AI 标签默认不可在线使用 | 先审核，避免幻觉污染检索 |
 | 2026-09-27 | 先冻结契约，再按迁移、种子和管理 API 小切片实现 | 每步都可回滚和验证，避免一次性接入在线检索 |
+| 2026-09-27 | 标签库治理与作品版本关联治理分两个入口 | 标签名称/合并/废弃属于全局词典，关联创建与审核更贴近具体诗词版本 |
+| 2026-09-27 | 诗词编辑弹窗只读写当前 `PoemVersion` 的关联 | 避免旧版本标签被误用于新正文，版本变化后必须重新确认 |

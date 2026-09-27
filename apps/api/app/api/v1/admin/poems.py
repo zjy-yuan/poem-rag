@@ -6,6 +6,10 @@ from fastapi import APIRouter, Depends, Query
 
 from app.api.deps import get_admin_catalog_service, get_admin_domain_label_service
 from app.core.response import success_response
+from app.models.domain_label import (
+    DomainLabelGenerationMethod,
+    DomainLabelReviewStatus,
+)
 from app.models.poem import PoemStatus
 from app.schemas.catalog import PoemCreate, PoemUpdate
 from app.schemas.domain_label import DomainLabelAssignmentCreate
@@ -112,3 +116,33 @@ async def create_poem_domain_label(
 ) -> Any:
     assignment, created = await domain_labels.create_assignment(poem_id, payload)
     return success_response(assignment, status_code=201 if created else 200)
+
+
+@router.get(
+    "/{poem_id}/domain-labels",
+    summary="List domain label assignments for the current poem version",
+)
+async def list_poem_domain_labels(
+    poem_id: int,
+    domain_labels: Annotated[
+        DomainLabelService,
+        Depends(get_admin_domain_label_service),
+    ],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
+    review_status: Annotated[DomainLabelReviewStatus | None, Query()] = None,
+    generation_method: Annotated[
+        DomainLabelGenerationMethod | None,
+        Query(),
+    ] = None,
+) -> Any:
+    result = await domain_labels.list_poem_assignments(
+        poem_id=poem_id,
+        page=page,
+        page_size=page_size,
+        review_status=review_status.value if review_status is not None else None,
+        generation_method=(
+            generation_method.value if generation_method is not None else None
+        ),
+    )
+    return success_response(result.items, meta=result.meta.model_dump())
