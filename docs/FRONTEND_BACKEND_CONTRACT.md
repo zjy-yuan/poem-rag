@@ -14,9 +14,9 @@
 1. 前端自己拼接口路径，后端修改路由后大量页面失效。
 2. 每个接口返回不同结构，前端到处写特殊判断。
 3. 页面路由权限被误当成真正的后端权限控制。
-4. 爬取字段直接污染诗词主表，导致数据结构随网站变化。
+4. 数据集来源字段直接污染诗词主表，导致数据结构随外部格式变化。
 5. 一开始设计过细，后续功能无法增量添加。
-6. 业务 CRUD、爬取导入和 RAG 索引用三套互不相通的数据逻辑。
+6. 业务 CRUD、批量导入和 RAG 索引用三套互不相通的数据逻辑。
 
 本阶段先建立框架和契约，不要求一次性实现所有接口。每个功能模块都按“数据库 -> 后端用例 -> API -> 前端 API 层 -> 页面 -> 测试”的顺序逐步落地。
 
@@ -30,9 +30,9 @@
 6. 破坏性变化不能静默替换，必须提供兼容窗口、迁移方案或新的版本路径。
 7. 未标注状态的历史条目表示目标设计，不自动代表当前已经实现；当前实现状态见 `PROJECT_GUIDE.md`。
 
-> 路线更新（2026-09-27）：网站爬虫已从当前项目路线移除，诗词数据统一来自固定版本、
-> 带来源证据的公开数据集。后文保留的爬取表、接口和适配器章节只作为未来扩展边界，
-> 不属于当前实施目标，也不能据此阻塞公开数据集导入、审核和发布流程。
+> 路线更新（2026-09-27）：网站爬虫不再属于项目路线，相关接口、表和适配器方案不作为
+> 当前契约。诗词数据统一来自固定版本、带来源证据的公开数据集，后续只扩展公开数据集的
+> 转换、预检、审核、导入和索引流程。
 
 ---
 
@@ -182,7 +182,6 @@ apps/web/src/
 | `admin-authors` | `/admin/authors` | 作者管理 | 管理员 |
 | `admin-categories` | `/admin/categories` | 分类管理 | 管理员 |
 | `admin-imports` | `/admin/imports` | 导入任务 | 管理员 |
-| `admin-crawl-sources` | `/admin/crawl-sources` | 爬取源管理 | 管理员，P1 |
 | `admin-users` | `/admin/users` | 用户管理 | 管理员，P1 |
 | `forbidden` | `/403` | 无权限 | 公开 |
 | `not-found` | `/:pathMatch(.*)*` | 404 | 公开 |
@@ -293,8 +292,7 @@ apps/api/app/
 │        ├─ authors.py
 │        ├─ categories.py
 │        ├─ users.py
-│        ├─ imports.py
-│        └─ crawl_sources.py
+│        └─ imports.py
 ├─ core/
 │  ├─ config.py
 │  ├─ security.py
@@ -406,17 +404,10 @@ Router -> Schema -> Service -> Repository -> Model / External Adapter
 /api/v1/admin/categories
 ```
 
-#### 管理端导入与爬取
+#### 管理端导入与索引
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| GET | `/api/v1/admin/crawl-sources` | 爬取源列表 |
-| POST | `/api/v1/admin/crawl-sources` | 新建爬取源 |
-| PATCH | `/api/v1/admin/crawl-sources/{id}` | 更新规则和启用状态 |
-| POST | `/api/v1/admin/crawl-jobs` | 创建爬取任务，返回 202 |
-| GET | `/api/v1/admin/crawl-jobs/{id}` | 查看任务状态 |
-| GET | `/api/v1/admin/crawl-jobs/{id}/items` | 查看抓取记录 |
-| POST | `/api/v1/admin/crawl-items/{id}/approve` | 审核并转成草稿 |
 | POST | `/api/v1/admin/import-jobs` | 上传文件导入 |
 | GET | `/api/v1/admin/import-jobs/{id}` | 导入状态 |
 | POST | `/api/v1/admin/indexes/rebuild` | 重建向量索引 |
@@ -435,11 +426,10 @@ Router -> Schema -> Service -> Repository -> Model / External Adapter
 
 ### 6.1 设计目标
 
-诗词数据同时面对三个来源：
+诗词数据同时面对两个来源：
 
 1. 管理员手工 CRUD。
-2. 后续网站爬取。
-3. 文件批量导入。
+2. 固定版本公开数据集的文件批量导入。
 
 它们不能各自写入不同结构。统一处理方式是：
 
@@ -484,7 +474,7 @@ deleted_at
 
 #### 分类 `categories`
 
-分类用于兼容爬取网站不同的划分方法，例如：
+分类用于兼容不同数据集对作品类型、体裁和主题的划分方法，例如：
 
 ```text
 诗
@@ -521,7 +511,7 @@ work_type    # 诗、词、曲
 form         # 五言绝句、七言律诗
 style        # 豪放、婉约
 theme        # 思乡、送别
-tag          # 来源网站自定义标签
+tag          # 数据集或人工维护的自定义标签
 ```
 
 分类不直接写死在 `poems` 表。分类与诗词通过 `poem_categories` 多对多关联：
@@ -533,7 +523,7 @@ source
 is_primary
 ```
 
-这样网站即使没有细分到“绝句”，只提供“诗”，系统也可以先保存较粗分类，后续再补充精细分类。
+这样数据集即使没有细分到“绝句”，只提供“诗”，系统也可以先保存较粗分类，后续再补充精细分类。
 
 #### 诗词规范化主表 `poems`
 
@@ -567,7 +557,7 @@ deleted_at
 
 #### 诗词来源 `poem_sources`
 
-一个规范化作品可以来自人工录入、文件、网站或其他导入方式，因此来源记录与爬取配置解耦：
+一个规范化作品可以来自人工录入、公开数据集文件或其他导入方式，因此来源记录与导入配置解耦：
 
 ```text
 id
@@ -589,7 +579,7 @@ created_at
 updated_at
 ```
 
-`source_type` 第一阶段使用 `manual`、`file`、`crawl`、`import`、`other`。`source_key` 用于稳定标识来源，例如 `manual`、`chinese-poetry` 或站点适配器名称。
+`source_type` 当前使用 `manual`、`file`、`import`、`other`。`source_key` 用于稳定标识来源，例如 `manual`、`chinese-gushiwen` 或 `chinese-poetry`。
 
 约束：
 
@@ -598,11 +588,11 @@ UNIQUE(source_key, external_id)
 INDEX(content_hash)
 ```
 
-原始内容必须保留来源和抓取时间，便于核对、去重和追溯。后续 `crawl_items` 审核通过后，通过导入 Service 写入本表，而不是让爬虫直接写诗词主表。
+原始内容必须保留来源和导入时间，便于核对、去重和追溯。公开数据集记录经审核后，统一通过导入 Service 写入本表，不能直接写诗词主表。
 
 #### 结构化文件导入契约
 
-当前已实现离线 CLI 导入，尚未实现上传文件、创建导入任务或查询任务状态的 HTTP API。后续爬虫应产出同一 JSON 结构并复用该 Service，不能直接写诗词主表。
+当前已实现离线 CLI 导入，尚未实现上传文件、创建导入任务或查询任务状态的 HTTP API。其他公开数据集应转换成同一 JSON 结构并复用该 Service，不能直接写诗词主表。
 
 命令：
 
@@ -922,80 +912,31 @@ updated_at
 5. 只写入模型回答中实际引用的证据。候选证据中未被引用的部分不落库，也不发送
    `citation` 事件。
 
-### 6.4 爬取相关表
+### 6.4 导入任务扩展边界
 
-#### 爬取源 `crawl_sources`
+当前导入由离线 CLI 完成，后续 HTTP 任务化导入应记录数据集版本、来源、预检报告、
+逐条错误和发布状态。大体积原始文件放对象存储，MySQL 只保存来源元数据、规范化和
+审核结果。
 
-```text
-id
-name
-base_url
-adapter_key
-config JSON
-robots_policy JSON
-rate_limit_per_minute
-enabled
-last_run_at
-created_at
-updated_at
-```
+### 6.5 公开数据集适配器边界
 
-#### 爬取任务 `crawl_jobs`
-
-```text
-id
-source_id
-status
-total_items
-success_items
-failed_items
-started_at
-finished_at
-error_message
-created_by
-created_at
-```
-
-#### 爬取原始项 `crawl_items`
-
-```text
-id
-job_id
-external_id
-detail_url
-raw_payload JSON
-raw_html_key
-parse_status
-normalized_draft JSON
-error_message
-content_hash
-created_at
-updated_at
-```
-
-`raw_html_key` 指向 MinIO。数据库不保存大段 HTML，避免拖慢查询和备份。
-
-### 6.5 爬取适配器边界
-
-不同网站的 HTML 结构、分类和分页规则不能写进通用诗词 Service。建立适配器接口：
+不同公开数据集的字段、分类和嵌套结构不能写进通用诗词 Service。建立转换适配器接口：
 
 ```python
-class PoemSourceAdapter(Protocol):
-    async def discover(self, cursor: str | None) -> DiscoveryResult: ...
-    async def fetch_detail(self, url: str) -> RawSourceItem: ...
+class CorpusAdapter(Protocol):
+    def iter_records(self, source_path: str) -> Iterator[RawSourceItem]: ...
     def normalize(self, raw: RawSourceItem) -> PoemDraft: ...
 ```
 
-在正式编写爬虫前必须确认：
+接入新的公开数据集前必须确认：
 
-1. 网站 `robots.txt`。
-2. 服务条款和版权要求。
-3. 请求频率、User-Agent 和并发限制。
-4. 页面结构、分页方式、详情字段和唯一标识。
-5. 分类是否稳定，还是由前端筛选参数动态生成。
-6. 是否需要 OCR、JavaScript 渲染或登录。
+1. 数据版本、来源地址和许可证边界。
+2. 原始字段、编码、缺失值、重复项和繁体简体的处理规则。
+3. 作者、朝代、体裁、分类和注释字段能否稳定映射。
+4. 同一作品的跨来源去重和版本留存策略。
+5. AI 派生或人工补写的赏析、译文和标签必须保留生成方式与审核状态。
 
-爬虫只负责获取和初步解析。去重、人工审核、发布和索引统一调用导入 Service。
+转换器只负责读取和规范化公开数据。去重、人工审核、发布和索引统一调用导入 Service。
 
 ### 6.6 去重策略
 
@@ -1007,13 +948,12 @@ class PoemSourceAdapter(Protocol):
 4. 不同来源但版本不同，不直接覆盖，保留为不同 `poem_sources`。
 5. 合并作品时记录人工决策，不静默删除来源。
 
-### 6.7 CRUD 与爬取共用流程
+### 6.7 CRUD 与导入共用流程
 
 ```text
 手工录入 --------------------┐
                             ├-> PoemDraft -> 校验 -> 保存/更新 -> 发布 -> 索引
-文件导入 -> 解析 -----------┤
-网站爬取 -> 适配器规范化 ---┘
+公开数据集 -> 转换器规范化 -┘
 ```
 
 保存和发布之间需要保留稳定版本边界：
@@ -1028,7 +968,7 @@ class PoemSourceAdapter(Protocol):
 
 这样可以保证：
 
-1. 手工 CRUD 和爬取使用同一套字段校验。
+1. 手工 CRUD 和公开数据集导入使用同一套字段校验。
 2. 发布逻辑只有一份。
 3. Embedding 和向量索引不会出现两套状态。
 4. 后续增加导入源不需要改问答模块。
@@ -1223,10 +1163,10 @@ HTTP 状态为 `202 Accepted`。前端通过任务查询接口或 WebSocket/SSE 
 
 ### 7.7 幂等与并发
 
-1. 创建导入、爬取等可能重复提交的任务时支持 `Idempotency-Key`。
+1. 创建导入和索引等可能重复提交的任务时支持 `Idempotency-Key`。
 2. 管理端更新可携带 `version_no`。
 3. 版本不一致时返回 `409 RESOURCE_VERSION_CONFLICT`。
-4. 爬取来源使用数据库唯一约束保证幂等。
+4. 导入来源使用 `source_key + external_id` 唯一约束保证幂等。
 
 ---
 
@@ -1640,8 +1580,6 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
 | `TASK_QUEUE_UNAVAILABLE` | 503 | 索引任务队列未启用或 broker 不可用 |
 | `CATEGORY_HAS_CHILDREN` | 409 | 分类仍有子分类 |
 | `CONVERSATION_NOT_FOUND` | 404 | 会话不存在或不属于当前用户 |
-| `CRAWL_SOURCE_DISABLED` | 409 | 爬取源未启用 |
-| `CRAWL_POLICY_REJECTED` | 403 | 不满足 robots 或站点策略 |
 | `IMPORT_JOB_FAILED` | 409 | 导入任务失败 |
 | `CHAT_CONTEXT_TOO_LONG` | 422 | 上下文超过限制 |
 | `CHAT_MODEL_NOT_CONFIGURED` | 503 | Chat Provider 未配置，错误发生在 SSE 建立前 |
@@ -1690,7 +1628,7 @@ FastAPI Schema
 2. Service 业务规则测试。
 3. Repository 使用真实 MySQL 容器测试。
 4. API 状态码、响应 Envelope、权限和分页测试。
-5. 爬取适配器使用固定 HTML Fixture，不访问真实网站。
+5. 公开数据集转换器使用固定 Fixture，不依赖真实网络。
 6. ID 唯一性、去重、软删除和发布状态测试。
 7. SSE 事件顺序和取消测试。
 
@@ -1764,21 +1702,21 @@ FastAPI Schema
 
 验收：管理员创建一首草稿并发布，游客可以查看，未发布内容不可见。
 
-### 切片 3：分类和爬取来源
+### 切片 3：分类和公开数据集导入
 
 后端：
 
 1. 分类树和分类合并。
-2. 爬取源、任务、原始项和审核。
-3. 第一个网站 Adapter，但必须先核对站点规范。
+2. 公开数据集预检、导入报告、幂等写入和审核。
+3. 第一个公开数据集 Adapter，并以固定版本和许可证边界接入。
 
 前端：
 
 1. 分类管理。
-2. 爬取源配置和任务进度。
-3. 抓取结果审核和转草稿。
+2. 导入任务进度。
+3. 导入结果审核和转草稿。
 
-验收：固定 Fixture 能稳定解析，真实站点抓取遵守频率与规则，重复运行不产生重复数据。
+验收：固定数据集能稳定转换，重复运行不产生重复数据，来源、许可和失败记录可追溯。
 
 ### 切片 4：RAG 索引和问答
 
@@ -1899,15 +1837,15 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 
 ### 15.2 数据待确认项
 
-1. 目标网站及其 robots、条款和版权要求。
-2. 网站分类层级是否稳定。
+1. 目标公开数据集的版本、许可证和长期保存边界。
+2. 数据集分类层级是否稳定。
 3. 作者和朝代字段是否完整。
 4. 同一作品是否存在多个版本。
 5. 繁体、简体、异体字如何保留和规范化。
 6. 注释、译文、赏析是否属于题库范围。
-7. 原始 HTML 的保存周期和清理策略。
+7. 原始数据文件、预检报告和导入报告的保存周期。
 
-在抓取规范确认前，不编写针对具体网站的解析器。
+在数据版本和许可证确认前，不为新的公开数据集编写解析器。
 
 ---
 
