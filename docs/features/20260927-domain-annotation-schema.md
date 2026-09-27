@@ -1,6 +1,6 @@
 # 领域标注 Schema 设计与治理边界
 
-> 状态：迁移、受控标签种子、管理 API、管理页、诗词编辑弹窗治理和离线语料审计已实现；在线检索尚未接入
+> 状态：迁移、受控标签种子、管理 API、管理页、诗词编辑弹窗治理、离线语料审计和首批人工审核已实现；在线检索尚未接入
 > 创建日期：2026-09-27
 > 最近更新：2026-09-27
 > 关联任务：为意象、情感、题材和典故建立可追溯、可审核的版本级标签
@@ -212,7 +212,9 @@ ai:deepseek-chat:domain-label-v1
 
 管理接口全部使用管理员鉴权。创建或更新标签时，同维度规范名和归一化别名均去重；
 合并只允许同维度 active 目标，且不允许多级合并链。公开数据集和 AI 标签必须提供
-`origin_ref`；AI 标签还必须提供 `model_name` 和 `task_version`。
+`origin_ref`；AI 标签还必须提供 `model_name` 和 `task_version`。审核请求可以在
+`pending -> approve/reject` 时可选地修正 `evidence_text`、`line_start` 和
+`line_end`，修正后的行号范围必须先通过校验，再执行状态流转。
 
 ## 10. RAG 接入与标签评估
 
@@ -229,22 +231,25 @@ ai:deepseek-chat:domain-label-v1
   --json-output data\eval\reports\domain_label_audit_20260927_after_import.json
 ```
 
-2026-09-27 首批人工样本导入后的真实 MySQL 审计结果：
+2026-09-27 首批人工样本审核后的真实 MySQL 审计结果：
 
 | 指标 | 结果 |
 | --- | ---: |
 | 已发布作品 / 当前版本 | 1008 / 1008 |
 | 有任一标签关联的作品 | 5 |
-| 有 `approved` 关联的作品 | 0 |
-| 有在线可见标签的作品 | 0 |
-| 在线标签覆盖率 | `0.0` |
+| 有 `approved` 关联的作品 | 5 |
+| 有在线可见标签的作品 | 5 |
+| 在线标签覆盖率 | `0.004960` |
 | 标签库 | `18 active` |
-| 当前关联 | 15 `pending` |
-| 从未在线可见的 active 标签 | 18 |
+| 当前关联 | 15 `approved` |
+| 从未在线可见的 active 标签 | 7 |
 
-除“active 标签尚无在线可见关联”外，其余治理风险均为 `0`。这说明表结构、审核状态机、
-批量导入和审计口径已经可用，但当前关联尚未审核，在线标签覆盖率仍为 `0.0`，不能进入
-在线标签过滤或重排。
+首批 15 条标签经人工核对后全部批准。审核时发现 8 条证据行号沿用了另一套文本行结构，
+其中《水调歌头·明月几时有》的 `theme:中秋` 还同时修正了证据文本；这些修正通过
+`DomainLabelService.review_assignment()` 完成，没有直接改数据库绕过状态机。除“7 个
+active 标签尚无在线可见关联”外，其余治理风险均为 `0`。这说明表结构、审核状态机、
+批量导入、审核修正和审计口径已经可用，但当前覆盖率仍只有 5/1008 首，不能进入在线
+标签过滤或重排。
 
 ### 10.2 批量导入契约（已实现）
 
@@ -278,7 +283,8 @@ ai:deepseek-chat:domain-label-v1
 首批样本覆盖 5 首作品、15 条标签关联；首次导入为 `5 created / 15 assignments`，
 重复导入为 `5 unchanged / 15 assignments`。导入结果保存于
 `data/eval/reports/domain_label_import_20260927.json`，导入后审计保存于
-`data/eval/reports/domain_label_audit_20260927_after_import.json`。
+`data/eval/reports/domain_label_audit_20260927_after_import.json`，审核后审计保存于
+`data/eval/reports/domain_label_audit_20260927_reviewed.json`。
 
 ### 10.3 在线接入顺序
 
@@ -327,6 +333,7 @@ ai:deepseek-chat:domain-label-v1
 - [x] 实现管理端录入与审核
 - [x] 接入离线标签覆盖率与治理审计
 - [x] 实现领域标签批量导入、dry-run、别名解析和幂等写入
+- [x] 完成首批 15 条人工审核，并在审核时修正证据文本和行号
 - [ ] 建立人工标签金标准并计算 precision、recall 和 macro F1
 - [ ] 再决定是否用于在线过滤和重排
 
@@ -373,6 +380,16 @@ ai:deepseek-chat:domain-label-v1
 - `data/eval/reports/domain_label_import_20260927.json` 和
   `data/eval/reports/domain_label_audit_20260927_after_import.json`：保存真实导入与
   导入后审计结果。
+- `apps/api/app/schemas/domain_label.py`：审核请求新增可选 `evidence_text`、
+  `line_start` 和 `line_end`，并校验行号范围。
+- `apps/api/app/services/domain_labels.py`：在 `pending -> approve/reject` 状态流转前
+  应用审核修正，并再次校验修正后的有效行号范围。
+- `apps/api/tests/test_domain_labels.py`：覆盖审核时修正证据、公开读取修正结果和
+  非法行号范围返回 `422`。
+- `data/import/example_domain_labels_v1.json`：修正 8 条错误行号和 1 条证据文本，
+  保证新环境重新导入时使用与当前快照一致的行结构。
+- `data/eval/reports/domain_label_audit_20260927_reviewed.json`：保存首批审核后的
+  真实审计结果。
 
 ## 14. 决策与变更记录
 
@@ -387,3 +404,4 @@ ai:deepseek-chat:domain-label-v1
 | 2026-09-27 | 诗词编辑弹窗只读写当前 `PoemVersion` 的关联 | 避免旧版本标签被误用于新正文，版本变化后必须重新确认 |
 | 2026-09-27 | 批量导入只创建 `pending` 关联，不提供自动批准 | 公开数据集和 AI 标签都可能出错，审核状态不能被导入流程绕过 |
 | 2026-09-27 | 使用来源键和外部 ID 定位作品 | 本地自增 ID 不可跨环境复用，公开数据集需要可重复导入 |
+| 2026-09-27 | 审核时可以修正证据文本和行号 | 导入数据的行结构可能与被审核版本快照不同，必须先修正证据再批准，避免公开错误行号 |

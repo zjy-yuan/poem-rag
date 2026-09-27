@@ -5601,3 +5601,60 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
    precision、recall 和 macro F1。
 2. 当前只支持 JSON 离线导入，没有 HTTP 导入任务、进度查询或失败重试界面。
 3. 在线标签过滤和重排继续关闭，标签必须完成审核且质量达标后才能进入检索链路。
+
+### [2026-09-27] 首批 15 条领域标签人工审核
+
+#### 本次目标
+
+- 对首批导入的 15 条领域标签逐条核对语义、证据文本和行号。
+- 不绕过审核状态机，修正错误证据后通过 `DomainLabelService.review_assignment()`
+  正式批准。
+- 重新运行只读审计，确认在线可见标签、覆盖率和剩余治理风险。
+
+#### 做出的决定
+
+- 审核动作保持显式状态机；审核时新增可选的 `evidence_text`、`line_start` 和
+  `line_end`，只在 `pending -> approve/reject` 时于状态流转前生效。
+- 审核修正后的有效行号必须满足 `line_end >= line_start`；非法范围返回
+  `422 VALIDATION_ERROR`，不得先批准再补证据。
+- 当前数据库没有 active `admin` 用户，因此本轮 `reviewed_by_id` 保持为空；审核时间
+  和状态仍正常记录。
+- 8 条行号按当前 `PoemVersion.snapshot` 的实际行结构修正；其中
+  《水调歌头·明月几时有》的 `theme:中秋` 同时修正为序言证据。
+- 审核后仍不接入在线标签过滤、查询改写或重排；5/1008 的覆盖率只用于验证治理链路。
+
+#### 完成内容
+
+- `apps/api/app/schemas/domain_label.py`：审核请求新增可选证据修正字段和行号范围
+  校验。
+- `apps/api/app/services/domain_labels.py`：审核状态流转前应用修正，并校验部分修正
+  后的有效行号范围。
+- `apps/api/tests/test_domain_labels.py`：覆盖审核修正、公开读取修正结果和非法行号
+  返回 `422`。
+- `data/import/example_domain_labels_v1.json`：修正 8 条错误行号和 1 条证据文本，
+  使后续新环境导入与当前快照一致。
+- 真实 MySQL：通过 Service 审核 15 条，最终 `approved=15`、`pending=0`、
+  `rejected=0`、`archived=0`。
+- `data/eval/reports/domain_label_audit_20260927_reviewed.json`：保存审核后审计结果。
+- `README.md`、`docs/PROJECT_GUIDE.md`、`docs/FRONTEND_BACKEND_CONTRACT.md` 和
+  `docs/features/20260927-domain-annotation-schema.md`：同步审核契约、覆盖率、风险项
+  和复现路径。
+
+#### 验证结果
+
+- 领域标签定向测试：`5 passed, 2 warnings`。
+- 真实 MySQL 审核：15/15 条批准成功；8 条行号修正成功，其中 1 条证据文本修正成功。
+- 审核后审计：1008 首已发布作品中有 5 首存在在线可见标签，在线标签覆盖率
+  `0.004960`；`imagery` 5 条关联、`emotion` 6 条关联、`theme` 4 条关联、
+  `allusion` 0 条关联。
+- 审核后仍有 7 个 active 标签没有在线可见关联，其余治理风险均为 `0`。
+- 完整 `.\scripts\verify.ps1` 通过：后端 `298 passed, 1 skipped, 3 warnings`、
+  Ruff、前端 typecheck、Vitest `9 passed` 和生产构建均通过。
+
+#### 风险与下一步
+
+1. 当前只有 5/1008 首作品有在线可见标签，覆盖率不足以证明标签过滤的检索收益。
+2. 本轮只完成语义和证据人工核对，还没有独立标签金标准，不能计算 precision、
+   recall 或 macro F1。
+3. 下一步应扩大标签样本并建立标签评估集；在未验证标签质量前，在线过滤和重排继续
+   保持关闭。

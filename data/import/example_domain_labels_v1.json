@@ -80,27 +80,27 @@
           "dimension": "imagery",
           "name": "月",
           "evidence_text": "明月几时有？把酒问青天。",
-          "line_start": 1,
-          "line_end": 1
+          "line_start": 3,
+          "line_end": 3
         },
         {
           "dimension": "emotion",
           "name": "离别",
           "evidence_text": "人有悲欢离合，月有阴晴圆缺，此事古难全。",
-          "line_start": 8,
-          "line_end": 8
+          "line_start": 4,
+          "line_end": 4
         },
         {
           "dimension": "emotion",
           "name": "旷达",
           "evidence_text": "但愿人长久，千里共婵娟。",
-          "line_start": 9,
-          "line_end": 9
+          "line_start": 4,
+          "line_end": 4
         },
         {
           "dimension": "theme",
           "name": "中秋",
-          "evidence_text": "明月几时有？把酒问青天。",
+          "evidence_text": "丙辰中秋，欢饮达旦，大醉，作此篇，兼怀子由。",
           "line_start": 1,
           "line_end": 1
         }
@@ -113,29 +113,29 @@
           "dimension": "imagery",
           "name": "夕阳",
           "evidence_text": "夕阳西下",
-          "line_start": 2,
-          "line_end": 2
+          "line_start": 4,
+          "line_end": 4
         },
         {
           "dimension": "emotion",
           "name": "思乡",
           "evidence_text": "断肠人在天涯",
-          "line_start": 2,
-          "line_end": 2
+          "line_start": 5,
+          "line_end": 5
         },
         {
           "dimension": "emotion",
           "name": "孤独",
           "evidence_text": "断肠人在天涯",
-          "line_start": 2,
-          "line_end": 2
+          "line_start": 5,
+          "line_end": 5
         },
         {
           "dimension": "theme",
           "name": "羁旅",
           "evidence_text": "古道西风瘦马。\n夕阳西下，断肠人在天涯。",
-          "line_start": 1,
-          "line_end": 2
+          "line_start": 3,
+          "line_end": 5
         }
       ]
     }

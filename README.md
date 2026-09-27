@@ -39,7 +39,8 @@
 31. 索引任务控制面已实现为默认关闭的异步能力：管理员可创建、列表、查询、重试和取消运行，支持 `Idempotency-Key`、Celery + Redis 入队、Worker 租约/心跳、过期重领、数据库统一重试上限和协作式取消；Celery Beat 补偿扫描可重新投递超时 `pending` 和过期租约运行；active index 已通过 MySQL pointer 原子发布，尚未实现事务 outbox 和生产监控。
 32. 旧向量清理与 Qdrant 对账已实现为默认 dry-run 的运维 CLI：分页盘点 Qdrant 点并分类 live、终态孤儿候选、活跃保护、未知和缺失；`--apply` 会先锁定作品发布目标、二次查询 MySQL 引用，只删除仍未被引用的终态运行点。真实库 dry-run 为 12415/12415 一一对应、0 个孤儿点；真实删除路径已在临时 collection 验证并清理，正式 collection 仍只允许 dry-run。
 33. 领域标签离线审计已实现为只读 CLI：统计当前已发布作品的标签覆盖率、审核状态、生成来源、每作品标签数量分布和治理风险，并输出完整 JSON 报告。首次真实审计时 1008 首语料有 0 条标签关联、在线标签覆盖率 `0.0`；该结果仅说明治理与审计基础可用，不能进入在线标签过滤或重排。
-34. 领域标签批量导入已实现为 JSON CLI：使用 `PoemSource(source_key, external_id)` 定位作品，按维度解析规范标签和别名，写入当前 `PoemVersion` 的 `pending` 关联，并通过 `origin_ref` 保证幂等。5 首人工样本完成只读预检和正式导入，首次创建 15 条关联、重复导入返回 15 条 `unchanged`；导入后在线覆盖率仍为 `0.0`，没有绕过审核。
+34. 领域标签批量导入已实现为 JSON CLI：使用 `PoemSource(source_key, external_id)` 定位作品，按维度解析规范标签和别名，写入当前 `PoemVersion` 的 `pending` 关联，并通过 `origin_ref` 保证幂等。5 首人工样本完成只读预检和正式导入，首次创建 15 条关联、重复导入返回 15 条 `unchanged`；导入当时在线覆盖率仍为 `0.0`，没有绕过审核。
+35. 首批 15 条领域标签关联已完成人工审核：审核时修正了 8 条证据行号，其中 1 条同时修正证据文本；全部进入 `approved`。当前 1008 首已发布作品中有 5 首拥有在线可见标签，在线标签覆盖率 `0.004960`；仍有 7 个 active 标签没有在线可见关联，标签过滤和重排继续关闭。
 
 ## 文档入口
 
@@ -63,12 +64,13 @@
 .\.venv\Scripts\python.exe apps\api\scripts\import_domain_labels.py `
   --input data\import\example_domain_labels_v1.json
 .\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
-  --json-output data\eval\reports\domain_label_audit_20260927_after_import.json
+  --json-output data\eval\reports\domain_label_audit_20260927_reviewed.json
 ```
 
 导入命令默认只写入 `pending`，不自动审核、批准或覆盖已有审核状态；dry-run 只做
 数据库预检。审计命令只读 MySQL，不创建标签关联、不执行审核、不修改向量索引，也
-不接入在线检索。
+不接入在线检索。首批样本的审核结果和修正明细见
+[领域标注 Schema 设计与治理边界](docs/features/20260927-domain-annotation-schema.md)。
 
 ## 本地开发
 

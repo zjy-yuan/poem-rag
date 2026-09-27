@@ -425,6 +425,22 @@ active 目标，且不允许多级合并链。公开数据集和 AI 标签必须
 AI 标签还必须提供 `model_name` 和 `task_version`。新增关联默认 `pending`，
 `pending/rejected/archived` 不进入公开读取。
 
+审核请求：
+
+```json
+{
+  "action": "approve",
+  "evidence_text": "可选，审核时修正证据文本",
+  "line_start": 3,
+  "line_end": 3
+}
+```
+
+`action` 必填；`evidence_text`、`line_start`、`line_end` 可选。只有当前状态为
+`pending` 且动作是 `approve` 或 `reject` 时，审核修正字段才会在状态流转前生效；
+修正后的 `line_end` 不得小于 `line_start`。`archive` 和 `reassess` 不接受证据修正，
+审核动作仍按既有状态机执行。
+
 #### 管理端导入与索引
 
 | 方法 | 路径 | 说明 |
@@ -2013,3 +2029,4 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 | 2026-09-27 | 新增领域标签管理 API、版本级审核状态机和公开 approved 标签读取 | 新增 `0008` 三张表和公开/管理接口；不接入在线检索、查询改写或重排 | 定向测试 `5 passed, 2 warnings`、Ruff 通过；完整门禁后端 `287 passed, 1 skipped, 3 warnings`、前端类型检查/测试/构建通过 |
 | 2026-09-27 | 新增领域标签管理页，支持标签库维护、合并/废弃、作品版本关联筛选与审核 | 只使用现有管理 API 和后台交互语言；不接在线过滤，不增加 HTTP 契约 | 完整 `.\scripts\verify.ps1` 通过：后端 `287 passed, 1 skipped, 3 warnings`、Ruff、前端 typecheck、Vitest `9 passed` 和生产构建通过 |
 | 2026-09-27 | 新增诗词当前版本标签关联列表接口，并在诗词编辑弹窗中接入关联创建与审核 | 新增管理员只读 GET 接口；仅查询当前 `PoemVersion`，不修改公开契约和在线检索 | 完整 `.\scripts\verify.ps1` 通过：后端 `287 passed, 1 skipped, 3 warnings`、Ruff、前端 typecheck、Vitest `9 passed` 和生产构建通过 |
+| 2026-09-27 | 领域标签审核请求支持在 `pending -> approve/reject` 时修正证据文本和行号 | 新增可选字段，不改变既有 `{action}` 请求；仅审核修正路径变化，不接入在线过滤 | 领域标签定向测试 `5 passed, 2 warnings`；真实 MySQL 审核 15 条后审计 `approved=15`、在线覆盖率 `0.004960` |

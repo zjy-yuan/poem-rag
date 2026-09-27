@@ -149,6 +149,27 @@ class DomainLabelAssignmentCreate(BaseModel):
 
 class DomainLabelAssignmentReviewRequest(BaseModel):
     action: DomainLabelReviewAction
+    evidence_text: str | None = Field(default=None, max_length=20000)
+    line_start: int | None = Field(default=None, ge=1)
+    line_end: int | None = Field(default=None, ge=1)
+
+    @field_validator("evidence_text")
+    @classmethod
+    def normalize_evidence_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        return normalized or None
+
+    @model_validator(mode="after")
+    def validate_evidence_range(self) -> DomainLabelAssignmentReviewRequest:
+        if (
+            self.line_start is not None
+            and self.line_end is not None
+            and self.line_end < self.line_start
+        ):
+            raise ValueError("line_end 不能小于 line_start")
+        return self
 
 
 class DomainLabelAssignmentRead(BaseModel):

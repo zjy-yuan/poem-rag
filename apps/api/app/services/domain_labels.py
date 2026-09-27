@@ -266,6 +266,26 @@ class DomainLabelService:
         current_status = assignment.review_status
         now = datetime.now(UTC)
 
+        if current_status == DomainLabelReviewStatus.PENDING.value and payload.action in {
+            DomainLabelReviewAction.APPROVE,
+            DomainLabelReviewAction.REJECT,
+        }:
+            corrections = payload.model_dump(exclude_unset=True, exclude={"action"})
+            effective_line_start = corrections.get("line_start", assignment.line_start)
+            effective_line_end = corrections.get("line_end", assignment.line_end)
+            if (
+                effective_line_start is not None
+                and effective_line_end is not None
+                and effective_line_end < effective_line_start
+            ):
+                raise AppError(
+                    status_code=422,
+                    code=ErrorCode.VALIDATION_ERROR,
+                    message="line_end 不能小于 line_start",
+                )
+            for field, value in corrections.items():
+                setattr(assignment, field, value)
+
         if (
             payload.action == DomainLabelReviewAction.APPROVE
             and current_status == DomainLabelReviewStatus.PENDING.value

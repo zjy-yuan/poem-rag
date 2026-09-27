@@ -283,13 +283,33 @@ def test_domain_label_admin_review_contract(client: TestClient) -> None:
     ).json()
     assert public_before_review["data"] == []
 
+    invalid_evidence_range = client.post(
+        f"/api/v1/admin/domain-label-assignments/{assignment['id']}/review",
+        headers=headers,
+        json={
+            "action": "approve",
+            "line_start": 2,
+            "line_end": 1,
+        },
+    )
+    assert invalid_evidence_range.status_code == 422
+    assert invalid_evidence_range.json()["error"]["code"] == "VALIDATION_ERROR"
+
     approved = client.post(
         f"/api/v1/admin/domain-label-assignments/{assignment['id']}/review",
         headers=headers,
-        json={"action": "approve"},
+        json={
+            "action": "approve",
+            "evidence_text": "床前明月光，疑是地上霜。",
+            "line_start": 2,
+            "line_end": 2,
+        },
     )
     assert approved.status_code == 200
     assert approved.json()["data"]["review_status"] == "approved"
+    assert approved.json()["data"]["evidence_text"] == "床前明月光，疑是地上霜。"
+    assert approved.json()["data"]["line_start"] == 2
+    assert approved.json()["data"]["line_end"] == 2
     assert approved.json()["data"]["reviewed_by_id"] is not None
     assert approved.json()["data"]["reviewed_at"] is not None
 
@@ -298,6 +318,9 @@ def test_domain_label_admin_review_contract(client: TestClient) -> None:
     ).json()
     assert [item["canonical_name"] for item in public_after_review["data"]] == ["明月"]
     assert public_after_review["data"][0]["generation_method"] == "manual"
+    assert public_after_review["data"][0]["evidence_text"] == "床前明月光，疑是地上霜。"
+    assert public_after_review["data"][0]["line_start"] == 2
+    assert public_after_review["data"][0]["line_end"] == 2
 
     invalid_transition = client.post(
         f"/api/v1/admin/domain-label-assignments/{assignment['id']}/review",
