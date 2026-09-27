@@ -5226,3 +5226,163 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
    限流和云环境 HTTPS。
 2. 下一阶段先从冻结 v5 holdout 和领域标注 schema 开始，不直接扩大语料或上线
    未经验证的重排策略。
+
+### [2026-09-27] v5 独立 Holdout 与领域标注 Schema
+
+#### 本次目标
+
+- 在 1000 首公开语料上冻结检索与生成 v5 holdout，为后续领域检索、标签和问答策略
+  提供未观察的泛化集。
+- 在引入意象、情感、题材和典故标签前，先冻结可追溯、可审核的数据模型。
+- 不修改当前在线 Embedding、分块、检索、重排、生成或数据库结构。
+
+#### 做出的决定
+
+- v5 检索集包含 46 条：38 条有答案、8 条无答案；生成集包含 26 条：16 条回答、
+  10 条拒答。
+- v5 在运行策略前冻结；若需要根据 v5 的失败样本修复实现，后续验证必须另建 v6。
+- 冻结审计时发现并修正一个确定问题：检索样本 `author-v5-luyou-02` 的问题文本
+  `陆游` 与 v3 重复，替换为 `author-v5-wanganshi-02` 和 `王安石`。
+- 领域标签不复用通用 `tags/categories`，设计为 `domain_labels`、
+  `domain_label_aliases` 和 `poem_version_domain_labels` 三张表。
+- 标签关联绑定 `poem_version_id`，保留来源、生成方式、置信度、证据、模型版本和
+  审核状态；AI 标签默认不得进入在线检索。
+
+#### 完成内容
+
+- `data/eval/retrieval_holdout_1000_v5.json`、`data/eval/generation_holdout_1000_v5.json`：
+  冻结独立检索与生成评估集。
+- `apps/api/tests/test_retrieval_evaluation.py`、`test_generation_evaluation.py`：
+  增加 v5 数量、分类、唯一性、跨集独立性和语料可定位契约测试。
+- `docs/features/20260927-independent-1000-holdout-v5.md`：记录冻结边界、审计结果和
+  后续使用规则。
+- `docs/features/20260927-domain-annotation-schema.md`：记录领域标注表结构、来源治理、
+  审核规则和未来 RAG 接入顺序。
+
+#### 验证结果
+
+- v5 定向测试通过：`35 passed, 2 warnings`。
+- Ruff 通过：`All checks passed!`。
+- 完整 `.\scripts\verify.ps1` 通过：后端 `282 passed, 1 skipped, 3 warnings`，
+  前端 typecheck 通过，Vitest `9 passed`，生产构建通过。
+- 跳过项仍是默认关闭的真实 Qdrant 集成测试；前端只有既存的 bundle 超过 `500 kB`
+  警告。
+- `git diff --check` 通过，只有 Windows 工作区既存 LF/CRLF 转换提示。
+
+#### 风险与下一步
+
+1. v5 当前尚未进入 Git 基线；文件提交后，其冻结语义才完整成立。
+2. 标题不交叉不代表主题语义完全独立，后续仍需对高相似样本做人工抽样复核。
+3. 下一步先实现领域标注 Alembic 迁移和受控标签种子，不直接接入在线过滤或重排。
+4. 标签过滤必须先在旧集回归，再在未观察 v5/v6 上验证，不能以标签证据替代正文
+   引用。
+
+### [2026-09-27] 领域标注迁移与受控标签种子
+
+#### 本次目标
+
+- 把领域标注 Schema 落成可回滚的 Alembic 迁移和 ORM 模型。
+- 建立首批受控标签与别名，验证重复执行不会产生重复记录。
+- 继续保持业务范围不包含管理 API、在线标签过滤或重排接入。
+
+#### 做出的决定
+
+- 三张表分别保存规范标签、别名和版本级标签关联，不把领域标签塞进通用
+  `tags/categories`。
+- 标签关联唯一键使用
+  `(poem_version_id, domain_label_id, origin_ref)`，以非空来源键避免 MySQL 多
+  NULL 唯一索引问题。
+- AI 标签的数据库约束要求 `model_name` 和 `task_version` 同时存在，默认审核状态
+  为 `pending`。
+- `merged_into_id` 保留 `ON DELETE SET NULL` 外键；由于 MySQL 不允许该列同时进入
+  CHECK 约束，自合并限制继续放在服务层。
+
+#### 完成内容
+
+- `apps/api/app/models/domain_label.py`：新增三类模型、维度/生命周期/来源/审核状态
+  枚举和关键 CHECK 约束。
+- `apps/api/migrations/versions/20260927_0008_create_domain_labels.py`：新增
+  `domain_labels`、`domain_label_aliases`、`poem_version_domain_labels` 及索引和
+  外键。
+- `apps/api/app/db/seed.py`：增加 `seed_domain_labels()`，首批写入 18 个标签和
+  35 个别名；已有标签不会因重跑 seed 被重新激活。
+- `apps/api/tests/test_domain_labels.py`：覆盖种子幂等、废弃状态保留、AI 元数据
+  必填和默认 `pending` 审核状态。
+- `docs/features/20260927-domain-annotation-schema.md`：同步实现状态与 MySQL
+  方言限制。
+
+#### 验证结果
+
+- 定向 Ruff：`All checks passed!`。
+- 领域标签与既有种子测试：`10 passed, 2 warnings`。
+- 真实 MySQL `alembic upgrade head`：从 `20260927_0007` 成功升级到
+  `20260927_0008`。
+- 真实 MySQL `alembic current`：`20260927_0008 (head)`。
+- `alembic check`：`No new upgrade operations detected.`。
+- 首次执行 `app.db.seed` 写入 18 个标签和 35 个别名；第二次执行结果为
+  `labels=0, existing_labels=18, aliases=0`。
+
+#### 风险与下一步
+
+1. 当前只建立受控词表和版本级关联表，没有任何自动标签写入或公开查询接口。
+2. 标签合并、人工审核和别名冲突仍需要后续 Service/API 层实现，数据库不负责全部
+   业务不变量。
+3. 下一步实现管理端领域标签 CRUD 与审核状态流转，并补 Repository/Service/API
+   测试；仍不直接启用在线过滤。
+
+### [2026-09-27] 领域标签管理 API 与审核状态机
+
+#### 本次目标
+
+- 在已落地的三张领域标注表上实现 Repository、Service 和管理 API。
+- 让人工、公开数据集和 AI 标签都通过同一条版本级关联流程进入审核。
+- 公开读取只暴露当前版本已审核通过的标签，同时继续隔离在线检索和重排。
+
+#### 做出的决定
+
+- 领域标签是版本级治理数据，不接入本轮在线检索、查询改写或重排。
+- 新增关联默认进入 `pending`；只有 `approved` 可以公开读取。
+- `pending -> approved/rejected`、`approved -> archived`、`rejected -> pending`
+  构成显式审核状态机，非法流转返回业务错误码。
+- 标签合并只允许同维度 active 目标，禁止自合并、跨维度合并和多级合并链。
+- 公开数据集和 AI 标签必须提供 `origin_ref`；AI 标签还必须提供 `model_name` 和
+  `task_version`。
+- 同一规范标签同时存在多来源 approved 记录时，按
+  `manual > public_dataset > ai` 选择公开结果；标签只辅助结构化检索，不替代正文
+  chunks 和引用证据。
+
+#### 完成内容
+
+- `apps/api/app/core/errors.py`：新增领域标签不存在、重名、非法合并、关联不存在和
+  非法审核流转错误码。
+- `apps/api/app/schemas/domain_label.py`：新增标签、别名、关联、审核请求和公开
+  读取 Schema；别名按 `normalize_lookup` 归一化去重，单项限制 `1..80`。
+- `apps/api/app/repositories/domain_labels.py`：新增标签分页、当前版本、公开
+  approved 关联和 `origin_ref` 幂等查询。
+- `apps/api/app/services/domain_labels.py`：实现标签 CRUD、别名替换、同维度唯一、
+  标签合并、默认待审核关联、审核状态机和公开可见性解析。
+- `apps/api/app/api/v1/admin/domain_labels.py`、`apps/api/app/api/v1/admin/poems.py`
+  和 `apps/api/app/api/v1/poems.py`：新增管理端与公开领域标签路由。
+- `apps/api/tests/test_domain_labels.py`：覆盖权限、CRUD、别名、幂等、审核、公开
+  可见性、AI 元数据、非法流转、合并和废弃。
+- `docs/FRONTEND_BACKEND_CONTRACT.md`、`docs/features/20260927-domain-annotation-schema.md`
+  和 `docs/PROJECT_GUIDE.md`：同步接口、数据模型、迁移 head 和验证状态。
+
+#### 验证结果
+
+- 定向 Ruff：`All checks passed!`。
+- 领域标签定向测试：`5 passed, 2 warnings`。
+- 后端全量测试：`287 passed, 1 skipped, 3 warnings`。
+- 完整 `.\scripts\verify.ps1` 通过：后端 Ruff 和全量测试通过，前端 typecheck 通过，
+  Vitest `9 passed`，生产构建通过。
+- `git diff --check` 通过；只有 Windows 工作区既存 LF/CRLF 转换提示，无空白错误。
+- 跳过项仍是默认关闭的真实 Qdrant 集成测试；前端只有既存的 bundle 超过 `500 kB`
+  警告。
+
+#### 风险与下一步
+
+1. 当前没有前端领域标签管理页，管理能力只能通过 API 和 OpenAPI 使用。
+2. 还没有离线标签评估集和标签质量指标；在积累金标准前不能把标签过滤切到在线。
+3. 标签合并已保留历史关联并解析到 active 目标，但尚未实现管理端“从上一版本复制”
+   的批量操作。
+4. 下一步先补前端标签治理界面或离线评估其中的一环，再决定是否进入在线结构化过滤。

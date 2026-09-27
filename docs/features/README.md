@@ -56,6 +56,8 @@ docs/features/20260925-hybrid-retrieval-baseline.md
 33. `20260927-index-run-task-control.md`
 34. `20260927-active-index-publication.md`
 35. `20260927-index-vector-reconciliation.md`
+36. `20260927-independent-1000-holdout-v5.md`
+37. `20260927-domain-annotation-schema.md`
 
 ## 2. 模板
 

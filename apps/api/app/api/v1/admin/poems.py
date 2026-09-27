@@ -4,11 +4,13 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query
 
-from app.api.deps import get_admin_catalog_service
+from app.api.deps import get_admin_catalog_service, get_admin_domain_label_service
 from app.core.response import success_response
 from app.models.poem import PoemStatus
 from app.schemas.catalog import PoemCreate, PoemUpdate
+from app.schemas.domain_label import DomainLabelAssignmentCreate
 from app.services.catalog import CatalogService
+from app.services.domain_labels import DomainLabelService
 
 router = APIRouter()
 
@@ -94,3 +96,19 @@ async def restore_poem(
     catalog: Annotated[CatalogService, Depends(get_admin_catalog_service)],
 ) -> Any:
     return success_response(await catalog.restore_poem(poem_id))
+
+
+@router.post(
+    "/{poem_id}/domain-labels",
+    summary="Create a domain label assignment for the current poem version",
+)
+async def create_poem_domain_label(
+    poem_id: int,
+    payload: DomainLabelAssignmentCreate,
+    domain_labels: Annotated[
+        DomainLabelService,
+        Depends(get_admin_domain_label_service),
+    ],
+) -> Any:
+    assignment, created = await domain_labels.create_assignment(poem_id, payload)
+    return success_response(assignment, status_code=201 if created else 200)

@@ -12,6 +12,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.annotation import PoemAnnotation
     from app.models.chunk import PoemChunk
+    from app.models.domain_label import PoemVersionDomainLabel
     from app.models.index_run import PoemIndexRun
     from app.models.poem import Poem
     from app.models.source import PoemSource
@@ -69,6 +70,10 @@ class PoemVersion(Base):
         cascade="all, delete-orphan",
     )
     index_runs: Mapped[list[PoemIndexRun]] = relationship(
+        back_populates="version",
+        cascade="all, delete-orphan",
+    )
+    domain_labels: Mapped[list[PoemVersionDomainLabel]] = relationship(
         back_populates="version",
         cascade="all, delete-orphan",
     )

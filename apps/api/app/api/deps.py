@@ -17,6 +17,7 @@ from app.repositories.users import UserRepository
 from app.services.auth import AuthService
 from app.services.catalog import CatalogService
 from app.services.chat import ChatService
+from app.services.domain_labels import DomainLabelService
 from app.services.retrieval import RetrievalService
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -47,6 +48,12 @@ def get_catalog_service(
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> CatalogService:
     return CatalogService(session)
+
+
+def get_domain_label_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> DomainLabelService:
+    return DomainLabelService(session)
 
 
 def get_retrieval_service(
@@ -129,3 +136,10 @@ async def get_admin_catalog_service(
     admin: Annotated[User, Depends(require_admin)],
 ) -> CatalogService:
     return CatalogService(session, changed_by_id=admin.id)
+
+
+async def get_admin_domain_label_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+    admin: Annotated[User, Depends(require_admin)],
+) -> DomainLabelService:
+    return DomainLabelService(session, actor_id=admin.id)

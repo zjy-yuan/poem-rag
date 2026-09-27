@@ -54,6 +54,12 @@ HOLDOUT_1000_V3_DATASET_PATH = (
     / "eval"
     / "generation_holdout_1000_v3.json"
 )
+HOLDOUT_1000_V5_DATASET_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "data"
+    / "eval"
+    / "generation_holdout_1000_v5.json"
+)
 EVALUATE_GENERATION_SCRIPT_PATH = (
     Path(__file__).resolve().parents[1] / "scripts" / "evaluate_generation.py"
 )
@@ -589,6 +595,74 @@ def test_holdout_1000_v3_citations_exist_in_converted_corpus(
     converted_corpus_records: list[dict[str, object]],
 ) -> None:
     dataset = load_generation_evaluation_dataset(HOLDOUT_1000_V3_DATASET_PATH)
+    records = converted_corpus_records
+
+    for case in dataset.cases:
+        for selector in case.expected_citations:
+            matches = [
+                record
+                for record in records
+                if selector.poem_title is None
+                or record["title"] == selector.poem_title
+            ]
+            if selector.author_name is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if record["author_name"] == selector.author_name
+                ]
+            assert matches, f"{case.id} 的引用金标准无法在当前转换后语料中定位"
+
+
+def test_holdout_1000_v5_generation_dataset_has_expected_coverage() -> None:
+    dataset = load_generation_evaluation_dataset(HOLDOUT_1000_V5_DATASET_PATH)
+    previous_datasets = [
+        load_generation_evaluation_dataset(HOLDOUT_1000_DATASET_PATH),
+        load_generation_evaluation_dataset(HOLDOUT_1000_V2_DATASET_PATH),
+        load_generation_evaluation_dataset(HOLDOUT_1000_V3_DATASET_PATH),
+    ]
+    previous_titles = {
+        selector.poem_title
+        for previous_dataset in previous_datasets
+        for case in previous_dataset.cases
+        for selector in case.expected_citations
+        if selector.poem_title is not None
+    }
+    current_titles = {
+        selector.poem_title
+        for case in dataset.cases
+        for selector in case.expected_citations
+        if selector.poem_title is not None
+    }
+
+    assert dataset.version == "generation-holdout-1000-v5"
+    assert len(dataset.cases) == 26
+    assert sum(case.expected == "answer" for case in dataset.cases) == 16
+    assert sum(case.expected == "refusal" for case in dataset.cases) == 10
+    assert {
+        "poem_fact",
+        "natural_language",
+        "multi_evidence",
+        "refusal_missing_entity",
+        "refusal_missing_attribute",
+        "refusal_cross_domain",
+    } <= {case.category for case in dataset.cases}
+    assert len({case.id for case in dataset.cases}) == len(dataset.cases)
+    assert len({case.question for case in dataset.cases}) == len(dataset.cases)
+    assert {case.question for case in dataset.cases}.isdisjoint(
+        {
+            case.question
+            for previous_dataset in previous_datasets
+            for case in previous_dataset.cases
+        }
+    )
+    assert current_titles.isdisjoint(previous_titles)
+
+
+def test_holdout_1000_v5_citations_exist_in_converted_corpus(
+    converted_corpus_records: list[dict[str, object]],
+) -> None:
+    dataset = load_generation_evaluation_dataset(HOLDOUT_1000_V5_DATASET_PATH)
     records = converted_corpus_records
 
     for case in dataset.cases:

@@ -1,0 +1,481 @@
+{
+  "version": "generation-holdout-1000-v5",
+  "description": "基于 chinese-gushiwen 1000 首开放语料的第五批独立生成 holdout。问题文本与 v1/v2/v3 全部不相交，引用作品标题不复用旧生成集。答案题覆盖作品事实、自然语言赏析和多证据比较；拒答题覆盖跨域技术问题、领域内缺实体和缺属性。该集创建后冻结；若用于样本级修复，必须另建 v6 复核泛化。",
+  "cases": [
+    {
+      "id": "gen-v5-xiaochi-summer",
+      "category": "poem_fact",
+      "question": "杨万里《小池》怎样从泉眼树荫写到新荷蜻蜓？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "pond-scene",
+          "any_of": ["泉眼无声惜细流", "树阴照水爱晴柔"]
+        },
+        {
+          "id": "lotus-dragonfly",
+          "any_of": ["小荷才露尖尖角", "早有蜻蜓立上头"]
+        }
+      ],
+      "forbidden_facts": [
+        {
+          "id": "wrong-author",
+          "any_of": ["王安石", "苏轼"]
+        }
+      ],
+      "expected_citations": [
+        {
+          "poem_title": "小池",
+          "author_name": "杨万里"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-youzi-mother",
+      "category": "poem_fact",
+      "question": "孟郊《游子吟》怎样通过缝衣场景表达母爱和游子感恩？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "mother-sewing",
+          "any_of": ["慈母手中线，游子身上衣", "临行密密缝，意恐迟迟归"]
+        },
+        {
+          "id": "repay",
+          "any_of": ["谁言寸草心，报得三春晖"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "游子吟",
+          "author_name": "孟郊"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-huanghelou-farewell",
+      "category": "poem_fact",
+      "question": "李白《黄鹤楼送孟浩然之广陵》怎样写送别地点和目送友人？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "departure",
+          "any_of": ["故人西辞黄鹤楼，烟花三月下扬州"]
+        },
+        {
+          "id": "sail",
+          "any_of": ["孤帆远影碧空尽，唯见长江天际流"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "黄鹤楼送孟浩然之广陵",
+          "author_name": "李白"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-yujiaao-frontier",
+      "category": "poem_fact",
+      "question": "范仲淹《渔家傲·秋思》怎样写边塞秋景和将士思乡？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "frontier-scene",
+          "any_of": ["塞下秋来风景异", "千嶂里，长烟落日孤城闭"]
+        },
+        {
+          "id": "homesick",
+          "any_of": ["浊酒一杯家万里，燕然未勒归无计", "将军白发征夫泪"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "渔家傲·秋思",
+          "author_name": "范仲淹"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-jiangchengzi-hunt",
+      "category": "poem_fact",
+      "question": "苏轼《江城子·密州出猎》怎样从出猎场面写到报国壮志？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "hunt",
+          "any_of": ["老夫聊发少年狂", "左牵黄，右擎苍", "千骑卷平冈"]
+        },
+        {
+          "id": "ambition",
+          "any_of": ["会挽雕弓如满月，西北望，射天狼"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "江城子·密州出猎",
+          "author_name": "苏轼"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-mulanhua-change",
+      "category": "poem_fact",
+      "question": "纳兰性德《木兰花·拟古决绝词柬友》怎样写初见美好与人心变化？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "first-sight",
+          "any_of": ["人生若只如初见", "何事秋风悲画扇"]
+        },
+        {
+          "id": "changed-heart",
+          "any_of": ["等闲变却故人心", "却道故人心易变"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "木兰花·拟古决绝词柬友",
+          "author_name": "纳兰性德"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-luyou-people",
+      "category": "natural_language",
+      "question": "陆游《秋夜将晓出篱门迎凉有感二首》怎样写山河壮阔和遗民盼望？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "mountains-rivers",
+          "any_of": ["三万里河东入海，五千仞岳上摩天"]
+        },
+        {
+          "id": "people-hope",
+          "any_of": ["遗民泪尽胡尘里，南望王师又一年"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "秋夜将晓出篱门迎凉有感二首",
+          "author_name": "陆游"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-luyou-hero",
+      "category": "natural_language",
+      "question": "陆游《诉衷情·当年万里觅封侯》怎样写昔日从军和晚年悲愤？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "past-army",
+          "any_of": ["当年万里觅封侯，匹马戍梁州"]
+        },
+        {
+          "id": "unfinished",
+          "any_of": ["胡未灭，鬓先秋，泪空流", "心在天山，身老沧洲"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "诉衷情·当年万里觅封侯",
+          "author_name": "陆游"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-sushi-guhong",
+      "category": "natural_language",
+      "question": "苏轼《卜算子·黄州定慧院寓居作》怎样借孤鸿写孤高与寂寞？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "guhong",
+          "any_of": ["时见幽人独往来，缥缈孤鸿影", "谁见幽人独往来，缥缈孤鸿影"]
+        },
+        {
+          "id": "lonely",
+          "any_of": ["拣尽寒枝不肯栖，寂寞沙洲冷"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "卜算子·黄州定慧院寓居作",
+          "author_name": "苏轼"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-sushi-chaoran",
+      "category": "natural_language",
+      "question": "苏轼《望江南·超然台作》怎样从春景酒醒写到珍惜年华？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "spring-scene",
+          "any_of": ["春未老，风细柳斜斜", "半壕春水一城花"]
+        },
+        {
+          "id": "new-fire",
+          "any_of": ["休对故人思故国，且将新火试新茶", "诗酒趁年华"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "望江南·超然台作",
+          "author_name": "苏轼"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-yanshu-separation",
+      "category": "natural_language",
+      "question": "晏殊《蝶恋花·槛菊愁烟兰泣露》怎样写离恨和登楼远望？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "separation",
+          "any_of": ["槛菊愁烟兰泣露", "明月不谙离恨苦"]
+        },
+        {
+          "id": "high-tower",
+          "any_of": ["昨夜西风凋碧树，独上高楼，望尽天涯路"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "蝶恋花·槛菊愁烟兰泣露",
+          "author_name": "晏殊"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-jiangjie-time",
+      "category": "natural_language",
+      "question": "蒋捷《一剪梅·舟过吴江》怎样写春愁和时光流逝？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "spring-sorrow",
+          "any_of": ["一片春愁待酒浇", "风又飘飘，雨又萧萧"]
+        },
+        {
+          "id": "time-pass",
+          "any_of": ["流光容易把人抛，红了樱桃，绿了芭蕉"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "一剪梅·舟过吴江",
+          "author_name": "蒋捷"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-taoyuan-freedom",
+      "category": "natural_language",
+      "question": "陶渊明《归园田居·其一》怎样写回归田园和重获自由？",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "return-field",
+          "any_of": ["开荒南野际，守拙归园田", "暧暧远人村，依依墟里烟"]
+        },
+        {
+          "id": "freedom",
+          "any_of": ["久在樊笼里，复得返自然"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "归园田居·其一",
+          "author_name": "陶渊明"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-multi-family",
+      "category": "multi_evidence",
+      "question": "请比较孟郊《游子吟》和王维《九月九日忆山东兄弟》中亲情牵挂的不同写法。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "youzi",
+          "any_of": ["慈母手中线，游子身上衣", "谁言寸草心，报得三春晖"]
+        },
+        {
+          "id": "chongyang",
+          "any_of": ["独在异乡为异客，每逢佳节倍思亲", "遍插茱萸少一人"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "游子吟",
+          "author_name": "孟郊"
+        },
+        {
+          "poem_title": "九月九日忆山东兄弟",
+          "author_name": "王维"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-multi-farewell",
+      "category": "multi_evidence",
+      "question": "请比较李白《送友人》和王勃《送杜少府之任蜀州》中送别情绪的不同。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "songyou",
+          "any_of": ["浮云游子意，落日故人情", "萧萧班马鸣"]
+        },
+        {
+          "id": "send-du",
+          "any_of": ["海内存知己，天涯若比邻", "无为在歧路，儿女共沾巾"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "送友人",
+          "author_name": "李白"
+        },
+        {
+          "poem_title": "送杜少府之任蜀州 / 送杜少府之任蜀川",
+          "author_name": "王勃"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-multi-autumn",
+      "category": "multi_evidence",
+      "question": "请比较范仲淹《渔家傲·秋思》和《苏幕遮·怀旧》中边塞乡愁与羁旅相思。",
+      "expected": "answer",
+      "required_facts": [
+        {
+          "id": "yujiaao",
+          "any_of": ["浊酒一杯家万里，燕然未勒归无计", "将军白发征夫泪"]
+        },
+        {
+          "id": "sumuzhe",
+          "any_of": ["黯乡魂，追旅思", "酒入愁肠，化作相思泪"]
+        }
+      ],
+      "forbidden_facts": [],
+      "expected_citations": [
+        {
+          "poem_title": "渔家傲·秋思",
+          "author_name": "范仲淹"
+        },
+        {
+          "poem_title": "苏幕遮·怀旧",
+          "author_name": "范仲淹"
+        }
+      ]
+    },
+    {
+      "id": "gen-v5-refusal-redis-persistence",
+      "category": "refusal_cross_domain",
+      "question": "Redis 的 RDB 与 AOF 在故障恢复时分别有什么取舍？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v5-refusal-docker-healthcheck",
+      "category": "refusal_cross_domain",
+      "question": "Docker healthcheck 和 depends_on 如何共同决定服务启动顺序？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v5-refusal-kafka-offset",
+      "category": "refusal_cross_domain",
+      "question": "Kafka 消费者提交 offset 后发生再平衡会怎样处理未完成消息？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v5-refusal-guiqulai",
+      "category": "refusal_missing_entity",
+      "question": "陶渊明《归去来兮辞》的译文是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v5-refusal-afanggong",
+      "category": "refusal_missing_entity",
+      "question": "杜牧《阿房宫赋》表达了什么主题？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v5-refusal-zuiweng",
+      "category": "refusal_missing_entity",
+      "question": "欧阳修《醉翁亭记》的赏析是什么？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v5-refusal-yongliu-year",
+      "category": "refusal_missing_attribute",
+      "question": "《咏柳》创作于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v5-refusal-hezhizhang-birth",
+      "category": "refusal_missing_attribute",
+      "question": "贺知章出生于哪一年？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v5-refusal-yangwanli-office",
+      "category": "refusal_missing_attribute",
+      "question": "杨万里一生担任过哪些具体官职？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    },
+    {
+      "id": "gen-v5-refusal-chang-e-time",
+      "category": "refusal_missing_attribute",
+      "question": "李商隐的《嫦娥》创作于什么时间？",
+      "expected": "refusal",
+      "required_facts": [],
+      "forbidden_facts": [],
+      "expected_citations": []
+    }
+  ]
+}

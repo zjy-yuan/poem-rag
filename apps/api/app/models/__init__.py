@@ -4,6 +4,15 @@ from app.models.author import Author
 from app.models.category import Category
 from app.models.chunk import ChunkGranularity, ChunkStatus, PoemChunk
 from app.models.conversation import Conversation
+from app.models.domain_label import (
+    DomainLabel,
+    DomainLabelAlias,
+    DomainLabelDimension,
+    DomainLabelGenerationMethod,
+    DomainLabelReviewStatus,
+    DomainLabelStatus,
+    PoemVersionDomainLabel,
+)
 from app.models.dynasty import Dynasty
 from app.models.index_run import IndexRunStage, IndexRunStatus, PoemIndexRun
 from app.models.message import Message, MessageCitation, MessageRole, MessageStatus
@@ -24,6 +33,12 @@ __all__ = [
     "ChunkStatus",
     "Conversation",
     "Dynasty",
+    "DomainLabel",
+    "DomainLabelAlias",
+    "DomainLabelDimension",
+    "DomainLabelGenerationMethod",
+    "DomainLabelReviewStatus",
+    "DomainLabelStatus",
     "IndexRunStage",
     "IndexRunStatus",
     "Message",
@@ -40,6 +55,7 @@ __all__ = [
     "PoemTag",
     "PoemVersion",
     "PoemVersionChangeType",
+    "PoemVersionDomainLabel",
     "RefreshToken",
     "Tag",
     "User",

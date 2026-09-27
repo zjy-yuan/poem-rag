@@ -362,9 +362,12 @@ Router -> Schema -> Service -> Repository -> Model / External Adapter
 | GET | `/api/v1/categories` | 分类树或分类列表 |
 | GET | `/api/v1/search` | 精确、标题、作者、分类搜索 |
 | GET | `/api/v1/search/evidence` | 已发布作品的可解释 poem/line/note 证据检索 |
+| GET | `/api/v1/poems/{poem_id}/domain-labels` | 已发布作品当前版本的 approved 领域标签 |
 
 公开列表不接受 `status` 参数，后端固定查询已发布内容，避免前端越权读取草稿。
 证据检索同样只读取已发布且未删除作品的当前版本，不接受调用方指定作品状态。
+领域标签公开读取只返回当前 `PoemVersion` 的 `approved` 记录；合并标签解析到
+active 目标，并按 `manual > public_dataset > ai` 去重。
 
 #### 用户问答
 
@@ -403,6 +406,22 @@ Router -> Schema -> Service -> Repository -> Model / External Adapter
 /api/v1/admin/dynasties
 /api/v1/admin/categories
 ```
+
+#### 管理端领域标签
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/v1/admin/domain-labels` | 分页查询标签，支持维度和状态过滤 |
+| POST | `/api/v1/admin/domain-labels` | 创建标签和别名 |
+| PATCH | `/api/v1/admin/domain-labels/{label_id}` | 更新名称、别名、废弃或合并标签 |
+| GET | `/api/v1/admin/domain-labels/{label_id}/assignments` | 查询某标签的作品版本关联 |
+| POST | `/api/v1/admin/poems/{poem_id}/domain-labels` | 为当前版本新增待审核标签 |
+| POST | `/api/v1/admin/domain-label-assignments/{assignment_id}/review` | 审核、驳回、归档或重新评估标签关联 |
+
+管理接口全部要求管理员权限。同维度规范名和归一化别名唯一；合并只允许同维度
+active 目标，且不允许多级合并链。公开数据集和 AI 标签必须提供 `origin_ref`；
+AI 标签还必须提供 `model_name` 和 `task_version`。新增关联默认 `pending`，
+`pending/rejected/archived` 不进入公开读取。
 
 #### 管理端导入与索引
 
@@ -832,6 +851,91 @@ POST /api/v1/admin/index-runs/{run_id}/cancel
 `page`、`page_size`、`status` 和 `poem_version_id`。任务队列默认关闭；队列未启用
 或 broker 不可用时返回 `503 TASK_QUEUE_UNAVAILABLE`。补偿扫描没有公开 HTTP
 接口，只由 Celery Beat 执行。
+
+#### 领域标签 `domain_labels`
+
+领域标签不复用通用 `tags/categories`，因为意象、情感、题材和典故需要维度、别名、
+来源、证据和审核状态。当前使用三张表：
+
+```text
+domain_labels
+domain_label_aliases
+poem_version_domain_labels
+```
+
+`domain_labels` 保存规范标签：
+
+```text
+id
+dimension
+canonical_name
+normalized_name
+description
+status
+merged_into_id
+created_at
+updated_at
+```
+
+规则：
+
+1. `dimension` 使用 `imagery`、`emotion`、`theme`、`allusion`。
+2. `status` 使用 `active`、`merged`、`deprecated`。
+3. 唯一键为 `(dimension, normalized_name)`。
+4. 合并保留原标签记录，只把 `merged_into_id` 指向同维度 active 目标。
+
+`domain_label_aliases` 保存现代口语、异名和抽取结果到规范标签的映射：
+
+```text
+id
+domain_label_id
+alias
+normalized_alias
+source_id
+created_at
+```
+
+规则：
+
+1. 唯一键为 `(domain_label_id, normalized_alias)`。
+2. 同一别名可以映射到不同维度的不同标签，解析时必须结合维度。
+3. 写入前按 `normalize_lookup` 去重，例如 `Moon` 和 `moon` 只保留一个。
+
+`poem_version_domain_labels` 保存版本级关联和来源证据：
+
+```text
+id
+poem_version_id
+domain_label_id
+source_id
+generation_method
+origin_ref
+confidence
+review_status
+evidence_text
+line_start
+line_end
+model_name
+task_version
+created_by_id
+reviewed_by_id
+reviewed_at
+created_at
+updated_at
+archived_at
+```
+
+规则：
+
+1. `generation_method` 使用 `manual`、`public_dataset`、`ai`。
+2. `review_status` 使用 `pending`、`approved`、`rejected`、`archived`。
+3. 唯一键为 `(poem_version_id, domain_label_id, origin_ref)`，用非空
+   `origin_ref` 避免 MySQL 多 NULL 唯一索引问题。
+4. 状态机为 `pending -> approved/rejected`、`approved -> archived`、
+   `rejected -> pending(reassess)`。
+5. AI 标签必须同时提供 `model_name` 和 `task_version`。
+6. 只有 `approved` 记录可以进入公开读取和后续在线过滤。
+7. 标签只辅助结构化检索，不能替代正文 chunks 和引用证据。
 
 ### 6.3 问答相关表
 
@@ -1579,6 +1683,11 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
 | `INDEX_RUN_ATTEMPTS_EXHAUSTED` | 409 | 索引运行已达到最大尝试次数 |
 | `TASK_QUEUE_UNAVAILABLE` | 503 | 索引任务队列未启用或 broker 不可用 |
 | `CATEGORY_HAS_CHILDREN` | 409 | 分类仍有子分类 |
+| `DOMAIN_LABEL_NOT_FOUND` | 404/409 | 标签不存在，或标签已合并/废弃而不能新增关联 |
+| `DOMAIN_LABEL_EXISTS` | 409 | 同维度下已存在同名标签 |
+| `DOMAIN_LABEL_INVALID_MERGE` | 409 | 合并自身、跨维度、目标非 active 或多级合并 |
+| `DOMAIN_LABEL_ASSIGNMENT_NOT_FOUND` | 404 | 领域标签关联不存在 |
+| `DOMAIN_LABEL_INVALID_REVIEW_TRANSITION` | 409 | 当前审核状态不允许指定动作 |
 | `CONVERSATION_NOT_FOUND` | 404 | 会话不存在或不属于当前用户 |
 | `IMPORT_JOB_FAILED` | 409 | 导入任务失败 |
 | `CHAT_CONTEXT_TOO_LONG` | 422 | 上下文超过限制 |
@@ -1899,3 +2008,4 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 | 2026-09-27 | 新增索引任务补偿扫描，恢复超时 `pending` 和过期租约 | 不修改公开 HTTP 接口、SSE、数据库表结构或在线检索；Beat 和扫描默认关闭，重复投递依赖原子 `claim` 去重 | 定向测试 `28 passed, 2 warnings`；完整门禁后端 `266 passed, 3 warnings`、Ruff/前端测试/构建通过 |
 | 2026-09-27 | 新增 active index MySQL pointer 原子发布、chunk 运行标签和历史回填 | 新增 `0007` 字段和检索过滤；不增加公开 HTTP 接口，pointer 为空时保留历史可见性 | 真实 MySQL `0006 -> 0007` 往返、1008 个 pointer/12410 个 chunk 回填、完整门禁后端 `274 passed, 3 warnings` |
 | 2026-09-27 | 新增 Qdrant 旧点 GC 与 MySQL/Qdrant 对账 CLI | 不修改公开 HTTP API、SSE、迁移和在线检索；默认 dry-run，apply 在发布锁内二次确认引用 | 定向测试 `24 passed, 3 warnings`、Ruff 通过；真实库 12415/12415 dry-run 一致，`--apply` 未对真实数据执行 |
+| 2026-09-27 | 新增领域标签管理 API、版本级审核状态机和公开 approved 标签读取 | 新增 `0008` 三张表和公开/管理接口；不接入在线检索、查询改写或重排 | 定向测试 `5 passed, 2 warnings`、Ruff 通过；完整门禁后端 `287 passed, 1 skipped, 3 warnings`、前端类型检查/测试/构建通过 |

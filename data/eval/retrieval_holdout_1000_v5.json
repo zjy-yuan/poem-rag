@@ -1,0 +1,580 @@
+{
+  "version": "retrieval-holdout-1000-v5",
+  "description": "基于 chinese-gushiwen 1000 首开放语料的第五批独立检索 holdout。问题文本与 v1/v2/v3/v4 全部不相交，金标准作品标题不复用旧检索集。覆盖名句、短语、标题、作者、朝代、多证据、自然语言、长文本、结构化筛选，以及跨域、领域内缺实体和缺属性拒答。该集创建后冻结；若用于样本级修复，必须另建 v6 复核泛化。",
+  "cases": [
+    {
+      "id": "exact-v5-xiaochi-lotus-01",
+      "category": "exact_quote",
+      "question": "小荷才露尖尖角，早有蜻蜓立上头。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "小池",
+          "author_name": "杨万里",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text_contains": "小荷才露尖尖角，早有蜻蜓立上头"
+        }
+      ]
+    },
+    {
+      "id": "exact-v5-youzi-mother-02",
+      "category": "exact_quote",
+      "question": "谁言寸草心，报得三春晖。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "游子吟",
+          "author_name": "孟郊",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text_contains": "谁言寸草心，报得三春晖"
+        }
+      ]
+    },
+    {
+      "id": "exact-v5-chang-e-regret-03",
+      "category": "exact_quote",
+      "question": "嫦娥应悔偷灵药，碧海青天夜夜心。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "嫦娥",
+          "author_name": "李商隐",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text_contains": "嫦娥应悔偷灵药，碧海青天夜夜心"
+        }
+      ]
+    },
+    {
+      "id": "exact-v5-huanghelou-sail-04",
+      "category": "exact_quote",
+      "question": "孤帆远影碧空尽，唯见长江天际流。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "黄鹤楼送孟浩然之广陵",
+          "author_name": "李白",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text_contains": "孤帆远影碧空尽，唯见长江天际流"
+        }
+      ]
+    },
+    {
+      "id": "exact-v5-yujiaao-homesick-05",
+      "category": "exact_quote",
+      "question": "浊酒一杯家万里，燕然未勒归无计。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "渔家傲·秋思",
+          "author_name": "范仲淹",
+          "dynasty_name": "宋",
+          "granularity": "line",
+          "text_contains": "浊酒一杯家万里，燕然未勒归无计"
+        }
+      ]
+    },
+    {
+      "id": "exact-v5-tianmen-sail-06",
+      "category": "exact_quote",
+      "question": "两岸青山相对出，孤帆一片日边来。",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "望天门山",
+          "author_name": "李白",
+          "dynasty_name": "唐",
+          "granularity": "line",
+          "text_contains": "两岸青山相对出，孤帆一片日边来"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v5-songyou-clouds-01",
+      "category": "phrase",
+      "question": "浮云游子意，落日故人情",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "送友人",
+          "author_name": "李白",
+          "granularity": "line",
+          "text_contains": "浮云游子意，落日故人情"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v5-chongyang-homesick-02",
+      "category": "phrase",
+      "question": "独在异乡为异客，每逢佳节倍思亲",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "九月九日忆山东兄弟",
+          "author_name": "王维",
+          "granularity": "line",
+          "text_contains": "独在异乡为异客，每逢佳节倍思亲"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v5-close-friend-03",
+      "category": "phrase",
+      "question": "海内存知己，天涯若比邻",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "送杜少府之任蜀州 / 送杜少府之任蜀川",
+          "author_name": "王勃",
+          "granularity": "line",
+          "text_contains": "海内存知己，天涯若比邻"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v5-liangzhou-wine-04",
+      "category": "phrase",
+      "question": "醉卧沙场君莫笑，古来征战几人回",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "凉州词二首·其一",
+          "author_name": "王翰",
+          "granularity": "line",
+          "text_contains": "醉卧沙场君莫笑，古来征战几人回"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v5-dongting-mirror-05",
+      "category": "phrase",
+      "question": "湖光秋月两相和，潭面无风镜未磨",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "望洞庭",
+          "author_name": "刘禹锡",
+          "granularity": "line",
+          "text_contains": "湖光秋月两相和，潭面无风镜未磨"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v5-monk-door-06",
+      "category": "phrase",
+      "question": "鸟宿池边树，僧敲月下门",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "题李凝幽居",
+          "author_name": "贾岛",
+          "granularity": "line",
+          "text_contains": "鸟宿池边树，僧敲月下门"
+        }
+      ]
+    },
+    {
+      "id": "phrase-v5-letter-unfinished-07",
+      "category": "phrase",
+      "question": "复恐匆匆说不尽，行人临发又开封",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "秋思",
+          "author_name": "张籍",
+          "granularity": "line",
+          "text_contains": "复恐匆匆说不尽，行人临发又开封"
+        }
+      ]
+    },
+    {
+      "id": "title-v5-jiangchengzi-hunt-01",
+      "category": "title",
+      "question": "江城子·密州出猎",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "江城子·密州出猎",
+          "author_name": "苏轼",
+          "dynasty_name": "宋"
+        }
+      ]
+    },
+    {
+      "id": "title-v5-mulanhua-first-sight-02",
+      "category": "title",
+      "question": "木兰花·拟古决绝词柬友",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "木兰花·拟古决绝词柬友",
+          "author_name": "纳兰性德",
+          "dynasty_name": "清"
+        }
+      ]
+    },
+    {
+      "id": "title-v5-sumuzhe-nostalgia-03",
+      "category": "title",
+      "question": "苏幕遮·怀旧",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "苏幕遮·怀旧",
+          "author_name": "范仲淹",
+          "dynasty_name": "宋"
+        }
+      ]
+    },
+    {
+      "id": "title-v5-xiangjianhuan-red-04",
+      "category": "title",
+      "question": "相见欢·林花谢了春红",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "相见欢·林花谢了春红",
+          "author_name": "李煜",
+          "dynasty_name": "五代"
+        }
+      ]
+    },
+    {
+      "id": "author-v5-yangwanli-01",
+      "category": "author",
+      "question": "杨万里",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "杨万里"
+        }
+      ]
+    },
+    {
+      "id": "author-v5-wanganshi-02",
+      "category": "author",
+      "question": "王安石",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "王安石"
+        }
+      ]
+    },
+    {
+      "id": "author-v5-lishangyin-03",
+      "category": "author",
+      "question": "李商隐",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "author_name": "李商隐"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-v5-pre-qin-01",
+      "category": "dynasty",
+      "question": "先秦诗经作品",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "先秦"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-v5-five-dynasties-02",
+      "category": "dynasty",
+      "question": "五代词人作品",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "五代"
+        }
+      ]
+    },
+    {
+      "id": "dynasty-v5-yuan-03",
+      "category": "dynasty",
+      "question": "元代散曲作品",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "dynasty_name": "元"
+        }
+      ]
+    },
+    {
+      "id": "multi-v5-family-homesick-01",
+      "category": "multi_evidence",
+      "question": "《游子吟》的母爱牵挂与《九月九日忆山东兄弟》的异乡思念怎样共同表现亲情",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "游子吟",
+          "author_name": "孟郊",
+          "text_contains": "报得三春晖"
+        },
+        {
+          "poem_title": "九月九日忆山东兄弟",
+          "author_name": "王维",
+          "text_contains": "每逢佳节倍思亲"
+        }
+      ]
+    },
+    {
+      "id": "multi-v5-farewell-contrast-02",
+      "category": "multi_evidence",
+      "question": "《送友人》的依依惜别与《送杜少府之任蜀州》的豁达送别有什么不同",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "送友人",
+          "author_name": "李白",
+          "text_contains": "萧萧班马鸣"
+        },
+        {
+          "poem_title": "送杜少府之任蜀州 / 送杜少府之任蜀川",
+          "author_name": "王勃",
+          "text_contains": "天涯若比邻"
+        }
+      ]
+    },
+    {
+      "id": "multi-v5-autumn-nostalgia-03",
+      "category": "multi_evidence",
+      "question": "《渔家傲·秋思》的边塞乡愁和《苏幕遮·怀旧》的羁旅相思怎样对照",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "渔家傲·秋思",
+          "author_name": "范仲淹",
+          "text_contains": "将军白发征夫泪"
+        },
+        {
+          "poem_title": "苏幕遮·怀旧",
+          "author_name": "范仲淹",
+          "text_contains": "化作相思泪"
+        }
+      ]
+    },
+    {
+      "id": "natural-v5-xiaochi-summer-01",
+      "category": "natural_language",
+      "question": "杨万里《小池》怎样写泉眼树荫和新荷蜻蜓的初夏小景",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "小池",
+          "author_name": "杨万里",
+          "text_contains": "树阴照水爱晴柔"
+        }
+      ]
+    },
+    {
+      "id": "natural-v5-change-regret-02",
+      "category": "natural_language",
+      "question": "李商隐《嫦娥》怎样借月宫夜景写孤独与悔意",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "嫦娥",
+          "author_name": "李商隐",
+          "text_contains": "碧海青天夜夜心"
+        }
+      ]
+    },
+    {
+      "id": "natural-v5-luyou-people-03",
+      "category": "natural_language",
+      "question": "陆游《秋夜将晓出篱门迎凉有感二首》怎样写山河与遗民盼望",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "秋夜将晓出篱门迎凉有感二首",
+          "author_name": "陆游",
+          "text_contains": "遗民泪尽胡尘里，南望王师又一年"
+        }
+      ]
+    },
+    {
+      "id": "natural-v5-luyou-hero-04",
+      "category": "natural_language",
+      "question": "陆游《诉衷情·当年万里觅封侯》怎样写报国无门的悲愤",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "诉衷情·当年万里觅封侯",
+          "author_name": "陆游",
+          "text_contains": "胡未灭，鬓先秋，泪空流"
+        }
+      ]
+    },
+    {
+      "id": "natural-v5-sushi-guhong-05",
+      "category": "natural_language",
+      "question": "苏轼《卜算子·黄州定慧院寓居作》怎样借孤鸿写贬谪孤寂",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "卜算子·黄州定慧院寓居作",
+          "author_name": "苏轼",
+          "text_contains": "拣尽寒枝不肯栖，寂寞沙洲冷"
+        }
+      ]
+    },
+    {
+      "id": "long-v5-gulangyue-ending-01",
+      "category": "long_form",
+      "question": "《古朗月行》后半怎样从月宫想象转向忧思和悲怆",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "古朗月行",
+          "author_name": "李白",
+          "text_contains": "忧来其如何？凄怆摧心肝"
+        }
+      ]
+    },
+    {
+      "id": "long-v5-baimapian-pledge-02",
+      "category": "long_form",
+      "question": "《白马篇》结尾怎样写游侠捐躯赴难的志节",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "白马篇",
+          "author_name": "曹植",
+          "text_contains": "捐躯赴国难，视死忽如归"
+        }
+      ]
+    },
+    {
+      "id": "long-v5-wanghaichao-scene-03",
+      "category": "long_form",
+      "question": "《望海潮·东南形胜》下片怎样写杭州湖山与繁华",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "望海潮·东南形胜",
+          "author_name": "柳永",
+          "text_contains": "有三秋桂子，十里荷花"
+        }
+      ]
+    },
+    {
+      "id": "long-v5-guiyuantian-freedom-04",
+      "category": "long_form",
+      "question": "《归园田居·其一》结尾怎样写脱离官场后的自由",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "归园田居·其一",
+          "author_name": "陶渊明",
+          "text_contains": "久在樊笼里，复得返自然"
+        }
+      ]
+    },
+    {
+      "id": "long-v5-chaotianzi-satire-05",
+      "category": "long_form",
+      "question": "《朝天子·咏喇叭》怎样讽刺官船扰民和仗势横行",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "朝天子·咏喇叭",
+          "author_name": "王磐",
+          "text_contains": "眼见的吹翻了这家，吹伤了那家"
+        }
+      ]
+    },
+    {
+      "id": "structured-v5-hezhizhang-willow-01",
+      "category": "structured_filter",
+      "question": "唐代贺知章借柳树和春风写早春的七言绝句",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "咏柳 / 柳枝词",
+          "author_name": "贺知章",
+          "dynasty_name": "唐",
+          "text_contains": "二月春风似剪刀"
+        }
+      ]
+    },
+    {
+      "id": "structured-v5-wanggong-goose-02",
+      "category": "structured_filter",
+      "question": "明代王恭借春雁写江南虽好仍思乡的七言绝句",
+      "expected": "evidence",
+      "gold_evidence": [
+        {
+          "poem_title": "春雁",
+          "author_name": "王恭",
+          "dynasty_name": "明",
+          "text_contains": "江南虽好是他乡"
+        }
+      ]
+    },
+    {
+      "id": "no-answer-v5-kafka-rebalance-01",
+      "category": "no_answer_cross_domain",
+      "question": "Kafka 消费者组再平衡时分区分配如何迁移",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v5-jvm-g1-02",
+      "category": "no_answer_cross_domain",
+      "question": "JVM G1 收集器如何根据停顿目标选择回收区域",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v5-postgres-mvcc-03",
+      "category": "no_answer_cross_domain",
+      "question": "PostgreSQL MVCC 如何通过事务快照实现可重复读",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v5-tengwangge-04",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "王勃《滕王阁序》的译文是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v5-yueyanglou-05",
+      "category": "no_answer_in_domain_missing_entity",
+      "question": "范仲淹《岳阳楼记》的主题是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v5-yongliu-year-06",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "贺知章《咏柳》创作于哪一年",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v5-hezhizhang-courtesy-07",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "贺知章的字和号分别是什么",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    },
+    {
+      "id": "no-answer-v5-change-location-08",
+      "category": "no_answer_in_domain_missing_attribute",
+      "question": "李商隐创作《嫦娥》时住在哪里",
+      "expected": "no_evidence",
+      "gold_evidence": []
+    }
+  ]
+}

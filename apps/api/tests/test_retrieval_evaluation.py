@@ -57,6 +57,12 @@ HOLDOUT_1000_V4_DATASET_PATH = (
     / "eval"
     / "retrieval_holdout_1000_v4.json"
 )
+HOLDOUT_1000_V5_DATASET_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "data"
+    / "eval"
+    / "retrieval_holdout_1000_v5.json"
+)
 EVALUATE_RETRIEVAL_SCRIPT_PATH = (
     Path(__file__).resolve().parents[1] / "scripts" / "evaluate_retrieval.py"
 )
@@ -628,6 +634,99 @@ def test_holdout_1000_v4_gold_evidence_exists_in_converted_corpus(
     converted_corpus_records: list[dict[str, object]],
 ) -> None:
     dataset = load_evaluation_dataset(HOLDOUT_1000_V4_DATASET_PATH)
+    records = converted_corpus_records
+
+    for case in dataset.cases:
+        for selector in case.gold_evidence:
+            matches = [
+                record
+                for record in records
+                if selector.poem_title is None
+                or record["title"] == selector.poem_title
+            ]
+            if selector.author_name is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if record["author_name"] == selector.author_name
+                ]
+            if selector.dynasty_name is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if record["dynasty_name"] == selector.dynasty_name
+                ]
+            if selector.text_contains is not None:
+                matches = [
+                    record
+                    for record in matches
+                    if selector.text_contains in record["content"]
+                ]
+            assert matches, f"{case.id} 的金标准无法在当前转换后语料中定位"
+
+
+def test_holdout_1000_v5_dataset_has_expected_coverage() -> None:
+    dataset = load_evaluation_dataset(HOLDOUT_1000_V5_DATASET_PATH)
+    previous_datasets = [
+        load_evaluation_dataset(HOLDOUT_1000_DATASET_PATH),
+        load_evaluation_dataset(HOLDOUT_1000_V2_DATASET_PATH),
+        load_evaluation_dataset(HOLDOUT_1000_V3_DATASET_PATH),
+        load_evaluation_dataset(HOLDOUT_1000_V4_DATASET_PATH),
+    ]
+    answerable = [case for case in dataset.cases if case.expected == "evidence"]
+    unanswerable = [
+        case for case in dataset.cases if case.expected == "no_evidence"
+    ]
+    previous_titles = {
+        selector.poem_title
+        for previous_dataset in previous_datasets
+        for case in previous_dataset.cases
+        for selector in case.gold_evidence
+        if selector.poem_title is not None
+    }
+    current_titles = {
+        selector.poem_title
+        for case in dataset.cases
+        for selector in case.gold_evidence
+        if selector.poem_title is not None
+    }
+
+    assert dataset.version == "retrieval-holdout-1000-v5"
+    assert len(dataset.cases) == 46
+    assert len(answerable) == 38
+    assert len(unanswerable) == 8
+    assert len({case.id for case in dataset.cases}) == len(dataset.cases)
+    assert len({case.question for case in dataset.cases}) == len(dataset.cases)
+    assert {case.question for case in dataset.cases}.isdisjoint(
+        {
+            case.question
+            for previous_dataset in previous_datasets
+            for case in previous_dataset.cases
+        }
+    )
+    assert current_titles.isdisjoint(previous_titles)
+
+    categories = {case.category for case in dataset.cases}
+    assert {
+        "exact_quote",
+        "phrase",
+        "title",
+        "author",
+        "dynasty",
+        "multi_evidence",
+        "natural_language",
+        "long_form",
+        "structured_filter",
+        "no_answer_cross_domain",
+        "no_answer_in_domain_missing_entity",
+        "no_answer_in_domain_missing_attribute",
+    } <= categories
+
+
+def test_holdout_1000_v5_gold_evidence_exists_in_converted_corpus(
+    converted_corpus_records: list[dict[str, object]],
+) -> None:
+    dataset = load_evaluation_dataset(HOLDOUT_1000_V5_DATASET_PATH)
     records = converted_corpus_records
 
     for case in dataset.cases:

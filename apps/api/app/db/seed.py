@@ -11,6 +11,12 @@ from app.core.text import normalize_content, normalize_lookup
 from app.db.session import create_database_engine, create_session_factory
 from app.models.author import Author
 from app.models.category import Category
+from app.models.domain_label import (
+    DomainLabel,
+    DomainLabelAlias,
+    DomainLabelDimension,
+    DomainLabelStatus,
+)
 from app.models.dynasty import Dynasty
 from app.models.poem import Poem
 from app.models.user import UserRole
@@ -119,6 +125,117 @@ POEMS = [
         "summary": "极简的景物排列里，留下旅人孤行天涯的背影。",
         "categories": ["曲", "思乡"],
         "tags": ["秋思", "思乡"],
+    },
+]
+
+DOMAIN_LABELS = [
+    {
+        "dimension": DomainLabelDimension.IMAGERY.value,
+        "name": "月",
+        "description": "明月、月光等常见意象，常连接思乡、怀人和人生感慨。",
+        "aliases": ["明月", "月亮", "月光"],
+    },
+    {
+        "dimension": DomainLabelDimension.IMAGERY.value,
+        "name": "流水",
+        "description": "常与时光流逝、离愁和人生变化相关。",
+        "aliases": ["逝水", "江水"],
+    },
+    {
+        "dimension": DomainLabelDimension.IMAGERY.value,
+        "name": "落花",
+        "description": "常与春逝、伤春和身世飘零相关。",
+        "aliases": ["花落", "残花"],
+    },
+    {
+        "dimension": DomainLabelDimension.IMAGERY.value,
+        "name": "杨柳",
+        "description": "古典诗词中的送别与离情意象。",
+        "aliases": ["柳", "垂柳"],
+    },
+    {
+        "dimension": DomainLabelDimension.IMAGERY.value,
+        "name": "夕阳",
+        "description": "常表现迟暮、怀古、羁旅和离愁。",
+        "aliases": ["落日", "斜阳"],
+    },
+    {
+        "dimension": DomainLabelDimension.IMAGERY.value,
+        "name": "鸿雁",
+        "description": "常与传书、思乡、远行和季节变化相关。",
+        "aliases": ["雁", "归雁"],
+    },
+    {
+        "dimension": DomainLabelDimension.EMOTION.value,
+        "name": "思乡",
+        "description": "对故乡、家园和旧居的思念。",
+        "aliases": ["想家", "乡愁"],
+    },
+    {
+        "dimension": DomainLabelDimension.EMOTION.value,
+        "name": "离别",
+        "description": "送别、分别以及由此产生的不舍。",
+        "aliases": ["送别", "别离"],
+    },
+    {
+        "dimension": DomainLabelDimension.EMOTION.value,
+        "name": "旷达",
+        "description": "面对人生变化时的开阔、超脱和通达。",
+        "aliases": ["豁达", "达观"],
+    },
+    {
+        "dimension": DomainLabelDimension.EMOTION.value,
+        "name": "伤春",
+        "description": "因春光消逝、花落春残而生的惋惜。",
+        "aliases": ["惜春"],
+    },
+    {
+        "dimension": DomainLabelDimension.EMOTION.value,
+        "name": "孤独",
+        "description": "独处、漂泊或知音难遇产生的寂寞感。",
+        "aliases": ["寂寞", "孤寂"],
+    },
+    {
+        "dimension": DomainLabelDimension.THEME.value,
+        "name": "羁旅",
+        "description": "远行、漂泊、客居及旅途见闻。",
+        "aliases": ["旅愁", "漂泊"],
+    },
+    {
+        "dimension": DomainLabelDimension.THEME.value,
+        "name": "登临",
+        "description": "登高、登楼、临水所见以及由此生发的感慨。",
+        "aliases": ["登高", "登楼"],
+    },
+    {
+        "dimension": DomainLabelDimension.THEME.value,
+        "name": "中秋",
+        "description": "中秋赏月、怀人和团圆主题。",
+        "aliases": ["仲秋"],
+    },
+    {
+        "dimension": DomainLabelDimension.THEME.value,
+        "name": "山水田园",
+        "description": "自然山水、田园生活和隐逸情趣。",
+        "aliases": ["山水", "田园"],
+    },
+    {
+        "dimension": DomainLabelDimension.THEME.value,
+        "name": "边塞",
+        "description": "边地风光、军旅生活和征戍情怀。",
+        "aliases": ["边关", "从军"],
+    },
+    {
+        "dimension": DomainLabelDimension.ALLUSION.value,
+        "name": "庄周梦蝶",
+        "description": "出自《庄子》，常表现人生如梦或物我难分。",
+        "aliases": ["梦蝶", "蝴蝶梦"],
+    },
+    {
+        "dimension": DomainLabelDimension.ALLUSION.value,
+        "name": "霸王别姬",
+        "description": "项羽与虞姬诀别的典故，常关联英雄末路。",
+        "aliases": ["虞姬", "楚帐"],
     },
 ]
 
@@ -235,6 +352,65 @@ async def seed_catalog(session: AsyncSession) -> dict[str, int]:
     return created
 
 
+async def seed_domain_labels(session: AsyncSession) -> dict[str, int]:
+    created = {
+        "labels": 0,
+        "existing_labels": 0,
+        "aliases": 0,
+    }
+
+    for item in DOMAIN_LABELS:
+        dimension = str(item["dimension"])
+        canonical_name = str(item["name"])
+        normalized_name = normalize_lookup(canonical_name)
+        label = await session.scalar(
+            select(DomainLabel).where(
+                DomainLabel.dimension == dimension,
+                DomainLabel.normalized_name == normalized_name,
+            )
+        )
+        if label is None:
+            label = DomainLabel(
+                dimension=dimension,
+                canonical_name=canonical_name,
+                normalized_name=normalized_name,
+                description=str(item["description"]),
+                status=DomainLabelStatus.ACTIVE.value,
+            )
+            session.add(label)
+            await session.flush()
+            created["labels"] += 1
+        else:
+            created["existing_labels"] += 1
+
+        if label.status != DomainLabelStatus.ACTIVE.value:
+            continue
+
+        aliases = item["aliases"]
+        assert isinstance(aliases, list)
+        for alias in aliases:
+            alias_text = str(alias)
+            normalized_alias = normalize_lookup(alias_text)
+            alias_exists = await session.scalar(
+                select(DomainLabelAlias.id).where(
+                    DomainLabelAlias.domain_label_id == label.id,
+                    DomainLabelAlias.normalized_alias == normalized_alias,
+                )
+            )
+            if alias_exists is None:
+                session.add(
+                    DomainLabelAlias(
+                        domain_label_id=label.id,
+                        alias=alias_text,
+                        normalized_alias=normalized_alias,
+                    )
+                )
+                created["aliases"] += 1
+
+    await session.commit()
+    return created
+
+
 async def seed_admin(session: AsyncSession, settings: Settings) -> bool:
     configured_values = (
         settings.seed_admin_email,
@@ -286,9 +462,13 @@ async def main() -> None:
     session_factory = create_session_factory(engine)
     async with session_factory() as session:
         created = await seed_catalog(session)
+        domain_labels = await seed_domain_labels(session)
         admin_created = await seed_admin(session, settings)
     await engine.dispose()
-    print(f"Seed completed: catalog={created}, admin_created={admin_created}")
+    print(
+        "Seed completed: "
+        f"catalog={created}, domain_labels={domain_labels}, admin_created={admin_created}"
+    )
 
 
 if __name__ == "__main__":
