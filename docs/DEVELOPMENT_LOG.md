@@ -5828,3 +5828,66 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
    不足以支持在线结构化过滤。
 3. 下一步建立 20 至 30 首、覆盖四维度且独立于 AI/导入结果的人工金标准，再评估
    过滤与重排；在线标签策略继续保持关闭。
+
+### [2026-09-27] 领域标签独立盲标采样
+
+#### 本次目标
+
+- 在首批同源金标准之外建立独立的 20 至 30 首人工标注候选，补足四个标签维度的
+  泛化评估基础。
+- 在人工标注前冻结样本，避免根据 AI 预测、公开数据集标签或既有审核结论反向选样。
+- 只生成离线清单，不写标签关联、不改审核状态、不接入在线过滤或重排。
+
+#### 做出的决定
+
+- 本轮固定采样 24 首，按唐代诗、宋代作品、其他朝代、长文本或词曲四层各取 6 首。
+- 默认来源固定为 `aopao-chinese-gushiwen`，并排除 `domain-label-gold-v1` 的 5 个
+  `external_id`。
+- 每层使用 `sha256(seed + "\0" + external_id)` 确定性排序；单个作者最多 2 首，
+  名额不足时在同一分层内按确定性顺序补足。
+- 采样前校验 `PoemSource.content_hash` 与当前 `PoemVersion.snapshot` 正文哈希一致，
+  不一致时直接失败，避免人工标注落在错误版本上。
+- 每个候选记录行号正文、来源信息、正文哈希和四个空白人工标签维度；Schema 明确
+  禁止在采样阶段预填标签。
+- 分层使用可解释启发式，不声明为严格体裁分类。标题不含 `·` 且正文较短的词作仍
+  可能进入朝代分层；本轮不在看过候选后调整规则。
+
+#### 完成内容
+
+- `apps/api/app/schemas/domain_label_sampling.py`：定义采样清单、逐作品记录、空白
+  人工标签位、分层枚举和数量/唯一性/排除项校验。
+- `apps/api/app/evaluation/domain_label_sampling.py`：实现只读候选加载、正文哈希
+  校验、四层配额、作者上限和确定性采样。
+- `apps/api/scripts/prepare_domain_label_gold_sampling.py`：新增采样 CLI，默认输出
+  `data/eval/domain_label_gold_v2_sampling.json`。
+- `apps/api/tests/test_domain_label_sampling.py`：覆盖确定性、分层、排除、哈希
+  不一致、Schema 和冻结文件契约。
+- `data/eval/domain_label_gold_v2_sampling.json`：保存 24 首待人工标注作品，四层
+  各 6 首，所有人工标签位为空。
+- `docs/features/20260927-independent-domain-label-sampling.md`：记录目标、非目标、
+  采样规则、命令、输出契约和人工标注边界。
+- `README.md`、`docs/PROJECT_GUIDE.md`、`docs/features/README.md` 和
+  `docs/features/20260927-domain-annotation-schema.md`：同步当前状态、命令和后续
+  v2 金标准冻结要求。
+
+#### 验证结果
+
+- 采样定向测试：`5 passed, 2 warnings`；警告来自既存 LangGraph 和 Starlette 依赖。
+- 完整 `.\scripts\verify.ps1` 通过：Ruff 通过，后端 `317 passed, 1 skipped,
+  3 warnings`，前端 typecheck 通过、Vitest `9 passed`、Vite 生产构建通过；仅保留
+  既存的前端主包超过 `500 kB` 警告。
+- 真实 MySQL 只读采样：24 首，四层各 6 首，单作者最多 2 首；排除 v1 的 5 首，
+  所有 `manual_labels` 为空。
+- 部分文本在控制台显示时可能受 PowerShell 编码影响而乱码，但冻结 JSON 为正常
+  UTF-8。
+- 采样输出保留 `generated_at`，因此同参数重复运行的选择结果稳定，但文件字节不会
+  完全一致。
+
+#### 风险与下一步
+
+1. 当前清单仍是候选池，不等于 `domain-label-gold-v2`。人工标签必须独立填写并完成
+   复核后，才能冻结为正式金标准。
+2. 分层规则是采样启发式，不能用于作品体裁分类或在线过滤。
+3. 人工标注需要严格按证据行号和 `critical` 规则执行，避免把作品常识或模型记忆
+   当成原文证据。
+4. 在线标签过滤和重排继续保持关闭；v2 覆盖和质量达标后再设计单独实验。

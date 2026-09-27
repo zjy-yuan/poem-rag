@@ -58,6 +58,7 @@ docs/features/20260925-hybrid-retrieval-baseline.md
 35. `20260927-index-vector-reconciliation.md`
 36. `20260927-independent-1000-holdout-v5.md`
 37. `20260927-domain-annotation-schema.md`
+38. `20260927-independent-domain-label-sampling.md`
 
 ## 2. 模板
 

@@ -203,7 +203,10 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
 覆盖率 `0.004960`；`theme` 保留 3 条在线关联、覆盖 3 首，仍有 7 个 active 标签
 没有在线可见关联，因此标签过滤和重排继续关闭。`domain-label-gold-v1` 当前为
 5 首、14 条标签同源一致性检查，micro/macro P/R/F1 均为 `1.0`、TP/FP/FN 为
-`14/0/0`；allusion 尚无金标准，不能把该结果解释为标签器泛化精度。
+`14/0/0`；allusion 尚无金标准，不能把该结果解释为标签器泛化精度。独立盲标采样已
+在 v1 之外冻结 24 首候选，按唐代诗、宋代作品、其他朝代、长文本或词曲四层各取
+6 首；清单排除 v1 的 5 个 `external_id`，人工标签位全部空白，当前只代表待标注
+候选池，尚未形成 v2 金标准。
 结构化切块、MySQL 词法检索、Embedding Provider、Qdrant 最小索引
 闭环、Dense/Hybrid 在线检索已经实现；真实库现有 1008 首已发布作品、1009 个作品
 版本和 12415 个 chunks。固定来源的 1000 首分层语料完成 902 个新建和 98 个未变化
@@ -242,6 +245,7 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
 | 领域标签人工审核 | 已实现 | 首批 15 条样本完成审核与人工复查，最终 `approved=14`、`archived=1`；审核时修正 7 条行号并修正 1 条证据文本；当前 5/1008 首作品拥有在线可见标签 |
 | 领域标签离线审计 | 已实现 | 只读统计当前已发布作品的标签覆盖率、审核积压、来源构成、数量分布和治理风险；人工复查后 `approved=14`、`archived=1`、在线覆盖率 `0.004960`、7 个 active 标签尚无在线可见关联，尚不能进入在线过滤 |
 | 领域标签金标准评估 | 已实现（CLI，默认只读） | 校验内容哈希、标签解析和证据行号后，按 `(external_id, label_id)` 计算 micro P/R/F1、有金标准维度的 macro P/R/F1、critical 漏标率、证据错误率和维度覆盖缺口；首批 5 首、14 条标签结果为 `1.0 / 1.0 / 1.0`、TP/FP/FN `14/0/0`，但样本同源且 allusion 为 `0/4`，只证明链路一致，不证明泛化精度 |
+| 领域标签独立盲标采样 | 已实现（CLI，待人工标注） | 排除 v1 的 5 首后，从 1008 首已发布作品按四层各 6 首采样，使用固定种子、作者上限和正文哈希校验；输出 24 首全空白标签位清单，不写数据库、不生成标签，也不改变在线检索策略 |
 | 诗词 CRUD 与发布状态 | 已实现 | 草稿、发布、撤回、软删除、恢复 |
 | 诗词公开浏览与基础搜索 | 已实现 | 基于 MySQL 的目录查询 |
 | MySQL 迁移与种子 | 已实现 | Alembic head 为 `20260927_0008`；真实 MySQL 已完成 `0006 -> 0007` 往返和 `0007 -> 0008` 升级，`alembic check` 无待生成操作 |
@@ -299,6 +303,7 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
 .\.venv\Scripts\python.exe apps\api\scripts\import_domain_labels.py `
   --input data\import\example_domain_labels_v2.json `
   --dry-run
+.\.venv\Scripts\python.exe apps\api\scripts\prepare_domain_label_gold_sampling.py
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --top-k 5
 .\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
   --json-output data\eval\reports\domain_label_audit_20260927_human_review.json

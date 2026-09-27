@@ -1,6 +1,6 @@
 # 领域标注 Schema 设计与治理边界
 
-> 状态：迁移、受控标签种子、管理 API、管理页、诗词编辑弹窗治理、离线语料审计、首批人工复查和标签金标准评估已实现；在线检索尚未接入
+> 状态：迁移、受控标签种子、管理 API、管理页、诗词编辑弹窗治理、离线语料审计、首批人工复查、标签金标准评估和独立盲标采样已实现；在线检索尚未接入
 > 创建日期：2026-09-27
 > 最近更新：2026-09-27
 > 关联任务：为意象、情感、题材和典故建立可追溯、可审核的版本级标签
@@ -352,6 +352,36 @@ theme `3/8`、allusion `0/4`。allusion 尚无金标准样本，其单维度 P/R
 - 检索层：标签过滤前后 Recall@5、MRR、nDCG@5 和拒答准确率。
 - 系统层：标签查询延迟、候选缩减率、无结果率和审核积压量。
 
+### 10.5 独立盲标采样（已实现，待人工标注）
+
+为补足 v1 的同源问题，采样 CLI 从 `aopao-chinese-gushiwen` 的已发布、未删除作品
+中排除 v1 的 5 个 `external_id`，按唐代诗、宋代作品、其他朝代、长文本或词曲四层
+各取 6 首。每层使用固定种子和 `external_id` 的 SHA-256 顺序，单个作者最多 2 首；
+名额不足时在同一分层内确定性补足。
+
+复现命令：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\prepare_domain_label_gold_sampling.py
+```
+
+默认输出 `data/eval/domain_label_gold_v2_sampling.json`，当前冻结 24 首：
+
+| 分层 | 数量 |
+| --- | ---: |
+| `tang-poem` | 6 |
+| `song-work` | 6 |
+| `other-dynasty` | 6 |
+| `long-text-or-ci` | 6 |
+
+采样器只读取作品、当前版本、来源和作者/朝代信息，校验来源内容哈希与当前版本正文
+一致；它不读取标签表、不调用模型、不写数据库、不改变审核状态。清单中
+`annotation_status` 全部为 `pending`，四个 `manual_labels` 维度全部为空。
+
+分层是采样结构，不是严格体裁分类；正文少于 10 行且标题不含 `·` 的词作仍可能进入
+朝代分层。当前不在看过候选后调整规则，以免破坏盲标边界。完整契约见
+[领域标签独立盲标采样](20260927-independent-domain-label-sampling.md)。
+
 ## 11. 测试计划
 
 | 层级 | 覆盖内容 |
@@ -387,6 +417,7 @@ theme `3/8`、allusion `0/4`。allusion 尚无金标准样本，其单维度 P/R
 - [x] 完成首批 15 条人工审核与复查，最终形成 `approved=14`、`archived=1`
 - [x] 新增复查修订版 v2 重放数据集，移除已归档的错误标签
 - [x] 建立人工标签金标准并计算 precision、recall 和 macro F1
+- [x] 建立独立于 v1 的 24 首盲标采样清单
 - [ ] 再决定是否用于在线过滤和重排
 
 实现记录：
@@ -460,6 +491,16 @@ theme `3/8`、allusion `0/4`。allusion 尚无金标准样本，其单维度 P/R
   `critical` 标签及各维度目标数量。
 - `data/eval/reports/domain_label_gold_v1_20260927.json`：保存首次真实评估结果和
   逐作品缺口。
+- `apps/api/app/schemas/domain_label_sampling.py`：定义盲标清单、逐作品空白标签位、
+  分层结果和校验；禁止清单预填人工标签。
+- `apps/api/app/evaluation/domain_label_sampling.py`：实现只读候选加载、正文哈希
+  校验、四层确定性采样和单作者上限。
+- `apps/api/scripts/prepare_domain_label_gold_sampling.py`：新增只读采样 CLI，默认
+  排除 `domain_label_gold_v1.json` 并输出冻结候选清单。
+- `apps/api/tests/test_domain_label_sampling.py`：覆盖确定性、分层、走样排除、哈希
+  不一致、Schema 和冻结文件契约。
+- `data/eval/domain_label_gold_v2_sampling.json`：冻结 24 首待人工标注作品，当前
+  人工标签位全部为空。
 
 ## 14. 决策与变更记录
 
@@ -478,3 +519,6 @@ theme `3/8`、allusion `0/4`。allusion 尚无金标准样本，其单维度 P/R
 | 2026-09-27 | 人工复查发现证据不足时通过 `approved -> archived` 退审，并单独维护 v2 重放数据集 | 状态机保留历史证据，同时避免新环境再次导入已确认错误的标签 |
 | 2026-09-27 | 金标准评估以 `(external_id, label_id)` 匹配，并只让有金标准的维度进入 macro | 避免同一作品重复来源抬高分值，也避免空维度稀释当前指标 |
 | 2026-09-27 | 首批金标准只用于验证评估链路，不用 `1.0` 证明泛化质量 | 样本与审核结果同源，且 allusion 尚无样本；独立样本建立前不能开启在线过滤 |
+| 2026-09-27 | 独立样本使用固定种子、四层各 6 首和单作者最多 2 首 | 在人工成本可控的前提下降低顺序、作者和文本结构偏置 |
+| 2026-09-27 | 候选清单不预填标签，也不读取标签表 | 保证人工标注独立于 AI、公开数据集和既有审核结果 |
+| 2026-09-27 | 不根据观察到的候选调整分层规则 | 先冻结盲标清单，避免结果导向采样 |

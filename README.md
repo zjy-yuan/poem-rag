@@ -43,6 +43,7 @@
 35. 首批 15 条领域标签关联已完成审核与人工复查：14 条保持 `approved`，序号 3 的《静夜思》`theme:羁旅` 因证据只能支持望月思乡而归档为 `archived`。当前 1008 首已发布作品中有 5 首拥有在线可见标签，在线标签覆盖率 `0.004960`；`theme` 保留 3 条在线关联、覆盖 3 首，仍有 7 个 active 标签没有在线可见关联，标签过滤和重排继续关闭。
 36. 独立 v5 holdout 已完成一次性真实盲测并转为观察集：检索在线组合为 45/46、Recall@5 `1.0`、nDCG@5 `0.917031`、MRR `0.888158`，唯一失败为领域内缺属性样本 `no-answer-v5-change-location-08`；生成层为 24/26、拒答 `10/10`、引用 P/R `1.0 / 1.0`，两条失败均为严格原文事实短语未命中。盲测后不根据 v5 修改阈值、权重、Prompt 或策略；后续样本级修复和策略比较必须另建 v6。
 37. 领域标签金标准评估已实现为只读 CLI：冻结 5 首作品、14 条人工确认标签和 8 条 `critical` 标签，按 `(external_id, label_id)` 计算 micro/macro P/R/F1、严重漏标率、证据错误率和维度覆盖缺口。首次真实结果为 micro/macro P/R/F1 `1.0`、TP/FP/FN `14/0/0`、critical 漏标 `0`、证据错误 `0`，但样本与审核结果同源且 allusion 仍为 `0/4`，因此只能证明评估链路一致，不能证明泛化精度，在线过滤和重排继续关闭。
+38. 领域标签独立盲标采样已实现为只读 CLI：从 `aopao-chinese-gushiwen` 的已发布作品排除 v1 的 5 首同源样本后，按唐代诗、宋代作品、其他朝代、长文本或词曲四层各取 6 首，并校验来源内容哈希。冻结清单共 24 首、全部 `pending` 且人工标签位为空；它只建立独立候选池，不写数据库、不产生标签，也不代表 v2 金标准已经完成。
 
 ## 文档入口
 
@@ -57,9 +58,10 @@
 接口的实际运行时定义以 FastAPI `/openapi.json` 和 `/docs` 为准，目标契约以
 `docs/FRONTEND_BACKEND_CONTRACT.md` 为准。两者不一致时应先修复差异，再继续扩展功能。
 
-领域标签批量导入、离线审计与金标准评估：
+领域标签独立采样、批量导入、离线审计与金标准评估：
 
 ```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\prepare_domain_label_gold_sampling.py
 .\.venv\Scripts\python.exe apps\api\scripts\import_domain_labels.py `
   --input data\import\example_domain_labels_v2.json `
   --dry-run
@@ -80,6 +82,12 @@
 macro 只统计已有金标准的三个维度，allusion 不进入均值。首批样本的复查结果和修正
 明细见
 [领域标注 Schema 设计与治理边界](docs/features/20260927-domain-annotation-schema.md)。
+
+独立盲标采样默认输出 `data/eval/domain_label_gold_v2_sampling.json`，共 24 首，
+四个分层各 6 首，单作者最多 2 首；清单会排除 v1 的 5 个 `external_id`，且所有
+人工标签位保持空白。该命令只读 MySQL 并写清单文件；人工标注和二次复核完成后，才
+能另行冻结 `domain-label-gold-v2` 并参与独立质量评估。设计边界见
+[领域标签独立盲标采样](docs/features/20260927-independent-domain-label-sampling.md)。
 
 ## 本地开发
 
