@@ -1,0 +1,91 @@
+{
+  "model": "deepseek-chat",
+  "provider_mode": "real",
+  "retrieval_mode": "real",
+  "concurrency": 4,
+  "request_count": 4,
+  "success_count": 4,
+  "error_count": 0,
+  "wall_time_ms": 5536.118,
+  "throughput_requests_per_second": 0.723,
+  "average_latency_ms": 3998.65,
+  "p95_latency_ms": 5535.97,
+  "average_ttft_ms": 2132.567,
+  "p95_ttft_ms": 2343.857,
+  "average_stage_timings_ms": {
+    "rewrite": 0.088,
+    "retrieval": 1083.902,
+    "assess": 600.963,
+    "generation": 2283.382,
+    "validate": 0.024
+  },
+  "p95_stage_timings_ms": {
+    "rewrite": 0.121,
+    "retrieval": 1444.852,
+    "assess": 677.397,
+    "generation": 3630.153,
+    "validate": 0.035
+  },
+  "results": [
+    {
+      "case_id": "profile-duange",
+      "latency_ms": 5535.97,
+      "ttft_ms": 2282.827,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.121,
+        "retrieval": 1444.852,
+        "assess": 424.202,
+        "generation": 3630.153,
+        "validate": 0.017
+      }
+    },
+    {
+      "case_id": "profile-guancanghai",
+      "latency_ms": 4216.548,
+      "ttft_ms": 2343.857,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.095,
+        "retrieval": 1373.285,
+        "assess": 625.275,
+        "generation": 2187.892,
+        "validate": 0.035
+      }
+    },
+    {
+      "case_id": "profile-wangyue",
+      "latency_ms": 2894.929,
+      "ttft_ms": 1854.558,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.073,
+        "retrieval": 758.622,
+        "assess": 677.397,
+        "generation": 1428.55,
+        "validate": 0.022
+      }
+    },
+    {
+      "case_id": "profile-shizhi",
+      "latency_ms": 3347.153,
+      "ttft_ms": 2049.027,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.065,
+        "retrieval": 758.85,
+        "assess": 676.977,
+        "generation": 1886.935,
+        "validate": 0.021
+      }
+    }
+  ]
+}

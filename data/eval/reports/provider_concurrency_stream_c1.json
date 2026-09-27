@@ -1,0 +1,56 @@
+{
+  "model": "deepseek-chat",
+  "mode": "stream",
+  "concurrency": 1,
+  "request_count": 4,
+  "success_count": 4,
+  "error_count": 0,
+  "wall_time_ms": 3916.634,
+  "throughput_requests_per_second": 1.021,
+  "average_latency_ms": 979.084,
+  "p95_latency_ms": 1049.482,
+  "average_ttft_ms": 373.09,
+  "p95_ttft_ms": 496.403,
+  "results": [
+    {
+      "workload_id": "stream-1",
+      "mode": "stream",
+      "latency_ms": 1006.88,
+      "ttft_ms": 391.127,
+      "output_chars": 148,
+      "delta_count": 112,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "workload_id": "stream-2",
+      "mode": "stream",
+      "latency_ms": 1000.236,
+      "ttft_ms": 350.12,
+      "output_chars": 137,
+      "delta_count": 99,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "workload_id": "stream-3",
+      "mode": "stream",
+      "latency_ms": 859.739,
+      "ttft_ms": 254.709,
+      "output_chars": 165,
+      "delta_count": 118,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "workload_id": "stream-4",
+      "mode": "stream",
+      "latency_ms": 1049.482,
+      "ttft_ms": 496.403,
+      "output_chars": 127,
+      "delta_count": 101,
+      "error_code": null,
+      "error_message": null
+    }
+  ]
+}

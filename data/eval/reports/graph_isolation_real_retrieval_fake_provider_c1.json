@@ -1,0 +1,91 @@
+{
+  "model": "fake-graph-provider",
+  "provider_mode": "fake",
+  "retrieval_mode": "real",
+  "concurrency": 1,
+  "request_count": 4,
+  "success_count": 4,
+  "error_count": 0,
+  "wall_time_ms": 4775.366,
+  "throughput_requests_per_second": 0.838,
+  "average_latency_ms": 1193.736,
+  "p95_latency_ms": 1879.694,
+  "average_ttft_ms": 1150.353,
+  "p95_ttft_ms": 1837.353,
+  "average_stage_timings_ms": {
+    "rewrite": 0.162,
+    "retrieval": 1095.627,
+    "assess": 20.981,
+    "generation": 62.578,
+    "validate": 0.063
+  },
+  "p95_stage_timings_ms": {
+    "rewrite": 0.241,
+    "retrieval": 1781.773,
+    "assess": 22.112,
+    "generation": 62.653,
+    "validate": 0.106
+  },
+  "results": [
+    {
+      "case_id": "profile-duange",
+      "latency_ms": 1879.694,
+      "ttft_ms": 1837.353,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.133,
+        "retrieval": 1781.773,
+        "assess": 20.47,
+        "generation": 62.506,
+        "validate": 0.034
+      }
+    },
+    {
+      "case_id": "profile-guancanghai",
+      "latency_ms": 1492.313,
+      "ttft_ms": 1448.777,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.241,
+        "retrieval": 1392.078,
+        "assess": 20.547,
+        "generation": 62.593,
+        "validate": 0.037
+      }
+    },
+    {
+      "case_id": "profile-wangyue",
+      "latency_ms": 734.747,
+      "ttft_ms": 691.316,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.125,
+        "retrieval": 637.843,
+        "assess": 20.796,
+        "generation": 62.653,
+        "validate": 0.074
+      }
+    },
+    {
+      "case_id": "profile-shizhi",
+      "latency_ms": 668.188,
+      "ttft_ms": 623.966,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.148,
+        "retrieval": 570.813,
+        "assess": 22.112,
+        "generation": 62.559,
+        "validate": 0.106
+      }
+    }
+  ]
+}

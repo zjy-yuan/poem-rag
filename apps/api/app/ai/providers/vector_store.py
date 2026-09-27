@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import Any, Protocol, runtime_checkable
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,6 +28,12 @@ class VectorPoint:
     payload: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass(frozen=True, slots=True)
+class VectorPointSnapshot:
+    id: str
+    payload: dict[str, Any] = field(default_factory=dict)
+
+
 class VectorStorePort(Protocol):
     @property
     def collection(self) -> str: ...
@@ -39,3 +45,18 @@ class VectorStorePort(Protocol):
     async def delete(self, point_ids: list[str]) -> None: ...
 
     async def search(self, request: VectorSearchRequest) -> list[VectorSearchHit]: ...
+
+
+class VectorStoreInventoryPort(Protocol):
+    @property
+    def collection(self) -> str: ...
+
+    async def list_points(self) -> list[VectorPointSnapshot]: ...
+
+
+@runtime_checkable
+class BatchVectorStorePort(Protocol):
+    async def search_batch(
+        self,
+        requests: list[VectorSearchRequest],
+    ) -> list[list[VectorSearchHit]]: ...

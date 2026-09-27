@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -34,6 +36,7 @@ async def run_evaluation(
     strategy: str,
     min_score: float | None = None,
     rerank_candidate_limit: int = 30,
+    concurrency: int = 1,
 ) -> RetrievalEvaluationReport:
     from app.ai.providers.qdrant import create_qdrant_vector_store
     from app.ai.providers.qwen_embedding import create_qwen_embedding_provider
@@ -59,6 +62,8 @@ async def run_evaluation(
 
     if rerank_candidate_limit < top_k:
         raise ValueError("rerank_candidate_limit cannot be smaller than top_k")
+    if concurrency < 1:
+        raise ValueError("concurrency must be at least 1")
 
     dataset = load_evaluation_dataset(dataset_path)
     settings = get_settings()
@@ -72,31 +77,62 @@ async def run_evaluation(
     vector_store = None
     embedding_provider = None
     try:
-        async with session_factory() as session:
-            retrieval: RetrievalSearchPort
-            if strategy == "lexical":
-                retrieval = RetrievalService(session)
-            elif strategy == "dense":
-                embedding_provider = create_qwen_embedding_provider(settings)
-                vector_store = create_qdrant_vector_store(settings)
-                retrieval = DenseRetrievalService(
-                    session,
-                    embedding_provider=embedding_provider,
-                    vector_store=vector_store,
-                    min_score=effective_min_score,
-                )
-            elif strategy == "expanded":
-                retrieval = ExpandedRetrievalService(
-                    RetrievalService(session),
-                    LexiconQueryRewriter(),
-                    entity_resolver=RepositoryQueryEntityResolver(session),
-                    max_variants=settings.chat_query_variant_limit,
-                )
-            elif strategy in {"expanded-hybrid", "expanded-hybrid-rerank"}:
-                embedding_provider = create_qwen_embedding_provider(settings)
-                vector_store = create_qdrant_vector_store(settings)
-                expanded_hybrid = ExpandedRetrievalService(
-                    HybridRetrievalService(
+        if strategy in DENSE_STRATEGIES:
+            embedding_provider = create_qwen_embedding_provider(settings)
+            vector_store = create_qdrant_vector_store(settings)
+
+        @asynccontextmanager
+        async def retrieval_factory() -> AsyncIterator[RetrievalSearchPort]:
+            async with session_factory() as session:
+                retrieval: RetrievalSearchPort
+                if strategy == "lexical":
+                    retrieval = RetrievalService(session)
+                elif strategy == "dense":
+                    if embedding_provider is None or vector_store is None:
+                        raise RuntimeError("Dense 检索资源尚未初始化")
+                    retrieval = DenseRetrievalService(
+                        session,
+                        embedding_provider=embedding_provider,
+                        vector_store=vector_store,
+                        min_score=effective_min_score,
+                    )
+                elif strategy == "expanded":
+                    retrieval = ExpandedRetrievalService(
+                        RetrievalService(session),
+                        LexiconQueryRewriter(),
+                        entity_resolver=RepositoryQueryEntityResolver(session),
+                        max_variants=settings.chat_query_variant_limit,
+                    )
+                elif strategy in {"expanded-hybrid", "expanded-hybrid-rerank"}:
+                    if embedding_provider is None or vector_store is None:
+                        raise RuntimeError("Hybrid 检索资源尚未初始化")
+                    expanded_hybrid = ExpandedRetrievalService(
+                        HybridRetrievalService(
+                            RetrievalService(session),
+                            DenseRetrievalService(
+                                session,
+                                embedding_provider=embedding_provider,
+                                vector_store=vector_store,
+                                min_score=effective_min_score,
+                            ),
+                        ),
+                        LexiconQueryRewriter(),
+                        strategy_name="expanded-hybrid-rrf-v1",
+                        entity_resolver=RepositoryQueryEntityResolver(session),
+                        max_variants=settings.chat_query_variant_limit,
+                    )
+                    if strategy == "expanded-hybrid-rerank":
+                        retrieval = RerankedRetrievalService(
+                            expanded_hybrid,
+                            DeterministicEvidenceReranker(),
+                            candidate_limit=rerank_candidate_limit,
+                        )
+                    else:
+                        retrieval = expanded_hybrid
+                else:
+                    if embedding_provider is None or vector_store is None:
+                        raise RuntimeError("Hybrid 检索资源尚未初始化")
+                    retrieval = HybridRetrievalService(
                         RetrievalService(session),
                         DenseRetrievalService(
                             session,
@@ -104,43 +140,20 @@ async def run_evaluation(
                             vector_store=vector_store,
                             min_score=effective_min_score,
                         ),
-                    ),
-                    LexiconQueryRewriter(),
-                    strategy_name="expanded-hybrid-rrf-v1",
-                    entity_resolver=RepositoryQueryEntityResolver(session),
-                    max_variants=settings.chat_query_variant_limit,
-                )
-                if strategy == "expanded-hybrid-rerank":
-                    retrieval = RerankedRetrievalService(
-                        expanded_hybrid,
-                        DeterministicEvidenceReranker(),
-                        candidate_limit=rerank_candidate_limit,
                     )
-                else:
-                    retrieval = expanded_hybrid
-            else:
-                embedding_provider = create_qwen_embedding_provider(settings)
-                vector_store = create_qdrant_vector_store(settings)
-                retrieval = HybridRetrievalService(
-                    RetrievalService(session),
-                    DenseRetrievalService(
-                        session,
-                        embedding_provider=embedding_provider,
-                        vector_store=vector_store,
-                        min_score=effective_min_score,
-                    ),
-                )
-            evaluator = RetrievalEvaluator(retrieval)
-            report = await evaluator.evaluate(dataset, top_k=top_k)
+                yield retrieval
+
+        evaluator = RetrievalEvaluator(
+            retrieval_factory=retrieval_factory,
+            concurrency=concurrency,
+        )
+        return await evaluator.evaluate(dataset, top_k=top_k)
     finally:
         if embedding_provider is not None:
             await embedding_provider.aclose()
         if vector_store is not None:
             await vector_store.aclose()
         await engine.dispose()
-
-    return report
-
 
 def resolve_min_score(
     *,
@@ -153,7 +166,7 @@ def resolve_min_score(
     return configured_min_score if min_score is None else min_score
 
 
-def main() -> None:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Evaluate retrieval against a fixed gold-evidence dataset."
     )
@@ -205,6 +218,17 @@ def main() -> None:
         default=None,
         help="Optional path for the full JSON report.",
     )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=1,
+        help="Maximum concurrent evaluation cases. Default: 1",
+    )
+    return parser
+
+
+def main() -> None:
+    parser = _build_parser()
     args = parser.parse_args()
     if args.top_k < 1:
         parser.error("--top-k must be at least 1")
@@ -212,6 +236,8 @@ def main() -> None:
         parser.error("--min-score must be between 0 and 1")
     if args.rerank_candidate_limit < args.top_k:
         parser.error("--rerank-candidate-limit must be at least --top-k")
+    if args.concurrency < 1:
+        parser.error("--concurrency must be at least 1")
     from app.core.config import get_settings
 
     effective_min_score = resolve_min_score(
@@ -226,6 +252,7 @@ def main() -> None:
             strategy=args.strategy,
             min_score=args.min_score,
             rerank_candidate_limit=args.rerank_candidate_limit,
+            concurrency=args.concurrency,
         )
     )
     from app.evaluation.retrieval import format_evaluation_report

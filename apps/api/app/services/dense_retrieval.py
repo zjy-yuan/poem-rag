@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -8,7 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.ai.providers.embedding import EmbeddingProvider
 from app.ai.providers.qdrant import VectorStoreError
 from app.ai.providers.qwen_embedding import EmbeddingProviderError
-from app.ai.providers.vector_store import VectorSearchRequest, VectorStorePort
+from app.ai.providers.vector_store import (
+    BatchVectorStorePort,
+    VectorSearchHit,
+    VectorSearchRequest,
+    VectorStorePort,
+)
 from app.core.errors import AppError, ErrorCode
 from app.models.chunk import ChunkGranularity
 from app.repositories.chunks import ChunkRepository, ChunkSearchCandidate
@@ -20,6 +26,7 @@ DENSE_RETRIEVAL_STRATEGY = "dense-baseline-v1"
 _CANDIDATE_MULTIPLIER = 5
 _MAX_CANDIDATE_LIMIT = 200
 _PRIMARY_TEXT_SCORE_TOLERANCE = 0.02
+_FALLBACK_SEARCH_CONCURRENCY = 4
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,26 +112,43 @@ class DenseRetrievalService:
                     "Embedding 返回的查询向量数量或内容无效"
                 )
 
-            hits_by_request = []
-            for request, query_vector in zip(
-                requests,
-                query_vectors,
-                strict=True,
-            ):
-                granularity_values = tuple(
-                    granularity.value for granularity in request.granularities
+            vector_requests = [
+                VectorSearchRequest(
+                    vector=query_vector,
+                    limit=_candidate_limit(request.limit),
+                    granularities=tuple(
+                        granularity.value
+                        for granularity in request.granularities
+                    ),
+                    author_id=request.author_id,
+                    dynasty_id=request.dynasty_id,
+                    chunk_strategy=self.chunk_strategy,
                 )
-                hits_by_request.append(
-                    await self.vector_store.search(
-                        VectorSearchRequest(
-                            vector=query_vector,
-                            limit=_candidate_limit(request.limit),
-                            granularities=granularity_values,
-                            author_id=request.author_id,
-                            dynasty_id=request.dynasty_id,
-                            chunk_strategy=self.chunk_strategy,
-                        )
+                for request, query_vector in zip(
+                    requests,
+                    query_vectors,
+                    strict=True,
+                )
+            ]
+            if isinstance(self.vector_store, BatchVectorStorePort):
+                hits_by_request = await self.vector_store.search_batch(
+                    vector_requests
+                )
+                if len(hits_by_request) != len(vector_requests):
+                    raise VectorStoreError(
+                        "向量存储批量检索返回数量不一致"
                     )
+            else:
+                semaphore = asyncio.Semaphore(_FALLBACK_SEARCH_CONCURRENCY)
+
+                async def search_one(
+                    request: VectorSearchRequest,
+                ) -> list[VectorSearchHit]:
+                    async with semaphore:
+                        return await self.vector_store.search(request)
+
+                hits_by_request = await asyncio.gather(
+                    *(search_one(request) for request in vector_requests)
                 )
         except EmbeddingProviderError as exc:
             raise AppError(

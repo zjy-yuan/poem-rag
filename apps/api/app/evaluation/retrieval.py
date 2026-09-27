@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import math
 import statistics
+from collections.abc import Callable
+from contextlib import AbstractAsyncContextManager
 from datetime import UTC, datetime
 from pathlib import Path
 from time import perf_counter
@@ -29,6 +32,12 @@ class RetrievalSearchPort(Protocol):
         query: str,
         limit: int,
     ) -> RetrievalSearchResult: ...
+
+
+RetrievalFactory = Callable[
+    [],
+    AbstractAsyncContextManager[RetrievalSearchPort],
+]
 
 
 def load_evaluation_dataset(path: Path) -> RetrievalEvaluationDataset:
@@ -70,8 +79,26 @@ def matches_selector(
 
 
 class RetrievalEvaluator:
-    def __init__(self, retrieval: RetrievalSearchPort) -> None:
+    def __init__(
+        self,
+        retrieval: RetrievalSearchPort | None = None,
+        *,
+        retrieval_factory: RetrievalFactory | None = None,
+        concurrency: int = 1,
+    ) -> None:
+        if (retrieval is None) == (retrieval_factory is None):
+            raise ValueError(
+                "必须且只能提供 retrieval 或 retrieval_factory"
+            )
+        if concurrency < 1:
+            raise ValueError("concurrency 必须大于等于 1")
+        if retrieval is not None and concurrency != 1:
+            raise ValueError(
+                "并发评估必须使用 retrieval_factory 提供独立检索栈"
+            )
         self.retrieval = retrieval
+        self.retrieval_factory = retrieval_factory
+        self.concurrency = concurrency
 
     async def evaluate(
         self,
@@ -79,25 +106,33 @@ class RetrievalEvaluator:
         *,
         top_k: int,
     ) -> RetrievalEvaluationReport:
-        results: list[RetrievalEvaluationCaseResult] = []
-        strategy = "unknown"
+        started_at = perf_counter()
+        semaphore = asyncio.Semaphore(self.concurrency)
 
-        for case in dataset.cases:
-            started_at = perf_counter()
-            search_result = await self.retrieval.search_evidence(
-                query=case.question,
-                limit=top_k,
+        async def run_case(
+            case: RetrievalEvaluationCase,
+        ) -> tuple[str, RetrievalEvaluationCaseResult]:
+            async with semaphore:
+                return await self._evaluate_case(case, top_k=top_k)
+
+        case_results = await asyncio.gather(
+            *(run_case(case) for case in dataset.cases)
+        )
+        results = [result for _, result in case_results]
+        wall_time_ms = round((perf_counter() - started_at) * 1000, 3)
+        throughput = (
+            round(len(results) / (wall_time_ms / 1000), 3)
+            if wall_time_ms > 0
+            else None
+        )
+        strategies = list(
+            dict.fromkeys(
+                strategy
+                for strategy, _ in case_results
+                if strategy
             )
-            latency_ms = (perf_counter() - started_at) * 1000
-            strategy = search_result.strategy
-            results.append(
-                _evaluate_case(
-                    case,
-                    search_result.items,
-                    latency_ms=latency_ms,
-                    top_k=top_k,
-                )
-            )
+        )
+        strategy = ", ".join(strategies) if strategies else "unknown"
 
         categories = {
             category: _summarize(
@@ -109,11 +144,45 @@ class RetrievalEvaluator:
             dataset_version=dataset.version,
             strategy=strategy,
             top_k=top_k,
+            concurrency=self.concurrency,
+            wall_time_ms=wall_time_ms,
+            throughput_cases_per_second=throughput,
             generated_at=datetime.now(UTC),
             summary=_summarize(results),
             categories=categories,
             failure_case_ids=[result.case_id for result in results if not result.passed],
             results=results,
+        )
+
+    async def _evaluate_case(
+        self,
+        case: RetrievalEvaluationCase,
+        *,
+        top_k: int,
+    ) -> tuple[str, RetrievalEvaluationCaseResult]:
+        started_at = perf_counter()
+        if self.retrieval_factory is not None:
+            async with self.retrieval_factory() as retrieval:
+                search_result = await retrieval.search_evidence(
+                    query=case.question,
+                    limit=top_k,
+                )
+        else:
+            if self.retrieval is None:
+                raise RuntimeError("retrieval evaluator is not configured")
+            search_result = await self.retrieval.search_evidence(
+                query=case.question,
+                limit=top_k,
+            )
+        latency_ms = (perf_counter() - started_at) * 1000
+        return (
+            search_result.strategy,
+            _evaluate_case(
+                case,
+                search_result.items,
+                latency_ms=latency_ms,
+                top_k=top_k,
+            ),
         )
 
 
@@ -122,6 +191,12 @@ def format_evaluation_report(report: RetrievalEvaluationReport) -> str:
     lines = [
         f"dataset={report.dataset_version}",
         f"strategy={report.strategy} top_k={report.top_k}",
+        (
+            f"concurrency={report.concurrency} "
+            f"wall_time_ms={report.wall_time_ms:.3f} "
+            "throughput_cases_per_second="
+            f"{_format_optional(report.throughput_cases_per_second)}"
+        ),
         (
             f"cases={summary.total_cases} passed={summary.passed_cases} "
             f"pass_rate={_format_optional(summary.pass_rate)}"

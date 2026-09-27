@@ -56,6 +56,26 @@ class Settings(BaseSettings):
     auto_create_tables: bool = False
 
     redis_url: str | None = None
+    index_task_queue_enabled: bool = False
+    celery_broker_url: str | None = None
+    index_task_queue_name: str = Field(
+        default="poem.index",
+        min_length=1,
+        max_length=100,
+    )
+    index_task_broker_socket_timeout_seconds: float = Field(
+        default=2.0,
+        gt=0,
+        le=30,
+    )
+    index_task_lease_seconds: int = Field(default=900, ge=30, le=3600)
+    index_task_heartbeat_seconds: int = Field(default=30, ge=5, le=600)
+    index_task_max_attempts: int = Field(default=3, ge=1, le=10)
+    index_task_retry_backoff_seconds: int = Field(default=5, ge=0, le=3600)
+    index_task_reconcile_enabled: bool = False
+    index_task_reconcile_interval_seconds: int = Field(default=60, ge=30, le=3600)
+    index_task_reconcile_stale_seconds: int = Field(default=300, ge=30, le=86400)
+    index_task_reconcile_batch_size: int = Field(default=100, ge=1, le=1000)
     qdrant_url: str | None = None
     qdrant_api_key: SecretStr | None = None
     qdrant_collection: str = Field(default="poem_chunks_v1", min_length=1, max_length=150)
@@ -90,6 +110,17 @@ class Settings(BaseSettings):
     qwen_embedding_timeout_seconds: float = Field(default=30.0, gt=0)
     qwen_embedding_max_retries: int = Field(default=2, ge=0, le=10)
     qwen_embedding_retry_backoff_seconds: float = Field(default=0.5, ge=0)
+    embedding_cache_enabled: bool = False
+    embedding_cache_ttl_seconds: int = Field(
+        default=3600,
+        ge=1,
+        le=604800,
+    )
+    embedding_cache_timeout_seconds: float = Field(
+        default=0.5,
+        ge=0.05,
+        le=10.0,
+    )
 
     @field_validator("qwen_embedding_dimension", mode="before")
     @classmethod
@@ -100,6 +131,12 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def populate_database_url(self) -> Settings:
+        if self.index_task_heartbeat_seconds >= self.index_task_lease_seconds:
+            raise ValueError("INDEX_TASK_HEARTBEAT_SECONDS 必须小于 INDEX_TASK_LEASE_SECONDS")
+        if self.index_task_reconcile_enabled and not self.index_task_queue_enabled:
+            raise ValueError(
+                "INDEX_TASK_RECONCILE_ENABLED 需要同时启用 INDEX_TASK_QUEUE_ENABLED"
+            )
         if self.database_url:
             return self
 
@@ -114,6 +151,10 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    @property
+    def effective_celery_broker_url(self) -> str | None:
+        return self.celery_broker_url or self.redis_url
 
 
 @lru_cache

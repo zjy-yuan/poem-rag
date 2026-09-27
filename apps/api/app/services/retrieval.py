@@ -9,7 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import AppError, ErrorCode
 from app.core.text import normalize_content, normalize_lookup
 from app.models.chunk import ChunkGranularity
-from app.repositories.chunks import ChunkRepository, ChunkSearchCandidate
+from app.repositories.chunks import (
+    ChunkRepository,
+    ChunkSearchCandidate,
+    LexicalSearchRequest,
+)
 from app.schemas.retrieval import RetrievalEvidence
 
 RETRIEVAL_STRATEGY = "lexical-baseline-v1"
@@ -103,8 +107,94 @@ class RetrievalService:
             author_id=author_id,
             dynasty_id=dynasty_id,
         )
+        return self._rank_candidates(
+            candidates,
+            normalized_content_query=normalized_content_query,
+            normalized_lookup_query=normalized_lookup_query,
+            limit=limit,
+        )
+
+    async def search_evidence_batch(
+        self,
+        requests: Sequence[RetrievalRequest],
+    ) -> list[RetrievalSearchResult]:
+        if not requests:
+            return []
+
+        normalized_queries: list[tuple[str, str]] = []
+        lexical_requests: list[LexicalSearchRequest] = []
+        for request in requests:
+            if request.limit < 1:
+                raise ValueError("limit must be at least 1")
+            normalized_content_query = normalize_content(request.query)
+            normalized_lookup_query = normalize_lookup(request.query)
+            if not normalized_content_query and not normalized_lookup_query:
+                raise AppError(
+                    status_code=422,
+                    code=ErrorCode.VALIDATION_ERROR,
+                    message="查询内容不能为空",
+                )
+            normalized_queries.append(
+                (normalized_content_query, normalized_lookup_query)
+            )
+            lexical_requests.append(
+                LexicalSearchRequest(
+                    query=request.query,
+                    # Batch callers already widen the candidate pool for fusion.
+                    # Expanding it again multiplies each LIKE scan without
+                    # adding useful evidence to the final top-k.
+                    limit=request.limit,
+                    granularities=tuple(
+                        granularity.value
+                        for granularity in request.granularities
+                    ),
+                    author_id=request.author_id,
+                    dynasty_id=request.dynasty_id,
+                )
+            )
+
+        candidate_groups = await self.chunks.search_lexical_batch(
+            lexical_requests
+        )
+        if len(candidate_groups) != len(requests):
+            raise RuntimeError("batch lexical retrieval returned an invalid result count")
+
+        return [
+            self._rank_candidates(
+                candidates,
+                normalized_content_query=normalized_content_query,
+                normalized_lookup_query=normalized_lookup_query,
+                limit=request.limit,
+            )
+            for request, candidates, (
+                normalized_content_query,
+                normalized_lookup_query,
+            ) in zip(
+                requests,
+                candidate_groups,
+                normalized_queries,
+                strict=True,
+            )
+        ]
+
+    @classmethod
+    def _rank_candidates(
+        cls,
+        candidates: Sequence[ChunkSearchCandidate],
+        *,
+        normalized_content_query: str,
+        normalized_lookup_query: str,
+        limit: int,
+    ) -> RetrievalSearchResult:
         scored = [
-            (candidate, *self._score(candidate, normalized_content_query, normalized_lookup_query))
+            (
+                candidate,
+                *cls._score(
+                    candidate,
+                    normalized_content_query,
+                    normalized_lookup_query,
+                ),
+            )
             for candidate in candidates
         ]
         scored = [item for item in scored if item[1] > 0]

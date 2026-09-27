@@ -1,0 +1,91 @@
+{
+  "model": "fake-graph-provider",
+  "provider_mode": "fake",
+  "retrieval_mode": "fake",
+  "concurrency": 1,
+  "request_count": 4,
+  "success_count": 4,
+  "error_count": 0,
+  "wall_time_ms": 382.4,
+  "throughput_requests_per_second": 10.46,
+  "average_latency_ms": 95.561,
+  "p95_latency_ms": 101.017,
+  "average_ttft_ms": 53.8,
+  "p95_ttft_ms": 58.505,
+  "average_stage_timings_ms": {
+    "rewrite": 0.148,
+    "retrieval": 1.676,
+    "assess": 21.114,
+    "generation": 62.078,
+    "validate": 0.033
+  },
+  "p95_stage_timings_ms": {
+    "rewrite": 0.284,
+    "retrieval": 2.386,
+    "assess": 22.209,
+    "generation": 63.4,
+    "validate": 0.036
+  },
+  "results": [
+    {
+      "case_id": "profile-duange",
+      "latency_ms": 101.017,
+      "ttft_ms": 58.505,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.122,
+        "retrieval": 1.228,
+        "assess": 22.209,
+        "generation": 63.4,
+        "validate": 0.036
+      }
+    },
+    {
+      "case_id": "profile-guancanghai",
+      "latency_ms": 92.746,
+      "ttft_ms": 51.545,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.284,
+        "retrieval": 1.231,
+        "assess": 20.252,
+        "generation": 61.569,
+        "validate": 0.031
+      }
+    },
+    {
+      "case_id": "profile-wangyue",
+      "latency_ms": 93.431,
+      "ttft_ms": 51.476,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.097,
+        "retrieval": 1.86,
+        "assess": 21.251,
+        "generation": 61.599,
+        "validate": 0.033
+      }
+    },
+    {
+      "case_id": "profile-shizhi",
+      "latency_ms": 95.051,
+      "ttft_ms": 53.676,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.089,
+        "retrieval": 2.386,
+        "assess": 20.746,
+        "generation": 61.744,
+        "validate": 0.03
+      }
+    }
+  ]
+}

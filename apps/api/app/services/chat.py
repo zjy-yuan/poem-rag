@@ -12,6 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.ai.graphs.rag import CitationDraft, RagChatGraph
 from app.ai.providers.chat import ChatMessage, ChatModelError, ChatModelPort, ChatRole
 from app.ai.providers.embedding import EmbeddingProvider
+from app.ai.providers.embedding_cache import (
+    CachedEmbeddingProvider,
+    RedisEmbeddingCache,
+)
 from app.ai.providers.qdrant import VectorStoreError, create_qdrant_vector_store
 from app.ai.providers.qwen_embedding import (
     EmbeddingProviderError,
@@ -189,6 +193,22 @@ async def create_chat_retrieval_resources(
     created: list[AsyncCloseable] = []
     try:
         embedding_provider = create_qwen_embedding_provider(settings)
+        if settings.embedding_cache_enabled and settings.redis_url:
+            try:
+                embedding_provider = CachedEmbeddingProvider(
+                    embedding_provider,
+                    cache=RedisEmbeddingCache(
+                        settings.redis_url,
+                        timeout_seconds=settings.embedding_cache_timeout_seconds,
+                    ),
+                    ttl_seconds=settings.embedding_cache_ttl_seconds,
+                )
+            except Exception:
+                logger.warning(
+                    "Embedding cache initialization failed; "
+                    "continuing without cache",
+                    exc_info=True,
+                )
         created.append(embedding_provider)
         vector_store = create_qdrant_vector_store(settings)
         created.append(vector_store)

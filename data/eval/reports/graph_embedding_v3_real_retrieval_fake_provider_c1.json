@@ -1,0 +1,957 @@
+{
+  "model": "fake-graph-provider",
+  "provider_mode": "fake",
+  "retrieval_mode": "real",
+  "concurrency": 1,
+  "request_count": 26,
+  "success_count": 26,
+  "error_count": 0,
+  "wall_time_ms": 18560.355,
+  "throughput_requests_per_second": 1.401,
+  "average_latency_ms": 713.83,
+  "p95_latency_ms": 1657.966,
+  "average_ttft_ms": 683.766,
+  "p95_ttft_ms": 1613.517,
+  "average_stage_timings_ms": {
+    "rewrite": 0.116,
+    "retrieval": 644.098,
+    "assess": 14.536,
+    "generation": 43.134,
+    "validate": 0.035
+  },
+  "p95_stage_timings_ms": {
+    "rewrite": 0.216,
+    "retrieval": 1562.605,
+    "assess": 21.648,
+    "generation": 63.363,
+    "validate": 0.048
+  },
+  "results": [
+    {
+      "case_id": "gen-v3-duange-talent",
+      "latency_ms": 1909.853,
+      "ttft_ms": 1867.036,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.104,
+        "retrieval": 1813.783,
+        "assess": 21.596,
+        "generation": 63.195,
+        "validate": 0.027
+      }
+    },
+    {
+      "case_id": "gen-v3-guancanghai-sea",
+      "latency_ms": 1657.966,
+      "ttft_ms": 1613.517,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.188,
+        "retrieval": 1562.605,
+        "assess": 21.041,
+        "generation": 62.036,
+        "validate": 0.088
+      }
+    },
+    {
+      "case_id": "gen-v3-wangyue-summit",
+      "latency_ms": 804.252,
+      "ttft_ms": 760.162,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.121,
+        "retrieval": 708.243,
+        "assess": 22.005,
+        "generation": 63.21,
+        "validate": 0.029
+      }
+    },
+    {
+      "case_id": "gen-v3-shizhi-border",
+      "latency_ms": 555.161,
+      "ttft_ms": 512.618,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.103,
+        "retrieval": 462.182,
+        "assess": 20.683,
+        "generation": 62.017,
+        "validate": 0.043
+      }
+    },
+    {
+      "case_id": "gen-v3-youshanxi-turn",
+      "latency_ms": 1388.879,
+      "ttft_ms": 1346.724,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.123,
+        "retrieval": 1292.141,
+        "assess": 21.334,
+        "generation": 61.849,
+        "validate": 0.029
+      }
+    },
+    {
+      "case_id": "gen-v3-dingfeng-calm",
+      "latency_ms": 531.444,
+      "ttft_ms": 488.909,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.135,
+        "retrieval": 434.759,
+        "assess": 21.389,
+        "generation": 62.449,
+        "validate": 0.046
+      }
+    },
+    {
+      "case_id": "gen-v3-yumeiren-sorrow",
+      "latency_ms": 454.131,
+      "ttft_ms": 411.395,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.106,
+        "retrieval": 359.929,
+        "assess": 20.273,
+        "generation": 62.254,
+        "validate": 0.035
+      }
+    },
+    {
+      "case_id": "gen-v3-wuling-sorrow",
+      "latency_ms": 594.11,
+      "ttft_ms": 551.095,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 7,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.088,
+        "retrieval": 500.831,
+        "assess": 20.95,
+        "generation": 62.255,
+        "validate": 0.03
+      }
+    },
+    {
+      "case_id": "gen-v3-dielianhua-longing",
+      "latency_ms": 1363.911,
+      "ttft_ms": 1319.1,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.096,
+        "retrieval": 1268.095,
+        "assess": 20.878,
+        "generation": 64.101,
+        "validate": 0.045
+      }
+    },
+    {
+      "case_id": "gen-v3-yeyu-reunion",
+      "latency_ms": 451.816,
+      "ttft_ms": 409.052,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.079,
+        "retrieval": 358.303,
+        "assess": 21.058,
+        "generation": 61.723,
+        "validate": 0.044
+      }
+    },
+    {
+      "case_id": "gen-v3-guazhou-homesick",
+      "latency_ms": 1372.251,
+      "ttft_ms": 1329.371,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.08,
+        "retrieval": 1274.955,
+        "assess": 20.772,
+        "generation": 63.363,
+        "validate": 0.042
+      }
+    },
+    {
+      "case_id": "gen-v3-yijianmei-lovesick",
+      "latency_ms": 586.729,
+      "ttft_ms": 544.057,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.153,
+        "retrieval": 488.821,
+        "assess": 20.811,
+        "generation": 61.835,
+        "validate": 0.033
+      }
+    },
+    {
+      "case_id": "gen-v3-pozhenzi-dream",
+      "latency_ms": 599.804,
+      "ttft_ms": 557.389,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.216,
+        "retrieval": 504.916,
+        "assess": 20.663,
+        "generation": 61.12,
+        "validate": 0.024
+      }
+    },
+    {
+      "case_id": "gen-v3-multi-dufu-life",
+      "latency_ms": 724.25,
+      "ttft_ms": 682.066,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.187,
+        "retrieval": 625.63,
+        "assess": 20.54,
+        "generation": 61.63,
+        "validate": 0.028
+      }
+    },
+    {
+      "case_id": "gen-v3-multi-sorrow",
+      "latency_ms": 1013.732,
+      "ttft_ms": 971.549,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.258,
+        "retrieval": 921.056,
+        "assess": 20.927,
+        "generation": 62.05,
+        "validate": 0.03
+      }
+    },
+    {
+      "case_id": "gen-v3-multi-adversity",
+      "latency_ms": 781.966,
+      "ttft_ms": 739.445,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.067,
+        "retrieval": 689.402,
+        "assess": 20.536,
+        "generation": 62.294,
+        "validate": 0.028
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-docker-ready",
+      "latency_ms": 373.826,
+      "ttft_ms": 372.43,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 0,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.042,
+        "retrieval": 364.273,
+        "assess": 0.041,
+        "generation": 0.042,
+        "validate": 0.044
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-mysql-index",
+      "latency_ms": 244.618,
+      "ttft_ms": 243.062,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 0,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.067,
+        "retrieval": 230.339,
+        "assess": 0.048,
+        "generation": 0.073,
+        "validate": 0.044
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-vue-reactivity",
+      "latency_ms": 251.313,
+      "ttft_ms": 249.99,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 0,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.071,
+        "retrieval": 237.176,
+        "assess": 0.042,
+        "generation": 0.065,
+        "validate": 0.037
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-yuweng",
+      "latency_ms": 831.736,
+      "ttft_ms": 830.801,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 0,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.13,
+        "retrieval": 818.763,
+        "assess": 0.039,
+        "generation": 0.063,
+        "validate": 0.02
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-zashi",
+      "latency_ms": 231.51,
+      "ttft_ms": 230.216,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 0,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.103,
+        "retrieval": 221.916,
+        "assess": 0.041,
+        "generation": 0.052,
+        "validate": 0.038
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-jinlvyi",
+      "latency_ms": 924.249,
+      "ttft_ms": 922.98,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 0,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.133,
+        "retrieval": 912.834,
+        "assess": 0.053,
+        "generation": 0.044,
+        "validate": 0.026
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-jiangjin-year",
+      "latency_ms": 11.839,
+      "ttft_ms": 11.41,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 0,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.198,
+        "retrieval": 0.443,
+        "assess": 0.08,
+        "generation": 0.039,
+        "validate": 0.019
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-wangzhihuan-birthplace",
+      "latency_ms": 8.034,
+      "ttft_ms": 7.607,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 0,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.041,
+        "retrieval": 0.071,
+        "assess": 0.019,
+        "generation": 0.035,
+        "validate": 0.02
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-dufu-death-year",
+      "latency_ms": 429.483,
+      "ttft_ms": 385.485,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.053,
+        "retrieval": 335.403,
+        "assess": 20.469,
+        "generation": 62.007,
+        "validate": 0.048
+      }
+    },
+    {
+      "case_id": "gen-v3-refusal-su-shi-office",
+      "latency_ms": 462.729,
+      "ttft_ms": 420.456,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 10,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.078,
+        "retrieval": 359.685,
+        "assess": 21.648,
+        "generation": 61.688,
+        "validate": 0.02
+      }
+    }
+  ],
+  "dataset": "generation_holdout_1000_v3.json",
+  "repeat_count": 1,
+  "variant_limit": 8,
+  "embedding_max_retries": 2,
+  "embedding_concurrency": null,
+  "embedding": {
+    "logical_call_count": 24,
+    "logical_error_count": 0,
+    "max_observed_logical_concurrency": 1,
+    "http_request_count": 24,
+    "retry_count": 0,
+    "success_count": 24,
+    "retryable_status_count": 0,
+    "client_error_status_count": 0,
+    "server_error_status_count": 0,
+    "transport_error_count": 0,
+    "max_observed_http_concurrency": 1,
+    "status_counts": {
+      "200": 24
+    },
+    "average_http_latency_ms": 200.839,
+    "p95_http_latency_ms": 276.703,
+    "max_http_latency_ms": 291.026,
+    "slowest_http_calls": [
+      {
+        "sequence": 7,
+        "call_id": 8,
+        "case_id": "gen-v3-wuling-sorrow",
+        "input_count": 8,
+        "started_offset_ms": 7802.944,
+        "elapsed_ms": 291.026,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 16,
+        "call_id": 17,
+        "case_id": "gen-v3-refusal-docker-ready",
+        "input_count": 1,
+        "started_offset_ms": 15316.111,
+        "elapsed_ms": 276.703,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 12,
+        "call_id": 13,
+        "case_id": "gen-v3-pozhenzi-dream",
+        "input_count": 8,
+        "started_offset_ms": 12184.468,
+        "elapsed_ms": 270.84,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 3,
+        "call_id": 4,
+        "case_id": "gen-v3-shizhi-border",
+        "input_count": 8,
+        "started_offset_ms": 4868.054,
+        "elapsed_ms": 248.47,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 0,
+        "call_id": 1,
+        "case_id": "gen-v3-duange-talent",
+        "input_count": 8,
+        "started_offset_ms": 1430.519,
+        "elapsed_ms": 243.538,
+        "status_code": 200,
+        "error_type": null
+      }
+    ],
+    "logical_calls": [
+      {
+        "call_id": 1,
+        "case_id": "gen-v3-duange-talent",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 294.947,
+        "error_type": null
+      },
+      {
+        "call_id": 2,
+        "case_id": "gen-v3-guancanghai-sea",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 201.215,
+        "error_type": null
+      },
+      {
+        "call_id": 3,
+        "case_id": "gen-v3-wangyue-summit",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 248.482,
+        "error_type": null
+      },
+      {
+        "call_id": 4,
+        "case_id": "gen-v3-shizhi-border",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 264.272,
+        "error_type": null
+      },
+      {
+        "call_id": 5,
+        "case_id": "gen-v3-youshanxi-turn",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 210.439,
+        "error_type": null
+      },
+      {
+        "call_id": 6,
+        "case_id": "gen-v3-dingfeng-calm",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 171.118,
+        "error_type": null
+      },
+      {
+        "call_id": 7,
+        "case_id": "gen-v3-yumeiren-sorrow",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 200.638,
+        "error_type": null
+      },
+      {
+        "call_id": 8,
+        "case_id": "gen-v3-wuling-sorrow",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 303.623,
+        "error_type": null
+      },
+      {
+        "call_id": 9,
+        "case_id": "gen-v3-dielianhua-longing",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 236.7,
+        "error_type": null
+      },
+      {
+        "call_id": 10,
+        "case_id": "gen-v3-yeyu-reunion",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 196.72,
+        "error_type": null
+      },
+      {
+        "call_id": 11,
+        "case_id": "gen-v3-guazhou-homesick",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 230.567,
+        "error_type": null
+      },
+      {
+        "call_id": 12,
+        "case_id": "gen-v3-yijianmei-lovesick",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 248.076,
+        "error_type": null
+      },
+      {
+        "call_id": 13,
+        "case_id": "gen-v3-pozhenzi-dream",
+        "kind": "documents",
+        "input_count": 8,
+        "expected_http_calls": 1,
+        "elapsed_ms": 288.826,
+        "error_type": null
+      },
+      {
+        "call_id": 14,
+        "case_id": "gen-v3-multi-dufu-life",
+        "kind": "documents",
+        "input_count": 4,
+        "expected_http_calls": 1,
+        "elapsed_ms": 136.785,
+        "error_type": null
+      },
+      {
+        "call_id": 15,
+        "case_id": "gen-v3-multi-sorrow",
+        "kind": "documents",
+        "input_count": 6,
+        "expected_http_calls": 1,
+        "elapsed_ms": 169.037,
+        "error_type": null
+      },
+      {
+        "call_id": 16,
+        "case_id": "gen-v3-multi-adversity",
+        "kind": "documents",
+        "input_count": 4,
+        "expected_http_calls": 1,
+        "elapsed_ms": 196.369,
+        "error_type": null
+      },
+      {
+        "call_id": 17,
+        "case_id": "gen-v3-refusal-docker-ready",
+        "kind": "documents",
+        "input_count": 1,
+        "expected_http_calls": 1,
+        "elapsed_ms": 277.557,
+        "error_type": null
+      },
+      {
+        "call_id": 18,
+        "case_id": "gen-v3-refusal-mysql-index",
+        "kind": "documents",
+        "input_count": 1,
+        "expected_http_calls": 1,
+        "elapsed_ms": 144.719,
+        "error_type": null
+      },
+      {
+        "call_id": 19,
+        "case_id": "gen-v3-refusal-vue-reactivity",
+        "kind": "documents",
+        "input_count": 1,
+        "expected_http_calls": 1,
+        "elapsed_ms": 146.005,
+        "error_type": null
+      },
+      {
+        "call_id": 20,
+        "case_id": "gen-v3-refusal-yuweng",
+        "kind": "documents",
+        "input_count": 5,
+        "expected_http_calls": 1,
+        "elapsed_ms": 219.725,
+        "error_type": null
+      },
+      {
+        "call_id": 21,
+        "case_id": "gen-v3-refusal-zashi",
+        "kind": "documents",
+        "input_count": 4,
+        "expected_http_calls": 1,
+        "elapsed_ms": 126.273,
+        "error_type": null
+      },
+      {
+        "call_id": 22,
+        "case_id": "gen-v3-refusal-jinlvyi",
+        "kind": "documents",
+        "input_count": 6,
+        "expected_http_calls": 1,
+        "elapsed_ms": 189.936,
+        "error_type": null
+      },
+      {
+        "call_id": 23,
+        "case_id": "gen-v3-refusal-dufu-death-year",
+        "kind": "documents",
+        "input_count": 4,
+        "expected_http_calls": 1,
+        "elapsed_ms": 221.304,
+        "error_type": null
+      },
+      {
+        "call_id": 24,
+        "case_id": "gen-v3-refusal-su-shi-office",
+        "kind": "documents",
+        "input_count": 7,
+        "expected_http_calls": 1,
+        "elapsed_ms": 182.571,
+        "error_type": null
+      }
+    ],
+    "http_calls": [
+      {
+        "sequence": 0,
+        "call_id": 1,
+        "case_id": "gen-v3-duange-talent",
+        "input_count": 8,
+        "started_offset_ms": 1430.519,
+        "elapsed_ms": 243.538,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 1,
+        "call_id": 2,
+        "case_id": "gen-v3-guancanghai-sea",
+        "input_count": 8,
+        "started_offset_ms": 3218.044,
+        "elapsed_ms": 185.231,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 2,
+        "call_id": 3,
+        "case_id": "gen-v3-wangyue-summit",
+        "input_count": 8,
+        "started_offset_ms": 4089.88,
+        "elapsed_ms": 235.517,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 3,
+        "call_id": 4,
+        "case_id": "gen-v3-shizhi-border",
+        "input_count": 8,
+        "started_offset_ms": 4868.054,
+        "elapsed_ms": 248.47,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 4,
+        "call_id": 5,
+        "case_id": "gen-v3-youshanxi-turn",
+        "input_count": 8,
+        "started_offset_ms": 6259.294,
+        "elapsed_ms": 196.84,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 5,
+        "call_id": 6,
+        "case_id": "gen-v3-dingfeng-calm",
+        "input_count": 8,
+        "started_offset_ms": 6843.135,
+        "elapsed_ms": 153.664,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 6,
+        "call_id": 7,
+        "case_id": "gen-v3-yumeiren-sorrow",
+        "input_count": 8,
+        "started_offset_ms": 7351.555,
+        "elapsed_ms": 189.514,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 7,
+        "call_id": 8,
+        "case_id": "gen-v3-wuling-sorrow",
+        "input_count": 8,
+        "started_offset_ms": 7802.944,
+        "elapsed_ms": 291.026,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 8,
+        "call_id": 9,
+        "case_id": "gen-v3-dielianhua-longing",
+        "input_count": 8,
+        "started_offset_ms": 9205.942,
+        "elapsed_ms": 222.07,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 9,
+        "call_id": 10,
+        "case_id": "gen-v3-yeyu-reunion",
+        "input_count": 8,
+        "started_offset_ms": 9754.429,
+        "elapsed_ms": 187.426,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 10,
+        "call_id": 11,
+        "case_id": "gen-v3-guazhou-homesick",
+        "input_count": 8,
+        "started_offset_ms": 11026.641,
+        "elapsed_ms": 216.971,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 11,
+        "call_id": 12,
+        "case_id": "gen-v3-yijianmei-lovesick",
+        "input_count": 8,
+        "started_offset_ms": 11595.355,
+        "elapsed_ms": 236.825,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 12,
+        "call_id": 13,
+        "case_id": "gen-v3-pozhenzi-dream",
+        "input_count": 8,
+        "started_offset_ms": 12184.468,
+        "elapsed_ms": 270.84,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 13,
+        "call_id": 14,
+        "case_id": "gen-v3-multi-dufu-life",
+        "input_count": 4,
+        "started_offset_ms": 13122.489,
+        "elapsed_ms": 131.894,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 14,
+        "call_id": 15,
+        "case_id": "gen-v3-multi-sorrow",
+        "input_count": 6,
+        "started_offset_ms": 14086.758,
+        "elapsed_ms": 161.198,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 15,
+        "call_id": 16,
+        "case_id": "gen-v3-multi-adversity",
+        "input_count": 4,
+        "started_offset_ms": 14873.333,
+        "elapsed_ms": 190.983,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 16,
+        "call_id": 17,
+        "case_id": "gen-v3-refusal-docker-ready",
+        "input_count": 1,
+        "started_offset_ms": 15316.111,
+        "elapsed_ms": 276.703,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 17,
+        "call_id": 18,
+        "case_id": "gen-v3-refusal-mysql-index",
+        "input_count": 1,
+        "started_offset_ms": 15699.963,
+        "elapsed_ms": 143.031,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 18,
+        "call_id": 19,
+        "case_id": "gen-v3-refusal-vue-reactivity",
+        "input_count": 1,
+        "started_offset_ms": 15952.02,
+        "elapsed_ms": 145.179,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 19,
+        "call_id": 20,
+        "case_id": "gen-v3-refusal-yuweng",
+        "input_count": 5,
+        "started_offset_ms": 16626.253,
+        "elapsed_ms": 208.051,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 20,
+        "call_id": 21,
+        "case_id": "gen-v3-refusal-zashi",
+        "input_count": 4,
+        "started_offset_ms": 16979.88,
+        "elapsed_ms": 120.47,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 21,
+        "call_id": 22,
+        "case_id": "gen-v3-refusal-jinlvyi",
+        "input_count": 6,
+        "started_offset_ms": 17782.958,
+        "elapsed_ms": 178.726,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 22,
+        "call_id": 23,
+        "case_id": "gen-v3-refusal-dufu-death-year",
+        "input_count": 4,
+        "started_offset_ms": 18160.074,
+        "elapsed_ms": 214.33,
+        "status_code": 200,
+        "error_type": null
+      },
+      {
+        "sequence": 23,
+        "call_id": 24,
+        "case_id": "gen-v3-refusal-su-shi-office",
+        "input_count": 7,
+        "started_offset_ms": 18607.342,
+        "elapsed_ms": 171.629,
+        "status_code": 200,
+        "error_type": null
+      }
+    ]
+  }
+}

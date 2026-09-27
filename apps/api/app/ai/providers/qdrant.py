@@ -9,12 +9,14 @@ from qdrant_client import models as qdrant_models
 
 from app.ai.providers.vector_store import (
     VectorPoint,
+    VectorPointSnapshot,
     VectorSearchHit,
     VectorSearchRequest,
 )
 from app.core.config import Settings
 
 _VECTOR_NAME = "dense"
+_SCROLL_PAGE_SIZE = 1000
 
 
 class VectorStoreError(RuntimeError):
@@ -118,6 +120,30 @@ class QdrantVectorStore:
         except Exception as exc:
             raise VectorStoreError("Qdrant 向量删除失败") from exc
 
+    async def list_points(self) -> list[VectorPointSnapshot]:
+        points: list[VectorPointSnapshot] = []
+        offset: Any = None
+        try:
+            while True:
+                records, offset = await self._client.scroll(
+                    collection_name=self._collection,
+                    limit=_SCROLL_PAGE_SIZE,
+                    offset=offset,
+                    with_payload=True,
+                    with_vectors=False,
+                )
+                points.extend(
+                    VectorPointSnapshot(
+                        id=str(record.id),
+                        payload=dict(record.payload or {}),
+                    )
+                    for record in records
+                )
+                if offset is None:
+                    return points
+        except Exception as exc:
+            raise VectorStoreError("Qdrant 向量对账读取失败") from exc
+
     async def search(self, request: VectorSearchRequest) -> list[VectorSearchHit]:
         if request.limit <= 0:
             raise VectorStoreError("Qdrant 检索 limit 必须大于 0")
@@ -144,6 +170,51 @@ class QdrantVectorStore:
                 payload=dict(point.payload or {}),
             )
             for point in response.points
+        ]
+
+    async def search_batch(
+        self,
+        requests: list[VectorSearchRequest],
+    ) -> list[list[VectorSearchHit]]:
+        if not requests:
+            return []
+        for request in requests:
+            if request.limit <= 0:
+                raise VectorStoreError("Qdrant 检索 limit 必须大于 0")
+            if not request.vector:
+                raise VectorStoreError("Qdrant 查询向量不能为空")
+
+        try:
+            responses = await self._client.query_batch_points(
+                collection_name=self._collection,
+                requests=[
+                    qdrant_models.QueryRequest(
+                        query=request.vector,
+                        using=_VECTOR_NAME,
+                        filter=_search_filter(request),
+                        limit=request.limit,
+                        with_payload=True,
+                        with_vector=False,
+                    )
+                    for request in requests
+                ],
+            )
+        except Exception as exc:
+            raise VectorStoreError("Qdrant 批量向量检索失败") from exc
+
+        if len(responses) != len(requests):
+            raise VectorStoreError("Qdrant 批量检索返回数量不一致")
+
+        return [
+            [
+                VectorSearchHit(
+                    id=str(point.id),
+                    score=float(point.score),
+                    payload=dict(point.payload or {}),
+                )
+                for point in response.points
+            ]
+            for response in responses
         ]
 
     async def aclose(self) -> None:

@@ -1,0 +1,91 @@
+{
+  "model": "fake-graph-provider",
+  "provider_mode": "fake",
+  "retrieval_mode": "fake",
+  "concurrency": 4,
+  "request_count": 4,
+  "success_count": 4,
+  "error_count": 0,
+  "wall_time_ms": 123.405,
+  "throughput_requests_per_second": 32.414,
+  "average_latency_ms": 111.258,
+  "p95_latency_ms": 123.202,
+  "average_ttft_ms": 67.907,
+  "p95_ttft_ms": 79.846,
+  "average_stage_timings_ms": {
+    "rewrite": 0.089,
+    "retrieval": 1.929,
+    "assess": 20.453,
+    "generation": 62.669,
+    "validate": 0.019
+  },
+  "p95_stage_timings_ms": {
+    "rewrite": 0.13,
+    "retrieval": 1.986,
+    "assess": 20.473,
+    "generation": 62.819,
+    "validate": 0.045
+  },
+  "results": [
+    {
+      "case_id": "profile-duange",
+      "latency_ms": 123.202,
+      "ttft_ms": 79.846,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.13,
+        "retrieval": 1.881,
+        "assess": 20.429,
+        "generation": 62.79,
+        "validate": 0.045
+      }
+    },
+    {
+      "case_id": "profile-guancanghai",
+      "latency_ms": 114.6,
+      "ttft_ms": 71.251,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.083,
+        "retrieval": 1.904,
+        "assess": 20.45,
+        "generation": 62.525,
+        "validate": 0.01
+      }
+    },
+    {
+      "case_id": "profile-wangyue",
+      "latency_ms": 106.749,
+      "ttft_ms": 63.4,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.078,
+        "retrieval": 1.945,
+        "assess": 20.462,
+        "generation": 62.819,
+        "validate": 0.012
+      }
+    },
+    {
+      "case_id": "profile-shizhi",
+      "latency_ms": 100.48,
+      "ttft_ms": 57.131,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.067,
+        "retrieval": 1.986,
+        "assess": 20.473,
+        "generation": 62.543,
+        "validate": 0.01
+      }
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import importlib.util
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import pytest
@@ -247,6 +249,104 @@ async def test_evaluator_penalizes_refusing_an_answerable_question() -> None:
     assert report.summary.refusal_precision == 0.5
     assert report.summary.refusal_recall == 1.0
     assert report.summary.refusal_f1 == 0.666667
+
+
+@pytest.mark.asyncio
+async def test_evaluator_bounds_concurrency_and_preserves_order() -> None:
+    active_calls = 0
+    max_active_calls = 0
+    factory_calls = 0
+
+    class ConcurrentRetrieval:
+        async def search_evidence(
+            self,
+            *,
+            query: str,
+            limit: int,
+        ) -> RetrievalSearchResult:
+            nonlocal active_calls, max_active_calls
+            del limit
+            active_calls += 1
+            max_active_calls = max(max_active_calls, active_calls)
+            try:
+                await asyncio.sleep(0.02 if "床前明月光" in query else 0.001)
+                items = (
+                    [
+                        _evidence(
+                            chunk_id=1,
+                            title="静夜思",
+                            text="床前明月光，疑是地上霜。",
+                        )
+                    ]
+                    if "床前明月光" in query
+                    else []
+                )
+                return RetrievalSearchResult(
+                    items=items,
+                    strategy="test-concurrent-strategy",
+                    normalized_query=query,
+                    candidate_count=len(items),
+                )
+            finally:
+                active_calls -= 1
+
+    @asynccontextmanager
+    async def retrieval_factory():
+        nonlocal factory_calls
+        factory_calls += 1
+        yield ConcurrentRetrieval()
+
+    dataset = RetrievalEvaluationDataset(
+        version="concurrency-test-v1",
+        description="Concurrent cases must be bounded and retain input order.",
+        cases=[
+            RetrievalEvaluationCase(
+                id="concurrency-case-01",
+                category="phrase",
+                question="床前明月光",
+                expected="evidence",
+                gold_evidence=[EvidenceSelector(poem_title="静夜思")],
+            ),
+            RetrievalEvaluationCase(
+                id="concurrency-case-02",
+                category="no_answer",
+                question="不存在的诗句",
+                expected="no_evidence",
+            ),
+            RetrievalEvaluationCase(
+                id="concurrency-case-03",
+                category="no_answer",
+                question="另一个不存在的问题",
+                expected="no_evidence",
+            ),
+        ],
+    )
+
+    report = await RetrievalEvaluator(
+        retrieval_factory=retrieval_factory,
+        concurrency=2,
+    ).evaluate(dataset, top_k=5)
+
+    assert factory_calls == 3
+    assert max_active_calls == 2
+    assert [result.case_id for result in report.results] == [
+        "concurrency-case-01",
+        "concurrency-case-02",
+        "concurrency-case-03",
+    ]
+    assert report.concurrency == 2
+    assert report.wall_time_ms >= 0
+    assert report.throughput_cases_per_second is not None
+    assert report.throughput_cases_per_second > 0
+
+
+def test_evaluator_rejects_invalid_concurrency_configuration() -> None:
+    with pytest.raises(ValueError, match="concurrency"):
+        RetrievalEvaluator(FakeRetrieval(), concurrency=0)
+    with pytest.raises(ValueError, match="retrieval_factory"):
+        RetrievalEvaluator(FakeRetrieval(), concurrency=2)
+    with pytest.raises(ValueError, match="retrieval"):
+        RetrievalEvaluator()
 
 
 def test_v2_dataset_separates_answerability_categories() -> None:
@@ -609,3 +709,6 @@ def test_retrieval_evaluation_uses_configured_dense_min_score() -> None:
         min_score=None,
         configured_min_score=0.6,
     ) == 0.0
+    parser = module._build_parser()
+    assert parser.parse_args([]).concurrency == 1
+    assert parser.parse_args(["--concurrency", "4"]).concurrency == 4

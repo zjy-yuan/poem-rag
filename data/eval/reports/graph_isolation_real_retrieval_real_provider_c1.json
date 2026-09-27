@@ -1,0 +1,91 @@
+{
+  "model": "deepseek-chat",
+  "provider_mode": "real",
+  "retrieval_mode": "real",
+  "concurrency": 1,
+  "request_count": 4,
+  "success_count": 4,
+  "error_count": 0,
+  "wall_time_ms": 16105.604,
+  "throughput_requests_per_second": 0.248,
+  "average_latency_ms": 4026.356,
+  "p95_latency_ms": 5366.379,
+  "average_ttft_ms": 2176.829,
+  "p95_ttft_ms": 2879.761,
+  "average_stage_timings_ms": {
+    "rewrite": 0.118,
+    "retrieval": 987.011,
+    "assess": 738.525,
+    "generation": 2288.142,
+    "validate": 0.028
+  },
+  "p95_stage_timings_ms": {
+    "rewrite": 0.171,
+    "retrieval": 1521.465,
+    "assess": 811.551,
+    "generation": 3058.54,
+    "validate": 0.046
+  },
+  "results": [
+    {
+      "case_id": "profile-duange",
+      "latency_ms": 5366.379,
+      "ttft_ms": 2879.761,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 6,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.113,
+        "retrieval": 1521.465,
+        "assess": 772.723,
+        "generation": 3058.54,
+        "validate": 0.026
+      }
+    },
+    {
+      "case_id": "profile-guancanghai",
+      "latency_ms": 3930.659,
+      "ttft_ms": 2079.451,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.171,
+        "retrieval": 1214.444,
+        "assess": 601.467,
+        "generation": 2101.377,
+        "validate": 0.017
+      }
+    },
+    {
+      "case_id": "profile-wangyue",
+      "latency_ms": 2778.697,
+      "ttft_ms": 1647.188,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.089,
+        "retrieval": 498.488,
+        "assess": 768.361,
+        "generation": 1498.032,
+        "validate": 0.046
+      }
+    },
+    {
+      "case_id": "profile-shizhi",
+      "latency_ms": 4029.688,
+      "ttft_ms": 2100.914,
+      "strategy": "expanded-hybrid-rrf-v1",
+      "selected_count": 5,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.099,
+        "retrieval": 713.648,
+        "assess": 811.551,
+        "generation": 2494.617,
+        "validate": 0.021
+      }
+    }
+  ]
+}

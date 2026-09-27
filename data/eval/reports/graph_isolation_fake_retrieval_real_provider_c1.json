@@ -1,0 +1,91 @@
+{
+  "model": "deepseek-chat",
+  "provider_mode": "real",
+  "retrieval_mode": "fake",
+  "concurrency": 1,
+  "request_count": 4,
+  "success_count": 4,
+  "error_count": 0,
+  "wall_time_ms": 6692.965,
+  "throughput_requests_per_second": 0.598,
+  "average_latency_ms": 1673.184,
+  "p95_latency_ms": 1949.408,
+  "average_ttft_ms": 1124.22,
+  "p95_ttft_ms": 1330.718,
+  "average_stage_timings_ms": {
+    "rewrite": 0.884,
+    "retrieval": 2.233,
+    "assess": 720.513,
+    "generation": 935.797,
+    "validate": 0.031
+  },
+  "p95_stage_timings_ms": {
+    "rewrite": 3.166,
+    "retrieval": 2.886,
+    "assess": 957.737,
+    "generation": 1323.886,
+    "validate": 0.042
+  },
+  "results": [
+    {
+      "case_id": "profile-duange",
+      "latency_ms": 1949.408,
+      "ttft_ms": 1330.718,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.112,
+        "retrieval": 1.171,
+        "assess": 803.133,
+        "generation": 1132.624,
+        "validate": 0.021
+      }
+    },
+    {
+      "case_id": "profile-guancanghai",
+      "latency_ms": 971.247,
+      "ttft_ms": 970.108,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.125,
+        "retrieval": 2.375,
+        "assess": 957.737,
+        "generation": 0.055,
+        "validate": 0.042
+      }
+    },
+    {
+      "case_id": "profile-wangyue",
+      "latency_ms": 1904.406,
+      "ttft_ms": 1046.212,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 0.135,
+        "retrieval": 2.499,
+        "assess": 565.255,
+        "generation": 1323.886,
+        "validate": 0.033
+      }
+    },
+    {
+      "case_id": "profile-shizhi",
+      "latency_ms": 1867.677,
+      "ttft_ms": 1149.844,
+      "strategy": "fake-profile-retrieval-v1",
+      "selected_count": 1,
+      "error_code": null,
+      "stage_timings_ms": {
+        "rewrite": 3.166,
+        "retrieval": 2.886,
+        "assess": 555.925,
+        "generation": 1286.621,
+        "validate": 0.027
+      }
+    }
+  ]
+}

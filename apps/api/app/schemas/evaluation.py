@@ -141,6 +141,9 @@ class RetrievalEvaluationReport(BaseModel):
     dataset_version: str
     strategy: str
     top_k: int
+    concurrency: int = Field(default=1, ge=1)
+    wall_time_ms: float = Field(default=0.0, ge=0)
+    throughput_cases_per_second: float | None = Field(default=None, ge=0)
     generated_at: datetime
     summary: RetrievalEvaluationSummary
     categories: dict[str, RetrievalEvaluationSummary]

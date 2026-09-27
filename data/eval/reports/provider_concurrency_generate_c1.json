@@ -1,0 +1,56 @@
+{
+  "model": "deepseek-chat",
+  "mode": "generate",
+  "concurrency": 1,
+  "request_count": 4,
+  "success_count": 4,
+  "error_count": 0,
+  "wall_time_ms": 2681.693,
+  "throughput_requests_per_second": 1.492,
+  "average_latency_ms": 670.359,
+  "p95_latency_ms": 802.567,
+  "average_ttft_ms": null,
+  "p95_ttft_ms": null,
+  "results": [
+    {
+      "workload_id": "assess-1",
+      "mode": "generate",
+      "latency_ms": 713.913,
+      "ttft_ms": null,
+      "output_chars": 100,
+      "delta_count": 0,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "workload_id": "assess-2",
+      "mode": "generate",
+      "latency_ms": 583.116,
+      "ttft_ms": null,
+      "output_chars": 110,
+      "delta_count": 0,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "workload_id": "assess-3",
+      "mode": "generate",
+      "latency_ms": 802.567,
+      "ttft_ms": null,
+      "output_chars": 88,
+      "delta_count": 0,
+      "error_code": null,
+      "error_message": null
+    },
+    {
+      "workload_id": "assess-4",
+      "mode": "generate",
+      "latency_ms": 581.838,
+      "ttft_ms": null,
+      "output_chars": 101,
+      "delta_count": 0,
+      "error_code": null,
+      "error_message": null
+    }
+  ]
+}

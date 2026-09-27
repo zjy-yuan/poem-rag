@@ -27,8 +27,11 @@ class FakeQdrantClient:
         create_collection_error: Exception | None = None,
         upsert_error: Exception | None = None,
         delete_error: Exception | None = None,
+        scroll_error: Exception | None = None,
         query_error: Exception | None = None,
+        scroll_results: list[tuple[list[Any], Any]] | None = None,
         query_points: list[Any] | None = None,
+        query_batch_results: list[Any] | None = None,
     ) -> None:
         self.exists = exists
         self.collection_info = collection_info
@@ -37,14 +40,19 @@ class FakeQdrantClient:
         self.create_collection_error = create_collection_error
         self.upsert_error = upsert_error
         self.delete_error = delete_error
+        self.scroll_error = scroll_error
         self.query_error = query_error
+        self.scroll_results = list(scroll_results or [])
         self.query_points_result = query_points or []
+        self.query_batch_results = query_batch_results or []
         self.exists_calls: list[str] = []
         self.created: list[dict[str, Any]] = []
         self.get_calls: list[str] = []
         self.upserts: list[dict[str, Any]] = []
         self.deletes: list[dict[str, Any]] = []
+        self.scrolls: list[dict[str, Any]] = []
         self.queries: list[dict[str, Any]] = []
+        self.batch_queries: list[dict[str, Any]] = []
         self.closed = False
 
     async def collection_exists(self, collection_name: str) -> bool:
@@ -74,11 +82,25 @@ class FakeQdrantClient:
             raise self.delete_error
         self.deletes.append(kwargs)
 
+    async def scroll(self, **kwargs: Any) -> tuple[list[Any], Any]:
+        if self.scroll_error is not None:
+            raise self.scroll_error
+        self.scrolls.append(kwargs)
+        if not self.scroll_results:
+            return [], None
+        return self.scroll_results.pop(0)
+
     async def query_points(self, **kwargs: Any) -> Any:
         if self.query_error is not None:
             raise self.query_error
         self.queries.append(kwargs)
         return SimpleNamespace(points=self.query_points_result)
+
+    async def query_batch_points(self, **kwargs: Any) -> list[Any]:
+        if self.query_error is not None:
+            raise self.query_error
+        self.batch_queries.append(kwargs)
+        return self.query_batch_results
 
     async def close(self) -> None:
         self.closed = True
@@ -184,6 +206,43 @@ async def test_qdrant_deletes_points_and_skips_empty_calls() -> None:
     assert call["points_selector"].points == ["point-1", "point-2"]
 
 
+async def test_qdrant_lists_all_points_across_scroll_pages() -> None:
+    client = FakeQdrantClient(
+        scroll_results=[
+            (
+                [
+                    SimpleNamespace(
+                        id="point-1",
+                        payload={"chunk_id": 7, "index_run_id": 11},
+                    )
+                ],
+                "next-page",
+            ),
+            (
+                [
+                    SimpleNamespace(
+                        id="point-2",
+                        payload={"chunk_id": 8, "index_run_id": 11},
+                    )
+                ],
+                None,
+            ),
+        ]
+    )
+
+    points = await _store(client).list_points()
+
+    assert [point.id for point in points] == ["point-1", "point-2"]
+    assert points[0].payload == {"chunk_id": 7, "index_run_id": 11}
+    assert len(client.scrolls) == 2
+    assert client.scrolls[0]["collection_name"] == "poem_chunks_v1"
+    assert client.scrolls[0]["limit"] == 1000
+    assert client.scrolls[0]["offset"] is None
+    assert client.scrolls[0]["with_payload"] is True
+    assert client.scrolls[0]["with_vectors"] is False
+    assert client.scrolls[1]["offset"] == "next-page"
+
+
 async def test_qdrant_searches_named_vector_with_filters() -> None:
     client = FakeQdrantClient(
         query_points=[
@@ -232,6 +291,51 @@ async def test_qdrant_searches_named_vector_with_filters() -> None:
     assert conditions[3].match.value == "structural-v1"
 
 
+async def test_qdrant_batches_vector_searches_in_request_order() -> None:
+    client = FakeQdrantClient(
+        query_batch_results=[
+            SimpleNamespace(
+                points=[
+                    SimpleNamespace(id="point-1", score=0.91, payload={})
+                ]
+            ),
+            SimpleNamespace(
+                points=[
+                    SimpleNamespace(id="point-2", score=0.83, payload={})
+                ]
+            ),
+        ]
+    )
+    store = _store(client)
+
+    hits = await store.search_batch(
+        [
+            VectorSearchRequest(vector=[1.0, 0.0], limit=5),
+            VectorSearchRequest(
+                vector=[0.0, 1.0],
+                limit=3,
+                author_id=7,
+            ),
+        ]
+    )
+
+    assert [[hit.id for hit in batch] for batch in hits] == [
+        ["point-1"],
+        ["point-2"],
+    ]
+    assert len(client.batch_queries) == 1
+    call = client.batch_queries[0]
+    assert call["collection_name"] == "poem_chunks_v1"
+    requests = call["requests"]
+    assert [request.query for request in requests] == [
+        [1.0, 0.0],
+        [0.0, 1.0],
+    ]
+    assert [request.limit for request in requests] == [5, 3]
+    assert requests[0].filter is None
+    assert requests[1].filter is not None
+
+
 async def test_qdrant_skips_empty_filter_and_wraps_query_failures() -> None:
     client = FakeQdrantClient()
     await _store(client).search(
@@ -260,6 +364,10 @@ async def test_qdrant_wraps_sdk_failures() -> None:
     delete_client = FakeQdrantClient(delete_error=RuntimeError("delete failed"))
     with pytest.raises(VectorStoreError, match="删除"):
         await _store(delete_client).delete(["point-1"])
+
+    scroll_client = FakeQdrantClient(scroll_error=RuntimeError("scroll failed"))
+    with pytest.raises(VectorStoreError, match="对账读取"):
+        await _store(scroll_client).list_points()
 
 
 def test_create_qdrant_vector_store_uses_settings() -> None:

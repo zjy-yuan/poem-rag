@@ -170,6 +170,35 @@ async def test_hybrid_batches_independent_dense_branches() -> None:
 
 
 @pytest.mark.asyncio
+async def test_hybrid_batches_independent_lexical_branches() -> None:
+    lexical = FakeBatchBranch(
+        items=[_evidence(chunk_id=1, score=0.9, match_types=["chunk_exact"])]
+    )
+    dense = FakeBranch(
+        items=[_evidence(chunk_id=2, score=0.95, match_types=["dense_similarity"])]
+    )
+
+    results = await HybridRetrievalService(
+        lexical,
+        dense,
+    ).search_evidence_batch(
+        [
+            RetrievalRequest(query="明月", limit=2),
+            RetrievalRequest(query="故乡", limit=3),
+        ]
+    )
+
+    assert len(results) == 2
+    assert len(lexical.batch_calls) == 1
+    assert [request.query for request in lexical.batch_calls[0]] == [
+        "明月",
+        "故乡",
+    ]
+    assert [request.limit for request in lexical.batch_calls[0]] == [10, 15]
+    assert [call["limit"] for call in lexical.calls] == [10, 15]
+
+
+@pytest.mark.asyncio
 async def test_hybrid_returns_single_source_hits_and_forwards_filters() -> None:
     lexical = FakeBranch(
         items=[_evidence(chunk_id=4, score=0.8, match_types=["chunk_phrase"])]

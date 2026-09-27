@@ -120,17 +120,26 @@ class HybridRetrievalService:
                 )
             )
 
-        lexical_results: list[RetrievalSearchResult] = []
-        for request in branch_requests:
-            lexical_results.append(
-                await self.lexical.search_evidence(
-                    query=request.query,
-                    limit=request.limit,
-                    granularities=list(request.granularities) or None,
-                    author_id=request.author_id,
-                    dynasty_id=request.dynasty_id,
-                )
+        if isinstance(self.lexical, BatchEvidenceRetriever):
+            lexical_results = await self.lexical.search_evidence_batch(
+                branch_requests
             )
+            if len(lexical_results) != len(branch_requests):
+                raise RuntimeError(
+                    "lexical batch retrieval returned an invalid result count"
+                )
+        else:
+            lexical_results = []
+            for request in branch_requests:
+                lexical_results.append(
+                    await self.lexical.search_evidence(
+                        query=request.query,
+                        limit=request.limit,
+                        granularities=list(request.granularities) or None,
+                        author_id=request.author_id,
+                        dynasty_id=request.dynasty_id,
+                    )
+                )
 
         dense_indexes = [
             index

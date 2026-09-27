@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
 from app.core.text import normalize_content, sha256_text
 from app.models.annotation import AnnotationStatus, AnnotationType, PoemAnnotation
 from app.models.chunk import ChunkStatus
 from app.repositories.chunks import ChunkRepository
 from app.services.chunk_catalog import ChunkCatalogService
+from app.services.retrieval import RetrievalRequest, RetrievalService
 from fastapi.testclient import TestClient
 from test_catalog import _admin_client
 from test_rag_corpus import _load_versions
@@ -317,6 +319,114 @@ def test_lexical_candidate_selection_prioritizes_title_over_earlier_body_match(
             return [candidate.title for candidate in candidates]
 
     assert portal.call(search) == ["登高"]
+
+
+def test_evidence_search_batch_uses_one_query_and_preserves_variant_filters(
+    client: TestClient,
+) -> None:
+    headers, dynasty, author = _create_catalog(client)
+    other_author_response = client.post(
+        "/api/v1/admin/authors",
+        headers=headers,
+        json={"name": "杜甫", "dynasty_id": dynasty["id"]},
+    )
+    assert other_author_response.status_code == 201
+    other_author = other_author_response.json()["data"]
+    content = "共享明月照山川。"
+    first = _create_poem(
+        client,
+        headers,
+        title="甲",
+        content=content,
+        author_id=author["id"],
+        dynasty_id=dynasty["id"],
+    )
+    second = _create_poem(
+        client,
+        headers,
+        title="乙",
+        content=content,
+        author_id=other_author["id"],
+        dynasty_id=dynasty["id"],
+    )
+    _publish(client, headers, first["id"])
+    _publish(client, headers, second["id"])
+
+    portal = client.portal
+    assert portal is not None
+    session_factory = client.app.state.session_factory
+    for poem in (first, second):
+        versions = portal.call(_load_versions, session_factory, poem["id"])
+        _rebuild_chunks(client, versions[0].id)
+
+    class CountingSession:
+        def __init__(self, session: Any) -> None:
+            self.session = session
+            self.execute_count = 0
+
+        async def execute(self, statement: Any) -> Any:
+            self.execute_count += 1
+            return await self.session.execute(statement)
+
+    async def search() -> tuple[int, list[Any], list[Any]]:
+        async with session_factory() as session:
+            counting = CountingSession(session)
+            service = RetrievalService(counting)  # type: ignore[arg-type]
+            results = await service.search_evidence_batch(
+                [
+                    RetrievalRequest(
+                        query=content,
+                        limit=1,
+                        author_id=author["id"],
+                    ),
+                    RetrievalRequest(
+                        query=content,
+                        limit=1,
+                        author_id=other_author["id"],
+                    ),
+                ]
+            )
+            empty = await service.search_evidence_batch([])
+            with pytest.raises(ValueError, match="limit must be at least 1"):
+                await service.search_evidence_batch(
+                    [RetrievalRequest(query=content, limit=0)]
+                )
+            return counting.execute_count, results, empty
+
+    execute_count, results, empty = portal.call(search)
+
+    assert execute_count == 1
+    assert empty == []
+    assert [[item.poem_id for item in result.items] for result in results] == [
+        [first["id"]],
+        [second["id"]],
+    ]
+
+
+@pytest.mark.asyncio
+async def test_evidence_search_batch_does_not_repeat_candidate_expansion() -> None:
+    captured_limits: list[int] = []
+
+    class FakeChunkRepository:
+        async def search_lexical_batch(
+            self,
+            requests: list[Any],
+        ) -> list[list[Any]]:
+            captured_limits.extend(request.limit for request in requests)
+            return [[] for _ in requests]
+
+    service = RetrievalService(object())  # type: ignore[arg-type]
+    service.chunks = FakeChunkRepository()  # type: ignore[assignment]
+
+    results = await service.search_evidence_batch(
+        [
+            RetrievalRequest(query="明月", limit=2),
+            RetrievalRequest(query="故乡", limit=3),
+        ]
+    )
+
+    assert captured_limits == [2, 3]
+    assert [result.items for result in results] == [[], []]
 
 
 def test_evidence_search_prioritizes_exact_title_over_body_substring(

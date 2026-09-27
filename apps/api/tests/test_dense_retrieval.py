@@ -59,6 +59,23 @@ class FakeVectorStore:
         return self.hits
 
 
+class FakeBatchVectorStore(FakeVectorStore):
+    def __init__(self, hits: list[VectorSearchHit]) -> None:
+        super().__init__(hits)
+        self.batch_requests: list[list[VectorSearchRequest]] = []
+
+    async def search(self, request: VectorSearchRequest) -> list[VectorSearchHit]:
+        del request
+        raise AssertionError("批量子类不应回退到逐条搜索")
+
+    async def search_batch(
+        self,
+        requests: list[VectorSearchRequest],
+    ) -> list[list[VectorSearchHit]]:
+        self.batch_requests.append(list(requests))
+        return [self.hits for _ in requests]
+
+
 class FailingEmbeddingProvider(FakeEmbeddingProvider):
     async def embed_documents(self, texts: list[str]) -> list[list[float]]:
         del texts
@@ -278,6 +295,52 @@ def test_dense_retrieval_batches_query_embeddings(
         chunks[1].id,
     ]
     assert [request.limit for request in store.requests] == [10, 10]
+
+
+def test_dense_retrieval_uses_vector_store_batch_search(
+    client: TestClient,
+) -> None:
+    headers, _ = _admin_client(client)
+    poem = _create_poem(
+        client,
+        headers=headers,
+        title="Vector batch",
+        content="Moonlight line.\nHomecoming line.",
+    )
+    chunks, vector_ids = _prepare_indexed_chunks(client, poem["id"])
+    store = FakeBatchVectorStore(
+        [
+            VectorSearchHit(id=vector_ids[0], score=0.91),
+            VectorSearchHit(id=vector_ids[1], score=0.83),
+        ]
+    )
+    portal = client.portal
+    assert portal is not None
+    session_factory = client.app.state.session_factory
+
+    async def search() -> Any:
+        async with session_factory() as session:
+            return await DenseRetrievalService(
+                session,
+                embedding_provider=FakeEmbeddingProvider(),
+                vector_store=store,
+            ).search_evidence_batch(
+                [
+                    RetrievalRequest(query="moon", limit=2),
+                    RetrievalRequest(query="home", limit=2),
+                ]
+            )
+
+    results = portal.call(search)
+
+    assert len(store.batch_requests) == 1
+    assert len(store.batch_requests[0]) == 2
+    assert [request.limit for request in store.batch_requests[0]] == [10, 10]
+    assert len(results) == 2
+    assert [item.chunk_id for item in results[0].items] == [
+        chunks[0].id,
+        chunks[1].id,
+    ]
 
 
 def test_dense_retrieval_drops_candidates_below_min_score(
