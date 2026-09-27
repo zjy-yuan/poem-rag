@@ -2,6 +2,8 @@
 
 诗词知识库与 RAG 问答项目。
 
+当前实现快照：`v0.9.0-performance-concurrency`
+
 当前已建立：
 
 1. FastAPI 异步后端和统一 API 响应契约。
@@ -32,6 +34,10 @@
 26. 生成质量 LLM-as-judge 已作为离线增量实现：读取已有生成报告，对 16 条可答样本执行独立调用，v3 结果为 `judge_errors=0`、忠实度通过率 `0.8125`、回答相关性 `1.0`、claim 支撑率 `0.950920`；拒答样本跳过 judge，并支持导出人工盲评 Markdown、填写评分 CSV 后自动计算人工与 judge 的一致率及偏严/偏松方向。首次定向校准复核 3/16 条，`judge_stricter=3`，说明 judge 对隐含文学解释偏保守，但该高难子集不能代表总体准确率。
 27. Retrieval 2.0 离线评估已完成：新增 `nDCG@k`、唯一 Gold 匹配、`EvidenceReranker` 协议和 `expanded-hybrid-rerank-v1`，并冻结 46 条 v4 泛化集。`deterministic-evidence-v1` 在 v4 上为 38/46、Recall@5 `0.828947`、nDCG@5 `0.776326`、MRR `0.757456`，低于不重排基线的 45/46、`1.0`、`0.915410`、`0.885965`，因此拒绝在线启用；Rerank 仅保留为离线实验能力，在线策略仍为 `expanded-hybrid-rrf-v1`。
 28. 生成性能评估新增 TTFT、五阶段平均/P95、wall time 和吞吐，并支持 `evaluate_generation.py --concurrency` 有界并发。v3 回归集实测 `c1 -> c4` 吞吐从 `0.269` 提升到 `0.644 cases/s`，质量保持 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`，但平均延迟从 `3711.359 ms` 升到 `5888.418 ms`、平均 TTFT 从 `2602.745 ms` 升到 `4291.510 ms`；因此只保留为离线测量能力，在线服务不启用并发配置。
+29. 检索与 Provider 并发边界诊断已完成：Qdrant 和词法检索支持批量路径，Retrieval 评估支持有界并发；v3 检索在 `c1/c4` 下质量保持一致且吞吐从 `1.743` 提升到 `6.823 cases/s`。查询变体消融表明 8 个变体必须保留，图级和 Provider 诊断表明真实 Chat Provider 是主要延迟来源，并发主要提高吞吐而不是降低单请求延迟。当前不修改在线并发、公开 API、SSE、数据库和前端。
+30. Embedding 精确缓存已实现为默认关闭的可选组合层：按原始文本、模型、配置维度和 `documents/query` 用途隔离缓存，批内去重并对 Redis 读写 fail-open。真实检索加假生成 Provider 的 104 次请求中，冷缓存命中率 `0.770408`、逻辑调用 `96`、物理 HTTP 调用 `24`、错误 `0`；热缓存复跑命中率 `1.0`、物理 HTTP 调用 `0`，两次均 `104/104` 成功。当前不缓存检索结果、回答、Prompt 或 Chat 响应。
+31. 索引任务控制面已实现为默认关闭的异步能力：管理员可创建、列表、查询、重试和取消运行，支持 `Idempotency-Key`、Celery + Redis 入队、Worker 租约/心跳、过期重领、数据库统一重试上限和协作式取消；Celery Beat 补偿扫描可重新投递超时 `pending` 和过期租约运行；active index 已通过 MySQL pointer 原子发布，尚未实现事务 outbox 和生产监控。
+32. 旧向量清理与 Qdrant 对账已实现为默认 dry-run 的运维 CLI：分页盘点 Qdrant 点并分类 live、终态孤儿候选、活跃保护、未知和缺失；`--apply` 会先锁定作品发布目标、二次查询 MySQL 引用，只删除仍未被引用的终态运行点。真实库 dry-run 为 12415/12415 一一对应、0 个孤儿点；真实删除路径已在临时 collection 验证并清理，正式 collection 仍只允许 dry-run。
 
 ## 文档入口
 

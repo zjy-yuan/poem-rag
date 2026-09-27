@@ -1,8 +1,8 @@
 # 项目说明与代码导览
 
 > 项目：Poem RAG  
-> 文档状态：当前实现快照 v0.8.0-retrieval-2-evaluation
-> 更新日期：2026-09-26
+> 文档状态：当前实现快照 v0.9.0-performance-concurrency
+> 更新日期：2026-09-27
 > 说明：本文件描述“现在是什么”，目标接口见 `FRONTEND_BACKEND_CONTRACT.md`
 
 ## 1. 一句话说明
@@ -51,7 +51,7 @@ flowchart LR
     D --> S[Service 业务用例]
     S --> R[Repository]
     R --> M[(MySQL 8)]
-    A --> C[(Redis 7)]
+    A --> C[(Redis 7 / Embedding Cache)]
     A --> Q[(Qdrant)]
     A --> G[LangGraph 条件路由问答]
     G -->|expanded-lexical-v1 + Dense + RRF| M
@@ -66,10 +66,11 @@ flowchart LR
 
 1. 采用模块化单体，暂不拆微服务。
 2. MySQL 是用户、权限和诗词业务数据的唯一事实来源。
-3. Redis 用于健康检查，后续承担缓存、限流、短期状态和任务基础设施。
+3. Redis 用于健康检查，并已提供默认关闭的 Embedding 精确缓存；限流、短期状态和任务基础设施仍待后续接入。
 4. Qwen Embedding Provider、Qdrant 最小索引闭环、Dense/Hybrid/查询改写检索和 DeepSeek Chat Provider 已实现；固定来源语料已扩展到 1000 首并完成真实索引。加权 RRF v2 在 v1 检索回归集上，在线组合达到 50/50；在第二批独立 holdout v2 上，在线组合从 40/46 提升到 45/46，生成 holdout 从 24/26 提升到 26/26。第三批独立 holdout v3 上，在线检索为 45/46、Recall@5 `1.0`、MRR `0.929825`，生成为 25/26、拒答 `10/10`。在线问答使用 `expanded-lexical-v1 + Dense + RRF`，并通过 `CHAT_DENSE_MIN_SCORE=0.60` 控制 Dense 候选下限：`poem`/`line` 主文本允许 `0.02` 容差，`note` 仍严格使用该阈值。Qdrant 或 Embedding 构造失败时降级到 `expanded-lexical-v1`，运行期仅对 `EMBEDDING_PROVIDER_ERROR` 和 `VECTOR_STORE_ERROR` 降级。Dense 门槛只能防跨域漂移，领域内“话题命中、答案缺失”的样本由 `assess` 节点通过 LLM 结构化输出判定；判定失败时 fail-open 继续生成，引用校验仍作为兜底。在线图同时记录各阶段内部耗时，`CHAT_QUERY_VARIANT_LIMIT=8` 限制查询扩展分支；指标只进入服务端日志，不改变公开 SSE。在线检索进一步复用进程级 Embedding 与 Qdrant 客户端，并把一次查询的全部变体合并为一次 Embedding 调用；同一 v2 回归集下检索质量不变，平均延迟从 `874.575 ms` 降到 `483.760 ms`。
-5. FastAPI Router 只处理 HTTP 映射，业务状态变化放在 Service，数据访问放在 Repository。
-6. MySQL 保存会话、消息和引用快照；SSE 只负责传输过程状态，不成为长期数据源。
+5. Embedding 精确缓存已实现为可选的 `EmbeddingCacheStore` 组合层，默认关闭。缓存键包含原始文本、模型、配置维度和用途，批内去重；Redis 连接、读写、反序列化或配置初始化失败时回退真实 Provider，不改变向量检索可用性。
+6. FastAPI Router 只处理 HTTP 映射，业务状态变化放在 Service，数据访问放在 Repository。
+7. MySQL 保存会话、消息和引用快照；SSE 只负责传输过程状态，不成为长期数据源。
 
 ## 4. 仓库结构
 
@@ -179,7 +180,7 @@ erDiagram
 
 已实现的 RAG 语料基础模型：
 
-1. `poem_sources`：人工、文件或后续爬取数据的来源证据。
+1. `poem_sources`：人工、文件或公开数据集导入的来源证据。
 2. `poem_versions`：诗词不可变版本快照和内容哈希。
 3. `poem_annotations`：注释、译文、赏析、背景和典故。
 4. `poem_chunks`：版本化文本切块和向量索引状态。
@@ -221,20 +222,21 @@ erDiagram
 | 朝代、作者、分类、标签 | 已实现 | 管理接口和公开读取 |
 | 诗词 CRUD 与发布状态 | 已实现 | 草稿、发布、撤回、软删除、恢复 |
 | 诗词公开浏览与基础搜索 | 已实现 | 基于 MySQL 的目录查询 |
-| MySQL 迁移与种子 | 已实现 | Alembic head 为 `20260920_0005`，真实 MySQL 已升级 |
-| Redis 健康检查 | 已实现 | 缓存和队列尚未使用 |
+| MySQL 迁移与种子 | 已实现 | Alembic head 为 `20260927_0007`，真实 MySQL 的 `0006 -> 0007 -> 0006 -> 0007` 往返验证已通过 |
+| Redis 健康检查与 Embedding 精确缓存 | 已实现（缓存和任务队列默认关闭） | Redis 健康检查保持原有行为；可选缓存按文本、模型、维度和用途隔离，失败 fail-open；任务队列可选复用 Redis 作为 Celery broker；限流和短期状态尚未使用 |
 | 语料来源与版本快照 | 已实现 | 来源、不可变版本和编辑版本链已接入 |
 | 结构化语料导入 | 已实现 | CLI 支持 JSON 预检、幂等创建/更新、逐条失败隔离、版本留痕和可选 chunk 重建；固定来源已扩展到 1000 首，真实结果为 902 created、98 unchanged、0 failed；尚无 HTTP 导入任务 |
 | 注释与 chunk 数据模型 | 已实现 | 支持 poem/line/note 粒度和向量索引状态 |
 | 结构切块器 `structural-v1` | 已实现 | 支持版本级幂等重建；真实库现有 12415 个 chunks，扩库新增 10346 个并全部完成向量索引 |
 | 索引运行元数据 | 已实现 | 记录 `pending/running/succeeded/failed/cancelled` 状态和 `chunk/embed/upsert` 阶段；配置快照入库前脱敏；同一版本禁止重复活跃运行 |
+| Active index 原子发布 | 已实现 | `poems.active_index_run_id` 和 `poem_chunks.index_run_id` 在 0007 中落地；chunk 标记与 pointer 切换在同一事务完成，旧运行晚完成不会覆盖新版本；真实库 1008 个 pointer 和 12410 个 chunk 标签已完成回填 |
+| 旧向量清理与 Qdrant 对账 | 已实现（CLI 默认 dry-run） | `reconcile_index_vectors.py` 分页盘点 Qdrant，将点分类为 live、终态孤儿候选、活跃保护、未知和缺失；apply 前锁定发布目标并二次查询 MySQL 引用，只删除仍未被引用的终态运行点；真实库 12415/12415 点 dry-run 一致，真实删除路径已在临时 collection 验证，正式 collection 仍只允许 dry-run |
 | MySQL 可解释检索基线 | 已实现 | `lexical-baseline-v1` 从当前版本的 poem/line/note chunks 返回出处、行号、得分和 `match_types`；只读取已发布且未删除作品 |
-| 索引任务 API 与 Worker | 未实现 | 当前只有 Service 和数据库记录，没有 HTTP 任务接口、租约、超时回收或取消 |
-| 爬虫与任务化导入 | 未实现 | 结构化文件导入已实现；网站爬虫、上传接口、导入任务和 Worker 尚未实现 |
-| Qwen Embedding Provider | 已实现（Provider 层） | 支持批量、维度、超时、有限重试和响应校验；已接入索引 Service，真实 DashScope 烟测已通过 |
+| 索引任务 API 与 Worker | 已实现（任务队列与补偿扫描默认关闭） | 管理员可创建、列表、查询、重试和取消运行；支持 `Idempotency-Key`、Celery 入队、租约/心跳、过期重领、数据库统一重试上限和协作式取消；Celery Beat 补偿扫描会重投超时 `pending` 和过期租约运行，重复消息由原子 `claim` 去重；尚无事务 outbox、生产监控和队列容量验证 |
+| 公开数据集导入与任务化导入 | 部分实现 | 固定公开数据集的转换、预检、幂等导入和索引已实现；上传接口、导入任务和 Worker 尚未实现。网站爬虫已从当前路线移除 |
+| Qwen Embedding Provider | 已实现（Provider 层） | 支持批量、维度、超时、有限重试和响应校验；已接入索引 Service，真实 DashScope 烟测已通过；可通过默认关闭的精确缓存包装在线 Provider |
 | Qdrant 向量索引 | 已实现（最小闭环） | chunks -> Qwen Embedding -> Collection -> upsert -> chunk 映射；真实 Qdrant 1.19.1 已完成临时 Collection 烟测 |
 | Dense 检索 | 已实现（在线分支） | `dense-baseline-v1` 使用 Qdrant 召回，并回查 MySQL 校验当前版本、发布状态和注释可见性；在线问答使用 `CHAT_DENSE_MIN_SCORE=0.60`，`poem`/`line` 主文本允许 `0.02` 容差、`note` 无容差，低于有效门槛的候选在检索层丢弃 |
-| 旧向量清理与 Qdrant 对账 | 未实现 | 尚未实现旧版本点清理、active index 切换和跨库全量对账 |
 | Hybrid RRF 检索 | 已实现（在线策略） | 加权 `hybrid-rrf-v1` 融合 `expanded-lexical-v1` 与 Dense 候选，按查询来源权重和排名去重融合；v1 回归集 Top-5 为 50/50、Recall@5 `1.0`、MRR `0.887698`；v2 独立 holdout 为 45/46、Recall@5 `1.0`、MRR `0.907895`；v3 独立 holdout 为 45/46、Recall@5 `1.0`、MRR `0.929825`。公开 HTTP 检索仍不暴露策略参数 |
 | 查询改写与多查询 RRF | 已实现（在线分支与降级策略） | `expanded-lexical-v1` 用可审查词典扩展月亮、思乡、元宵、怀人、白发夸张和已知作者实体，保留原查询并用加权 RRF 融合多路召回；显式标题会保留完整作品槽位，多标题查询优先完整作品块，结构化主题查询保留正文候选，多证据问题会限制单个作品占用的候选槽位；v2 独立 holdout Top-5 为 38/46，v3 为 44/46 |
 | 重排 | 离线框架已实现；确定性策略未达切换门槛；在线未启用 | 新增 `EvidenceReranker`、`RerankedRetrievalService`、`expanded-hybrid-rerank-v1` 和 nDCG@k；`deterministic-evidence-v1` 在 v4 泛化集为 38/46、Recall@5 `0.828947`、nDCG@5 `0.776326`、MRR `0.757456`，低于不重排基线的 45/46、`1.0`、`0.915410`、`0.885965`，因此仅保留离线实验能力 |
@@ -243,7 +245,9 @@ erDiagram
 | LangGraph 问答 | 已实现（条件路由） | `rewrite -> retrieve -> assess -> generate|refuse -> validate`；在线检索使用 `expanded-lexical-v1 + Dense + RRF`，基础设施故障时降级到 `expanded-lexical-v1`；命中作品追加诗词级父级上下文，长文本按作品轮转并受 40 chunks / 4800 字符预算约束；`assess` 用 LLM 结构化判定可答性，无证据或判定不可答时走 `refuse` 且不调用生成模型；判定异常 fail-open |
 | 在线 RAG 可观测性 | 已实现 | 图节点在 `finally` 中发出内部 `timing`，`ChatService` 聚合 `rewrite/retrieval/assess/generation/validate`、TTFT、候选数、策略和判定状态；流结束记录请求级日志。`timing` 不进入公开 SSE，`done` 仍为 `{finish_reason, latency_ms}`；`CHAT_QUERY_VARIANT_LIMIT` 默认 `8`、范围 `1-20` |
 | 在线检索资源复用与批量 Embedding | 已实现 | Embedding Provider 和 Qdrant 客户端在应用 `lifespan` 中创建并共享，流结束不再重复初始化；`BatchEvidenceRetriever` 协议让一次查询的全部变体合并为一次 Embedding 调用，跨变体向量 ID 回查合并为一次 MySQL 查询。Qdrant 搜索仍按变体串行，因为 `AsyncSession` 不能并发复用。同一 v2 回归集下检索仍为 45/46、MRR `0.907895`，平均延迟 `874.575 ms -> 483.760 ms`、P95 `2770.212 ms -> 1239.925 ms` |
+| Embedding 精确缓存 | 已实现（默认关闭） | `CachedEmbeddingProvider` 按原始文本、模型、配置维度和 `documents/query` 用途生成 SHA-256 key，支持批内去重、跨调用命中、Redis 批量读写和失败计数。真实检索加假生成 Provider 的 104 次冷缓存请求为 453 hits、135 misses、135 writes、0 errors、hit rate `0.770408`，逻辑调用 `96`、HTTP 调用 `24`；热缓存复跑为 588 hits、0 misses、0 writes、hit rate `1.0`、HTTP 调用 `0`。Redis 初始化或读写失败时回退原始 Provider |
 | 生成性能与有界并发评估 | 已实现（仅离线评估） | 生成评估报告新增 TTFT、五阶段平均/P95、wall time 和吞吐；`evaluate_generation.py --concurrency` 默认 `1`，用信号量限制同时执行的样本并保持结果顺序。v3 真实 `c1 -> c4`：吞吐 `0.269 -> 0.644 cases/s`，质量保持 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`，但平均延迟 `3711.359 -> 5888.418 ms`、平均 TTFT `2602.745 -> 4291.510 ms`。该参数不接入在线服务 |
+| 检索与 Provider 并发诊断 | 已实现（批量路径 + 离线诊断） | Qdrant `search_batch()` 和词法 `search_lexical_batch()` 减少重复往返；Dense 不支持批量时最多并发 `4` 回退。`evaluate_retrieval.py --concurrency` 默认 `1`，v3 `c1/c4` 质量均为 45/46、Recall@5 `1.0`、nDCG@5 `0.947993`、MRR `0.929825`，吞吐 `1.743 -> 6.823 cases/s`。8/4/2/1 个查询变体分别对应 45/44/43/36，因此保留 8；图级和 Provider 诊断表明并发提高吞吐，但真实 Provider 下单请求延迟仍会上升。该能力不改变在线默认并发、公开 API、SSE、数据库和前端 |
 | SSE 引用问答 | 已实现 | `meta -> retrieval -> delta* -> citation* -> done/error`；持久化最终消息和引用，无证据时不调用模型 |
 | RAG 评估体系 | 已实现（检索层 + 生成层 + 离线 judge/校准） | v1 回归集 50 条中 `expanded-lexical-v1` 为 48/50、Hybrid 为 40/50、在线组合为 50/50；生成回归集 28 条为 `28/28`、拒答 `7/7`。v2 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、MRR `0.907895`，生成 26 条为 `26/26`、拒答 `10/10`、引用 P/R 均为 `1.0`。v3 独立 holdout 检索 46 条中在线组合为 45/46、Recall@5 `1.0`、nDCG@5 `0.947993`、MRR `0.929825`，生成 26 条为 `25/26`、拒答 `10/10`、引用 P/R `1.0 / 1.0`。v4 检索 holdout 46 条（38 有答案 + 8 无答案）首次用于 Rerank 泛化验证：不重排基线为 45/46、Recall@5 `1.0`、nDCG@5 `0.915410`、MRR `0.885965`；`deterministic-evidence-v1` 未达标，已拒绝在线启用。v3 的可答样本进一步由独立 LLM judge 复核：16/16 完成、0 错误、忠实度通过率 `0.8125`、相关性 `1.0`、claim 支撑率 `0.950920`；首次人工校准覆盖 3/16，`judge_stricter=3`。四批样本都已参与失败观察或策略筛选，只能作为回归集 |
 | 云服务器部署 | 未实现 | 核心 RAG 闭环后再处理域名和 HTTPS |
@@ -475,6 +479,15 @@ P95 `1285.898 ms`。Top-10 和 Top-5 候选消融仍分别只有 41/46 和 45/46
 `2602.745 ms` 升到 `4291.510 ms`。因此当前只把并发作为评估能力，不把它写入在线
 服务配置。详细契约、阶段耗时和风险边界见
 `docs/features/20260926-generation-performance-concurrency.md`。
+
+检索侧随后完成批量化和隔离诊断。Qdrant `query_batch_points()`、词法
+`UNION ALL + ROW_NUMBER()` 和无批量实现的 `4` 路有界回退已经接入内部检索路径；
+Retrieval 评估新增 `--concurrency`、wall time 和吞吐。v3 检索在 `c1/c4` 下质量
+完全一致，吞吐从 `1.743` 提升到 `6.823 cases/s`。查询变体从 8 降到 4/2/1 时，
+通过数依次降到 44/43/36，因此保留 8 个变体。图级和 Provider 诊断表明真实 Chat
+Provider 是主导延迟来源，`c4` 主要提高批处理吞吐，不能降低单请求等待时间。详细
+边界和报告见
+`docs/features/20260926-retrieval-provider-concurrency-diagnosis.md`。
 
 完成在线 RAG 可观测性和变体上限后，同一 v2 回归集再次运行在线组合，检索为 45/46、
 平均延迟 `738.465 ms`、P95 `1970.978 ms`；生成为 `26/26`、拒答 `10/10`、引用

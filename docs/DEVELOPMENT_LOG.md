@@ -3,7 +3,7 @@
 > 项目代号：Poem RAG  
 > 文档状态：持续开发日志 v1.0  
 > 创建日期：2026-09-19  
-> 最后更新：2026-09-26
+> 最后更新：2026-09-27
 > 技术方向：Vue 3 全栈 + Python/FastAPI + LangChain/LangGraph + RAG  
 > 默认领域：中国诗词知识库与智能问答
 
@@ -4534,3 +4534,658 @@ P95 和 TTFT 同时上升；阶段统计显示 `retrieval` 的 P95 从 `1831.997
 - 共享 Provider、Embedding 和 Qdrant 客户端仍需用独立会话与重复试验拆解并发边界。
 - 后续优先验证检索资源竞争、连接池预算和单请求 P95，再决定是否启用缓存或在线并发。
 - 性能与资源边界稳定后，再进入云服务器、域名和 HTTPS 部署阶段。
+
+### [2026-09-26] 检索与 Provider 并发边界诊断
+
+#### 本次目标
+
+- 拆分生成并发评估中观察到的检索资源竞争和 Provider 延迟变化。
+- 为 Qdrant、词法检索、Retrieval 评估和 Provider 建立可重复的批量与并发诊断。
+- 判断是否可以通过减少查询变体或候选池扩大来换取性能。
+
+#### 完成内容
+
+- `apps/api/app/ai/providers/vector_store.py`：新增运行时可检查的
+  `BatchVectorStorePort`。
+- `apps/api/app/ai/providers/qdrant.py`：新增 `search_batch()`，底层使用
+  `query_batch_points()`，校验请求与响应数量并保持输入顺序。
+- `apps/api/app/services/dense_retrieval.py`：优先使用批量搜索；不支持批量时以最大
+  并发 `4` 逐条回退。
+- `apps/api/app/repositories/chunks.py`：新增 `search_lexical_batch()`，用
+  `UNION ALL + ROW_NUMBER()` 在一次数据库往返内处理多个查询变体；结果通过标签读取
+  `query_index`，不再依赖固定列下标。
+- `apps/api/app/services/retrieval.py`、`hybrid_retrieval.py`：接入批量词法路径，
+  批量层不重复扩大候选预算。
+- `apps/api/app/evaluation/retrieval.py`、`schemas/evaluation.py`、
+  `scripts/evaluate_retrieval.py`：新增 `--concurrency`、每样本独立检索栈、
+  wall time 和吞吐；共享 Embedding 与 Qdrant 资源。
+- `apps/api/scripts/profile_graph_concurrency.py`：支持假/真检索与假/真 Provider
+  四种隔离组合，并记录 Embedding 逻辑调用、HTTP 调用、重试和长尾。
+- `apps/api/scripts/profile_provider_concurrency.py`：支持 generate、stream、mixed
+  三种真实 Provider 并发诊断。
+- 新增四个测试文件/扩展，覆盖批量顺序、过滤、并发上限、结果顺序、非法参数、重试
+  关联和 CLI 契约。
+
+#### 真实结果
+
+批量修复后的 v3 检索 `c1` 为 45/46、Recall@5 `1.000000`、nDCG@5 `0.947993`、
+MRR `0.929825`、平均延迟 `436.045 ms`、P95 `1149.235 ms`。候选池消融同为
+45/46，平均延迟 `447.135 ms`、P95 `1196.559 ms`，没有收益，已撤回。
+
+查询变体消融：
+
+| 变体上限 | 通过 | Recall@5 | nDCG@5 | MRR | 平均延迟 | P95 |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 8 | 45/46 | 1.000000 | 0.947993 | 0.929825 | 436.045 ms | 1149.235 ms |
+| 4 | 44/46 | 0.973684 | 0.921677 | 0.903509 | 331.981 ms | 663.489 ms |
+| 2 | 43/46 | 0.947368 | 0.920741 | 0.929825 | 232.926 ms | 384.667 ms |
+| 1 | 36/46 | 0.815789 | 0.771020 | 0.759649 | 216.564 ms | 348.324 ms |
+
+结论是 8 个查询变体必须保留，不能用截断查询表达换取延迟。
+
+检索评估 v3 `c1/c4` 的质量、nDCG 和 MRR 完全一致；wall time 从
+`26384.588 ms` 降到 `6742.179 ms`，吞吐从 `1.743` 提升到 `6.823 cases/s`。
+图级隔离中，真实比例越高延迟越大；真实 Provider 是主要来源。Provider 独立诊断的
+generate、mixed、stream 在 `c4` 下吞吐约提升 `2.8x` 至 `2.9x`，但单请求平均延迟
+同时上升。Embedding 的 24 次逻辑调用严格对应 24 次 HTTP 调用，最大 HTTP 并发为
+`4`，平均延迟 `266.943 ms`、P95 `445.109 ms`、最大 `1521.541 ms`，存在明显长尾。
+
+为确认长尾不是单次现象，又对同一生成数据集 26 个请求执行 `repeat=4`，共 104 次
+真实 Embedding 请求。`c1` 为 104/104 成功、0 重试，wall time `69601.611 ms`、
+吞吐 `1.494 req/s`、平均请求延迟 `669.223 ms`、P95 `1382.033 ms`；Embedding 平均
+HTTP 延迟 `225.055 ms`、P95 `297.020 ms`、最大 `1513.087 ms`。`c4` 同样
+104/104 成功、0 重试，wall time `16938.778 ms`、吞吐 `6.140 req/s`、平均请求
+延迟 `643.098 ms`、P95 `1306.759 ms`；Embedding 平均 HTTP 延迟 `202.665 ms`、
+P95 `293.950 ms`、最大 `487.796 ms`。复跑确认 `c1` 长尾稳定存在；本轮 `c4` 未
+观察到重试或限流，但该结果仍只代表当前单机与上游网络状态。
+
+#### 决策与边界
+
+- 保留批量检索、有界回退和离线并发评估能力。
+- 不启用候选池放大，不减少 8 个查询变体。
+- 不修改在线默认并发、公开 API、SSE、数据库、Qdrant Collection 和前端。
+- 当前结果只支持本机单次诊断，不代表生产容量；并发改善吞吐，不降低真实 Provider
+  下单请求等待时间。
+
+#### 验证结果
+
+- 批量检索、评估和诊断定向测试通过。
+- Ruff 通过。
+- 真实诊断使用 MySQL、Qdrant `poem_chunks_v1`、Qwen `text-embedding-v4` 和
+  `deepseek-chat`。
+- 提交前执行完整 `.\scripts\verify.ps1` 与 `git diff --check`。
+
+#### 报告
+
+- `data/eval/reports/retrieval_holdout_1000_v3_batch_limit_c1_restored.json`
+- `data/eval/reports/retrieval_holdout_1000_v3_performance_c1.json`
+- `data/eval/reports/retrieval_holdout_1000_v3_performance_c4.json`
+- `data/eval/reports/retrieval_holdout_1000_v3_candidate_pool_c1.json`
+- `data/eval/reports/graph_isolation_*_c1/c4.json`
+- `data/eval/reports/provider_concurrency_*_c1/c4.json`
+- `data/eval/reports/graph_embedding_v3_real_retrieval_fake_provider_c1/c4.json`
+- `data/eval/reports/graph_embedding_v3_stability_rerun_c1.json`
+- `data/eval/reports/graph_embedding_v3_stability_rerun_c4.json`
+
+#### 下一步
+
+1. 用重复试验验证检索连接池、Qdrant 批量上限和 Embedding 长尾稳定性。
+2. 保持 v3 只作回归，评估缓存和正式压测工具前先冻结新的质量门槛。
+3. 本地性能与质量稳定后，再进入云服务器、域名和 HTTPS 部署阶段。
+
+### [2026-09-26] Embedding 精确缓存
+
+#### 本次目标
+
+- 在并发诊断确认 Embedding 存在长尾后，先验证边界最小、结果确定的精确缓存。
+- 只复用相同文本、模型、配置维度和用途的向量，不缓存检索、回答或 Chat 响应。
+- Redis 未配置、超时、连接失败、值损坏或初始化异常时 fail-open。
+- 默认关闭，保留离线诊断开关，不修改公开 API、SSE、MySQL、Qdrant Collection 和前端。
+
+#### 做出的决定
+
+- 缓存键使用规范化 JSON 的 SHA-256，输入为缓存版本、用途、模型 ID、配置维度和原始
+  文本；不做大小写、空白或标点归一化。
+- 用途严格区分 `documents` 和 `query`，避免文档向量与查询向量语义混用。
+- 一次批量请求先去重，再对 Redis 批量读取、批量写入，最后恢复原始输入顺序。
+- Redis 缓存值是仅包含格式版本和向量的 JSON；不保存原文、用户、会话或问题。
+- 缓存异常只记录 warning 和计数，Provider 异常保持原样抛出，`CancelledError` 继续传播。
+- 首版不实现分布式 single-flight；并发 miss 可以重复调用 Provider，但不影响正确性。
+- 默认 `EMBEDDING_CACHE_ENABLED=false`，TTL `3600 s`，Redis 超时 `0.5 s`。
+
+#### 完成内容
+
+- `apps/api/app/ai/providers/embedding_cache.py`：新增 `EmbeddingCacheStore`、
+  `RedisEmbeddingCache`、`CachedEmbeddingProvider` 和统计结构；实现批内去重、
+  跨调用命中、用途/模型/维度隔离、损坏值 miss 和读写 fail-open。
+- `apps/api/app/core/config.py`：新增缓存开关、TTL 和超时 Settings 及边界校验。
+- `apps/api/app/services/chat.py`：仅在开关开启且 `REDIS_URL` 已配置时包装共享
+  Qwen Provider；Redis 初始化失败时回退原始 Provider。
+- `apps/api/scripts/profile_graph_concurrency.py`：新增 `--embedding-cache`，只在
+  `--retrieval real` 下允许，并要求 `REDIS_URL`；报告增加 hits、misses、writes、
+  errors 和 hit rate。
+- `apps/api/tests/test_embedding_cache.py`、`test_graph_concurrency_profile.py`：
+  覆盖批内去重、顺序、跨调用、隔离、损坏值、Redis 故障、Provider 异常、取消、
+  空批量、配置边界、初始化失败降级和 CLI 报告契约。
+- `.env.example`、功能文档、功能索引、README 和项目导览同步记录配置与边界。
+
+#### 真实结果
+
+环境为真实 MySQL、Qdrant `poem_chunks_v1`、Qwen `text-embedding-v4` 和 Redis，
+生成 Provider 使用 fake。每个请求重复 4 次，共 104 次请求：
+
+| 场景 | 成功 | Cache hits | Misses | Writes | Errors | 逻辑调用 | HTTP 调用 | Hit rate |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 冷缓存 | 104/104 | 453 | 135 | 135 | 0 | 96 | 24 | 0.770408 |
+| 热缓存复跑 | 104/104 | 588 | 0 | 0 | 0 | 96 | 0 | 1.000000 |
+
+冷缓存已经能复用同一次查询内重复变体和跨 case 的重复文本；热缓存复跑时全部 24 个
+Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。该结果证明精确缓存
+的复用与隔离行为有效，但不能替代生产容量、Redis value 体积和淘汰策略评估。
+
+报告：
+
+- `data/eval/reports/graph_embedding_cache_c1.json`
+- `data/eval/reports/graph_embedding_cache_c1_warm.json`
+
+#### Redis 容量只读检查
+
+对真实 Redis 只读检查后，项目前缀共有 135 个键，总占用 `3,335,040 bytes`，平均
+单键 `24,704 bytes`；所有键均有 TTL，剩余 TTL 为 `3,095,704-3,133,741 ms`。
+当前实例仍为 `maxmemory=0` 和 `maxmemory-policy=noeviction`，说明它可以完成功能
+验证，但不具备生产缓存所需的容量边界和淘汰策略。
+
+本阶段不修改该共享实例配置，也不开启在线缓存。后续启用前应优先使用独立 Redis
+实例并设置 `maxmemory`；专用实例使用 `allkeys-lru`，与持久键共享实例时使用
+`volatile-lru`，并保留缓存 TTL。
+
+#### 验证结果
+
+- 定向检查：Ruff 通过，pytest `40 passed, 2 warnings`。
+- 完整门禁：`.\scripts\verify.ps1` 通过；后端 `248 passed, 3 warnings`，
+  前端 typecheck、Vitest `9 passed` 和生产构建通过。
+- 前端构建仍只有既有主 bundle 超过 `500 kB` 的警告。
+- 真实 Redis `6379`、Qdrant `6335` 在线；冷/热缓存实际结果均无缓存错误。
+
+#### 风险与回滚
+
+- 键设计错误可能返回错误向量，因此保留用途、模型、维度和原始文本隔离，不使用语义
+  近似命中。
+- Redis 故障会增加一次短超时尝试；在线初始化失败直接回退原始 Provider，不让缓存
+  连带关闭向量检索。
+- 未实现 single-flight，并发冷 miss 仍可能重复调用 Provider；正确性不受影响。
+- 回滚只需设置 `EMBEDDING_CACHE_ENABLED=false`；该缓存不是事实来源，不涉及迁移。
+
+#### 下一步
+
+1. 在线默认保持关闭，先补 Redis 容量、淘汰策略和命中收益的独立验证。
+2. 不缓存检索结果或回答，直到语料版本、权限、过滤条件和质量校验边界明确。
+3. 缓存与性能门禁稳定后，再进入云服务器、域名和 HTTPS 部署阶段。
+
+### [2026-09-27] v0.9.0 发布基线收口
+
+#### 本次目标
+
+- 将已经通过性能、并发和缓存验证的实现整理为可识别的候选发布基线。
+- 统一后端 OpenAPI、前端包和项目文档中的版本信息。
+- 明确未跟踪评估报告的保留规则，不在未确认前提交、删除或静默忽略证据。
+
+#### 做出的决定
+
+- Python 包版本使用 `apps/api/app/__init__.py` 中的 `__version__` 作为单一来源，
+  FastAPI 在应用工厂中直接读取该值。
+- 当前候选版本为 `0.9.0`，文档快照和候选 tag 使用
+  `v0.9.0-performance-concurrency`。
+- 本阶段只处理发布身份和验证入口，不修改在线检索、SSE、数据库、Qdrant
+  Collection 或前端交互。
+- 重复性能、隔离诊断、探针和中间调参报告默认保留为本地可复现产物；
+  文档引用的最终报告在提交前逐项决定是否纳入版本管理。
+- 本地 `verify.ps1` 优先使用 `apps/web/node_modules/.bin`，依赖缺失时才回退
+  pnpm，避免已有依赖环境下因注册表不可用阻断门禁。
+
+#### 完成内容
+
+- `apps/api/app/__init__.py`：增加 `__version__ = "0.9.0"`。
+- `apps/api/app/main.py`：OpenAPI 版本改为读取包版本，不再硬编码 `0.7.0`。
+- `apps/api/tests/test_health.py`：增加应用版本与包版本一致性测试。
+- `apps/web/package.json`：前端包版本更新为 `0.9.0`。
+- `scripts/verify.ps1`：前端类型检查、Vitest 和生产构建支持本地二进制优先执行。
+- `README.md`、`docs/features/README.md`：增加当前快照和发布基线文档入口。
+- `docs/features/20260927-v0.9-release-baseline.md`：记录版本身份、验收标准、
+  报告保留规则和待用户确认的提交/tag 动作。
+
+#### 验证结果
+
+- OpenAPI `info.version` 实际输出为 `0.9.0`。
+- 完整 `.\scripts\verify.ps1` 通过：Ruff 通过，pytest `249 passed, 3 warnings`，
+  前端 typecheck 通过，Vitest `9 passed`，生产构建通过。
+- 前端构建仅有既存的主 bundle 超过 `500 kB` 警告，本次未新增构建错误。
+- `git diff --check` 通过；仅报告 Windows 工作区的 LF/CRLF 转换提示。
+- 评估报告仍然保留在本地，不因版本收口而删除；未执行 commit、push 或 tag。
+
+#### 风险与下一步
+
+1. 在提交前逐项审阅当前未跟踪报告，决定哪些最终证据需要纳入版本管理。
+2. 用户确认后提交候选基线并创建 `v0.9.0-performance-concurrency` tag。
+3. 基线提交完成后，进入异步数据平面：导入/切块/Embedding/索引任务 API、
+   Worker 幂等、重试、租约和状态查询。
+
+### [2026-09-27] 索引任务控制面
+
+#### 本次目标
+
+- 把索引运行从仅有数据库状态推进为可执行的管理员 API + Celery Worker 切片。
+- 保证重复创建、并发领取、进程崩溃恢复和失败重试不会破坏索引运行状态。
+- 队列默认关闭，先验证控制面正确性，不改变在线问答和现有检索路径。
+
+#### 做出的决定
+
+- MySQL 保存业务事实，Celery 和 Redis 只负责投递与执行。
+- 创建接口支持 `Idempotency-Key`，重复请求返回原运行，不重复入队。
+- Worker 每次领取原子增加 `attempt_count`，`max_attempts` 只由数据库判断；
+  Celery `self.retry(max_retries=None)` 不再维护第二套重试上限。
+- 使用 `lease_owner`、`lease_expires_at` 和 `heartbeat_at` 防御并发 Worker；
+  过期租约允许重新领取，失去租约的运行不能继续写入。
+- 取消采用协作式跳过，不尝试强杀已经发出的模型或网络调用。
+- 本阶段暂不实现 outbox、孤儿 `pending` reaper、active index 切换和旧向量清理；
+  孤儿任务补偿已由同日后续“索引任务补偿扫描”切片补齐。
+
+#### 完成内容
+
+- `apps/api/app/api/v1/admin/index_runs.py`：新增管理员列表、创建、详情、重试和取消接口。
+- `apps/api/app/services/index_runs.py`：新增幂等创建、领取、心跳、过期重领、
+  数据库重试上限、取消和租约校验。
+- `apps/api/app/services/task_queue.py`、`apps/api/app/tasks/celery_app.py`、
+  `apps/api/app/tasks/indexing.py`：新增 Celery + Redis 队列、Worker 执行和
+  可重试失败处理。
+- `apps/api/app/models/index_run.py`、`apps/api/migrations/versions/20260927_0006_add_index_run_task_control.py`：
+  增加幂等键、Celery ID、尝试次数、租约、心跳、取消请求和错误码字段。
+- `.env.example`：增加队列开关、broker、队列名、租约、心跳、尝试次数和退避配置。
+- `apps/api/tests/test_index_task_queue.py`：覆盖队列关闭、幂等创建、重试入队、
+  Worker 成功、数据库重试上限和取消后跳过。
+- `docs/features/20260927-index-run-task-control.md`：记录控制面契约、数据、运维和风险。
+- `README.md`、`docs/PROJECT_GUIDE.md`、`docs/FRONTEND_BACKEND_CONTRACT.md`：
+  同步当前实现状态、API、错误码和契约边界。
+
+#### 验证结果
+
+- 定向测试：
+
+  ```powershell
+  .\.venv\Scripts\python.exe -m pytest `
+    apps\api\tests\test_index_task_queue.py `
+    apps\api\tests\test_index_runs.py `
+    apps\api\tests\test_indexing.py -q
+  ```
+
+  结果：`24 passed, 2 warnings`。
+
+- Ruff：
+
+  ```powershell
+  .\.venv\Scripts\python.exe -m ruff check `
+    apps\api\tests\test_index_task_queue.py `
+    apps\api\app\tasks\indexing.py `
+    apps\api\app\api\v1\admin\index_runs.py
+  ```
+
+  结果：`All checks passed!`。
+
+- 真实 MySQL 已完成 `0005 -> 0006 -> 0005 -> 0006` 往返验证，当前 head 为
+  `20260927_0006`。
+
+- 完整门禁 `.\scripts\verify.ps1` 通过：Ruff 通过，后端 `262 passed, 3 warnings`，
+  前端 typecheck 通过，Vitest `9 passed`，生产构建通过。前端构建仍只有既存主
+  bundle 超过 `500 kB` 的警告。
+
+#### 风险与下一步
+
+1. API 提交运行后、broker 入队前发生进程崩溃时，会留下没有消息的 `pending` 运行。
+2. 本切片中过期租约只有在 Celery 再次投递任务时才能被领取；该缺口随后由
+   “索引任务补偿扫描”切片补齐。
+3. 队列开启前需要验证独立 Redis、broker 超时、Worker 并发和故障恢复。
+4. 真实迁移验证通过后，运行完整 `.\scripts\verify.ps1` 和 `git diff --check`。
+5. 控制面稳定后再设计 active index 原子切换、对账、旧点清理和前端任务页。
+
+### [2026-09-27] 索引任务补偿扫描
+
+#### 本次目标
+
+- 收口异步索引任务的数据可靠性缺口：API 提交后消息丢失、Worker 崩溃后租约长期
+  停留在 `running`、最后一次尝试租约过期后无法进入终态。
+- 保持任务队列和补偿扫描默认关闭，不改变在线问答、检索路径、公开 API 和前端。
+- 先用轻量补偿扫描覆盖故障窗口，不在当前规模下立即引入事务 outbox。
+
+#### 做出的决定
+
+- 采用 at-least-once 投递语义：重复消息只有通过数据库原子 `claim` 的运行才会执行。
+- `pending` 超过宽限期后允许重新投递；`running` 租约过期且仍有尝试次数时重置为
+  `pending` 后重投。
+- 租约过期且 `attempt_count >= max_attempts` 的运行直接进入 `failed`，避免持续
+  投递永远无法领取的消息。
+- Celery Beat 只在 `INDEX_TASK_RECONCILE_ENABLED=true` 时注册周期任务。
+
+#### 完成内容
+
+- `apps/api/app/services/index_runs.py`：新增补偿候选查询和过期租约原子恢复。
+- `apps/api/app/tasks/reconciliation.py`：新增批量补偿扫描、分项错误计数和 Celery 任务。
+- `apps/api/app/tasks/celery_app.py`：注册补偿任务并配置可选 Beat schedule。
+- `apps/api/app/core/config.py`、`.env.example`：增加补偿开关、扫描间隔、宽限期和批量大小。
+- `apps/api/app/core/errors.py`：增加 `INDEX_RUN_LEASE_EXPIRED` 运行错误码。
+- `apps/api/tests/test_index_task_queue.py`：增加超时 `pending`、过期租约恢复、
+  尝试耗尽失败和队列关闭短路测试。
+- `docs/features/20260927-index-run-task-control.md`：同步补偿语义、运维和风险边界。
+
+#### 验证结果
+
+- 定向测试：
+
+  ```powershell
+  .\.venv\Scripts\python.exe -m pytest `
+    apps\api\tests\test_index_task_queue.py `
+    apps\api\tests\test_index_runs.py `
+    apps\api\tests\test_indexing.py -q
+  ```
+
+  结果：`28 passed, 2 warnings`。
+
+- 完整门禁：`.\scripts\verify.ps1` 通过，Ruff 通过，后端
+  `266 passed, 3 warnings`，前端 typecheck、Vitest `9 passed` 和 production
+  build 通过。前端仍只有既存主 bundle 超过 `500 kB` 的警告。
+
+#### 风险与下一步
+
+1. 补偿扫描缩短故障窗口，但恢复时间至少为 `scan interval + stale grace`；若业务
+   要求更低恢复时间，再评估事务 outbox。
+2. 当前只验证了进程内状态机与任务编排，尚未在独立 Redis 上验证 Broker 断连、
+   Worker 重启和容量边界；该缺口已在下一节完成真实 Redis/Celery 验证。
+3. 下一步优先做真实 Redis/Celery 故障演练，再决定是否把队列开关写入本地或部署
+   环境；active index 原子切换和旧 Qdrant 点清理仍排在后面。
+
+### [2026-09-27] 异步索引任务可靠性收口
+
+#### 本次目标
+
+- 在独立 Redis 上验证 Broker 断连、消息保留、Worker 重启恢复和快速失败。
+- 避免同步 Celery 发布调用阻塞 FastAPI 事件循环。
+- 区分“API 发布快速失败”和“Worker 启动/掉线恢复”，不因 API 熔断需求牺牲
+  Worker 的 broker 重连能力。
+
+#### 做出的决定
+
+- API 和补偿扫描通过 `asyncio.to_thread()` 调用同步的 Celery 发布接口。
+- `task_publish_retry=false`，每次 API 发布显式传入 `retry=false`。
+- Redis transport 的发布连接使用单次连接尝试和 2 秒 socket 超时；Worker 启动仍
+  使用 `broker_connection_retry_on_startup=true`。
+- 仍以 MySQL 作为权威状态。发布失败返回 `503 TASK_QUEUE_UNAVAILABLE`，由幂等创建
+  或补偿扫描负责后续恢复。
+
+#### 完成内容
+
+- `apps/api/app/tasks/celery_app.py`：关闭任务发布重试，为 Redis transport 增加
+  socket 超时、单次连接尝试和无退避配置。
+- `apps/api/app/services/task_queue.py`：Celery 入队显式关闭发布重试，并把底层
+  异常映射为统一的队列不可用错误。
+- `apps/api/app/api/v1/admin/index_runs.py`、`apps/api/app/tasks/reconciliation.py`：
+  使用工作线程执行同步发布，避免阻塞事件循环。
+- `apps/api/tests/test_task_queue.py`：覆盖发布重试关闭、错误映射、事件循环隔离
+  和 Celery 配置边界。
+- `docs/features/20260927-index-run-task-control.md`：同步快速失败、连接恢复和
+  真实验证边界。
+
+#### 验证结果
+
+- 定向测试：`test_task_queue.py` 与 `test_index_task_queue.py` 共 `14 passed,
+  2 warnings`。
+- Ruff：`All checks passed!`。
+- 真实 Redis/Celery：
+  - Worker 未启动时发布消息，队列深度为 `1`；Worker 启动后消费成功，队列深度为
+    `0`。
+  - 停止独立 Redis 后，入队约 `2.83s` 返回 `503 TASK_QUEUE_UNAVAILABLE`。
+  - `poem-redis` 验证结束后重新启动，监听 `6380`。
+- 完整门禁 `.\scripts\verify.ps1` 通过：Ruff 通过，后端 `270 passed, 3 warnings`，
+  前端 typecheck、Vitest `9 passed` 和生产构建通过。前端仍只有既存主 bundle
+  超过 `500 kB` 的警告。
+
+#### 风险与下一步
+
+1. 当前只验证单实例 Redis 和单 Worker 的离线恢复，尚未完成多 Worker 竞争、队列
+   容量、长期连接抖动和监控告警验证。
+2. active index 原子切换、旧 Qdrant 点清理和跨库对账仍不属于本切片。
+3. 下一步可以进入部署前的任务监控与容量验证，或继续完善索引切换和前端任务页。
+
+### [2026-09-27] Active index 原子发布与半成品隔离
+
+#### 本次目标
+
+- 把“索引运行成功”和“线上正式发布”拆开，避免新版本 chunk 尚未全部写入时
+  被问答检索读取。
+- 让作品版本的切换、chunk 运行标签和检索过滤只依赖 MySQL 事务，不引入
+  Qdrant alias 或跨库分布式事务。
+- 兼容迁移前没有发布 pointer 的 1008 首历史作品，并提供可审计、可 dry-run 的
+  回填路径。
+
+#### 做出的决定
+
+- `poems.active_index_run_id` 是唯一发布事实源；Qdrant 只保存可重建的向量。
+- `poem_chunks.index_run_id` 记录 chunk 由哪次索引运行写入，检索只读取与当前
+  pointer 相等的 chunk。
+- chunk 标记和 pointer 切换在同一个数据库事务中提交；Qdrant 可以先写入，但在
+  事务提交前新索引不可见。
+- pointer 只在运行对应的 `poem_versions.version_no` 仍等于作品当前版本时移动；
+  旧版本运行晚完成时保留成功审计记录，但不抢回发布权。
+- 不在发布事务中同步删除旧 Qdrant 点；旧点 GC 和对账继续作为独立数据治理任务。
+- pointer 为空时保持旧的版本可见性，回填脚本只填补空值，不覆盖已有发布状态。
+
+#### 完成内容
+
+- `apps/api/app/models/poem.py`、`apps/api/app/models/chunk.py`：增加
+  `active_index_run_id` 和 `index_run_id`。
+- `apps/api/migrations/versions/20260927_0007_add_active_index_pointer.py`：新增
+  pointer、chunk 标签、索引和外键；pointer 故意不建外键，避免约束循环。
+- `apps/api/app/repositories/chunks.py`：增加统一的 `_published_index_filter()`，
+  覆盖 lexical、dense 和证据上下文查询；`mark_indexed()` 在同一事务中标记 chunks
+  并切换 pointer。
+- `apps/api/app/services/indexing.py`：运行旧版本时只完成 chunk 审计，不移动 pointer；
+  pointer 未移动时记录 warning 而不伪造失败。
+- `apps/api/scripts/backfill_active_index.py`：默认 dry-run，输出待标记 chunk 数；
+  `--apply` 只更新空 pointer 和空 `index_run_id`，冲突作品会跳过并报告。
+- `apps/api/tests/test_active_index_publication.py`：覆盖新版本发布前不可见、
+  发布后切换、旧运行晚完成不覆盖、历史兼容和非 active run 过滤。
+- 新增 `docs/features/20260927-active-index-publication.md`，并同步索引运行元数据、
+  任务控制面、项目导览和前后端契约中的数据字段与发布边界。
+
+#### 验证结果
+
+- 真实 MySQL 迁移往返：
+  `0006 -> 0007 -> 0006 -> 0007` 成功，当前 head 为 `20260927_0007`。
+- 定向回归：索引、发布、任务队列、dense、lexical、hybrid 共
+  `57 passed, 2 warnings`；Ruff `All checks passed!`。
+- 真实库回填前 dry-run：
+
+  ```text
+  poems_total=1008
+  poems_without_pointer=1008
+  publishable_poems=1008
+  chunks_to_tag=12410
+  tagged_chunks=0
+  skipped_ambiguous=0
+  ```
+
+- 执行 `backfill_active_index.py --apply` 后实际标记 `12410` 个 chunks；再次
+  dry-run 得到 `poems_without_pointer=0`、`chunks_to_tag=0`、
+  `skipped_ambiguous=0`。
+- 完整 `.\scripts\verify.ps1` 通过：Ruff 通过，后端 `274 passed, 3 warnings`，
+  前端 typecheck 通过，Vitest `9 passed`，生产构建通过。前端仍只有既存主
+  bundle 超过 `500 kB` 的警告。
+- `git diff --check` 通过；仅报告 Windows 工作区既存 LF/CRLF 转换提示。
+
+#### 风险与下一步
+
+1. 旧 Qdrant 点不会在 pointer 切换时删除，后续需要实现可审计的 GC 和跨库对账。
+2. 当前只保证 MySQL 发布事务和检索过滤正确；若进程在 Qdrant upsert 后、MySQL
+   提交前崩溃，需要靠运行记录、重试和对账处理孤立点。
+3. 管理端尚未展示发布 pointer 和运行详情；后续任务页应展示运行状态、版本和
+   是否需要重建。
+4. 本次不执行 commit、push 或 tag；工作区仍保留其他未提交的性能、评估和文档
+   改动，提交前需要按主题分开审阅。
+
+### [2026-09-27] Index 向量对账与旧点 GC
+
+#### 本次目标
+
+- 清理 active index 切换后不再被 MySQL 引用的 Qdrant 点，但不把网络删除放入
+  发布事务。
+- 在并发发布下避免把“Qdrant 已写入、MySQL 尚未提交引用”的点误判为孤儿。
+- 区分可安全删除的终态旧点、活跃运行保护点、无法识别的历史点和缺失向量。
+
+#### 做出的决定
+
+- MySQL 继续是发布和向量引用的事实源，Qdrant inventory 只用于核对。
+- 默认执行 dry-run；只有显式 `--apply` 才允许删除。
+- `pending/running` 运行产生的点一律保护；无法识别来源的点进入 `unknown`，
+  不自动删除。
+- inspect 结束后，apply 先结束数据库快照，再锁定全部作品发布目标，重新查询候选
+  point ID 是否已被 MySQL 引用；只有仍然未被引用的点才发送 Qdrant delete。
+- 索引 upsert 前锁对应作品行，并持有到 chunk 标签和 active pointer 提交，使索引
+  发布与 GC 使用同一发布协调锁。
+- `missing` 只报告，不自动补向量；修复策略留给后续数据治理切片。
+
+#### 完成内容
+
+- `apps/api/app/ai/providers/vector_store.py`、`qdrant.py`：新增 inventory 端口、
+  point snapshot 和 1000 条分页的 `list_points()`。
+- `apps/api/app/services/index_publication.py`：集中提供单作品发布锁和全量发布锁。
+- `apps/api/app/services/index_reconciliation.py`：实现 inspect、五种分类、apply
+  和删除前引用二次查询。
+- `apps/api/app/services/indexing.py`：Qdrant payload 增加 `index_run_id`，upsert
+  前获取作品发布锁。
+- `apps/api/scripts/reconcile_index_vectors.py`：新增默认 dry-run 的运维 CLI。
+- `apps/api/tests/test_index_reconciliation.py`、`test_qdrant_vector_store.py`、
+  `test_indexing.py`：覆盖分页盘点、活跃保护、未知点、缺失点、终态候选和锁内
+  二次引用校验。
+- 新增 `docs/features/20260927-index-vector-reconciliation.md`，并同步功能索引、
+  发布、任务控制、项目导览、前后端契约和 README。
+
+#### 验证结果
+
+- 定向测试：索引、发布、Qdrant 和对账相关测试共 `24 passed, 3 warnings`。
+- Ruff：`All checks passed!`。
+- 真实 MySQL + Qdrant 只读 dry-run：
+
+  ```text
+  mode=dry-run collection=poem_chunks_v1 expected_points=12415 actual_points=12415
+  live_points=12415 orphan_points=0 delete_candidates=0 protected_points=0
+  unknown_points=0 missing_points=0 deleted_points=0
+  ```
+
+- 没有删除真实数据，也没有修改 `.env` 或 Qdrant collection。
+
+#### 风险与下一步
+
+1. 真实库当前没有孤儿点，因此 `--apply` 的真实 Qdrant 删除分支尚未执行；应在
+   隔离 collection 构造旧点和活跃保护点后再验证。
+2. SQLite 测试不能证明 MySQL InnoDB 的 `FOR UPDATE` 争用和间隙锁行为；真实并发
+   发布与 GC 需要单独演练。
+3. `list_points()` 当前把全量快照放入内存，12415 点规模可用；更大规模应改为
+   分批流式处理或临时 collection 快照。
+4. 完整门禁、`git diff --check`、提交和 tag 仍待本次收尾执行；不清理未跟踪评估
+   报告。
+
+### [2026-09-27] 旧向量 GC 隔离验证与数据来源路线收口
+
+#### 本次目标
+
+- 在真实 Qdrant 上验证 `IndexReconciliationService.apply()` 的删除网络路径，而不是只
+  使用 fake adapter 断言调用参数。
+- 确保隔离验证不接触正式 `poem_chunks_v1`，并在测试结束后清理临时 collection。
+- 明确网站爬虫不再属于当前实施路线，诗词数据统一来自固定版本、可追溯的公开数据集。
+
+#### 做出的决定
+
+- 新增显式环境变量 `POEM_QDRANT_INTEGRATION=1` 控制的真实 Qdrant 集成测试；默认
+  跳过，CI 不依赖外部 Qdrant。
+- 隔离测试继续使用测试数据库生成 MySQL 引用关系，但 Qdrant 使用真实随机临时
+  collection，验证 live、stale、protected 和 unknown 点的真实删除结果。
+- 公开数据集导入链路成为唯一数据处理主线；历史契约中的爬取表、接口和适配器章节
+  保留为未来扩展边界，不属于当前目标。
+
+#### 完成内容
+
+- `apps/api/tests/test_qdrant_reconciliation_integration.py`：新增真实 Qdrant 隔离测试，
+  验证只删除 stale 点、保留其余三类点，并销毁临时 collection。
+- `docs/features/20260927-index-vector-reconciliation.md`：记录隔离验证命令、结果和
+  仍未覆盖的 MySQL 锁争用边界。
+- `docs/PROJECT_GUIDE.md`、`docs/FRONTEND_BACKEND_CONTRACT.md`：将数据导入说明改为
+  公开数据集主线，并标注爬取章节仅为未来扩展。
+
+#### 验证结果
+
+- 真实 Qdrant 隔离测试：`1 passed`；测试后 collection 列表只剩正式
+  `poem_chunks_v1`。
+- 定向 Ruff：`All checks passed!`。
+- 正式 `poem_chunks_v1`、`.env` 和真实 MySQL 数据均未修改。
+
+#### 风险与下一步
+
+1. 该测试证明真实 Qdrant 删除和隔离清理可工作，但不证明 MySQL InnoDB 在真实并发
+   `FOR UPDATE` 下的等待、死锁和间隙锁行为。
+2. 正式 collection 上仍不执行 `--apply`，直到真实 dry-run 出现可证明安全的候选并
+   完成人工确认。
+3. 下一步收口 `v0.9`：按主题审阅工作区改动、分组提交、执行完整门禁，并在用户确认后
+   再推送和创建 tag。
+
+### [2026-09-27] v0.9 评估报告引用审计
+
+#### 本次目标
+
+- 把文档引用的评估报告逐一映射到本地文件、Git 跟踪状态和实际用途。
+- 区分发布基线需要长期保留的里程碑证据，以及可重复生成的 smoke、slow-tail、
+  消融和中间调参产物。
+- 消除指向未入库文件的“正式报告”表述，不删除任何 `data/eval/reports/*.json`。
+
+#### 做出的决定
+
+- 以下 24 个命名报告作为 `v0.9` 检索、Provider 并发、Embedding 长尾和缓存验证
+  的里程碑证据，随发布基线纳入版本管理：
+  - `retrieval_holdout_1000_v3_batch_limit_c1_restored.json`
+  - `retrieval_holdout_1000_v3_candidate_pool_c1.json`
+  - `retrieval_holdout_1000_v3_performance_c1.json`
+  - `retrieval_holdout_1000_v3_performance_c4.json`
+  - `graph_isolation_*_{c1,c4}.json`
+  - `provider_concurrency_*_{c1,c4}.json`
+  - `graph_embedding_v3_real_retrieval_fake_provider_{c1,c4}.json`
+  - `graph_embedding_v3_stability_rerun_{c1,c4}.json`
+  - `graph_embedding_cache_c1.json`
+  - `graph_embedding_cache_c1_warm.json`
+- smoke、slow-tail、查询变体和其他重复诊断继续保存在本地，但由 `.gitignore`
+  明确排除，不再形成“未跟踪文件就是遗漏证据”的歧义。
+- 功能文档只把纳入基线的报告称为“本版纳入 Git 的里程碑报告”；中间产物正文只保留
+  指标和可复现命令。
+
+#### 完成内容
+
+- `.gitignore`：新增 v0.9 smoke、slow-tail 和查询变体诊断的忽略规则；命名里程碑
+  报告不受这些规则影响。
+- `docs/features/20260927-v0.9-release-baseline.md`：记录最终报告清单、本地诊断清单
+  和敏感信息检查边界。
+- `docs/features/20260926-retrieval-provider-concurrency-diagnosis.md`：修正
+  `c1/c4` 简写为可识别的 `{c1,c4}`，明确报告归属。
+- `docs/features/20260926-embedding-exact-cache.md`：补充缓存里程碑报告和数据最小化
+  说明。
+
+#### 验证结果
+
+- 文档引用、实际文件、`git ls-files` 和 `git ls-files --others` 逐项对照完成。
+- 纳入基线的报告共约 2.2 MB，扫描未发现密钥、Token、Cookie、请求头或用户凭证。
+- 完整 `.\scripts\verify.ps1` 通过：Ruff 通过，后端 `278 passed, 1 skipped, 3 warnings`，
+  前端 typecheck 通过，Vitest `9 passed`，生产构建通过。跳过项是默认关闭的真实
+  Qdrant 集成测试；本阶段已在前一项独立验证中通过显式环境变量执行。
+- `git diff --check` 通过；只有 Windows 工作区既存 LF/CRLF 转换提示，无空白错误。
+
+#### 风险与下一步
+
+1. 报告可以复现，但性能数值仍受本机负载、网络和上游状态影响，不能视为生产容量承诺。
+2. 当前尚未执行 `git add`、commit、push 或 tag；提交时需要把这些命名报告与对应的
+   性能、缓存、任务控制和文档改动分到可审阅的主题中。
+3. 后续新增报告必须在功能文档合并前完成一次归属检查，避免重新引入失效引用。

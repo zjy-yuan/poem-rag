@@ -50,6 +50,12 @@ docs/features/20260925-hybrid-retrieval-baseline.md
 27. `20260924-generation-judge.md`
 28. `20260926-retrieval-2-rerank-v4.md`
 29. `20260926-generation-performance-concurrency.md`
+30. `20260926-retrieval-provider-concurrency-diagnosis.md`
+31. `20260926-embedding-exact-cache.md`
+32. `20260927-v0.9-release-baseline.md`
+33. `20260927-index-run-task-control.md`
+34. `20260927-active-index-publication.md`
+35. `20260927-index-vector-reconciliation.md`
 
 ## 2. 模板
 

@@ -3,7 +3,7 @@
 > 项目：Poem RAG  
 > 文档版本：v0.4  
 > 创建日期：2026-09-19  
-> 最后更新：2026-09-24
+> 最后更新：2026-09-27
 > 文档状态：前后端目标接口的唯一事实源  
 > 适用范围：Vue 3 前端、FastAPI 后端、诗词领域模型、API 响应和功能增量开发
 
@@ -30,6 +30,10 @@
 6. 破坏性变化不能静默替换，必须提供兼容窗口、迁移方案或新的版本路径。
 7. 未标注状态的历史条目表示目标设计，不自动代表当前已经实现；当前实现状态见 `PROJECT_GUIDE.md`。
 
+> 路线更新（2026-09-27）：网站爬虫已从当前项目路线移除，诗词数据统一来自固定版本、
+> 带来源证据的公开数据集。后文保留的爬取表、接口和适配器章节只作为未来扩展边界，
+> 不属于当前实施目标，也不能据此阻塞公开数据集导入、审核和发布流程。
+
 ---
 
 ## 2. 总体原则
@@ -44,7 +48,7 @@
 | FastAPI Router | HTTP 协议、鉴权依赖、参数和响应映射 | 大量业务实现 |
 | Service | 用例、事务边界、权限规则、跨模块编排 | 直接处理 Vue 页面状态 |
 | Repository | MySQL、Redis、Qdrant 等数据访问 | 决定用户权限和业务状态 |
-| Worker | 爬取、导入、切块、Embedding、索引 | 等待浏览器请求 |
+| Worker | 数据集导入、切块、Embedding、索引 | 等待浏览器请求 |
 | LangGraph | AI 问答状态和条件流程 | 普通诗词 CRUD |
 
 ### 2.2 核心约束
@@ -57,7 +61,7 @@
 6. 列表接口统一分页参数和返回结构。
 7. 错误使用稳定字符串错误码，前端不依赖中文消息做逻辑判断。
 8. 前端路由守卫只改善体验，后端必须再次校验权限。
-9. 爬取原始数据与规范化诗词数据分开保存。
+9. 外部原始数据与规范化诗词数据分开保存。
 10. 任何功能都按可验收的纵向切片增量加入。
 
 ---
@@ -76,8 +80,8 @@
 
 ### 3.2 P1 数据导入与问答
 
-1. 爬取源配置、爬取任务和原始记录。
-2. 爬取结果清洗、去重、审核和发布。
+1. 公开数据集版本、原始记录、预检和导入报告。
+2. 导入结果清洗、去重、审核和发布。
 3. 诗词 chunk 和 Qwen-Embedding 向量索引。
 4. 用户会话、LangGraph 问答和 SSE 流式输出。
 5. 引用、反馈和基础 RAG 评估。
@@ -738,6 +742,7 @@ token_count
 vector_id
 embedding_model
 embedding_dimension
+index_run_id
 chunk_strategy
 status
 created_at
@@ -756,6 +761,12 @@ updated_at
 8. `structural-v1` 只使用整篇、空行段落、标点和字符上限边界，不进行未经验证的韵脚或平仄识别。
 9. 版本级重建只读取 `published` 注释；没有 `vector_id` 的旧 chunks 可以幂等替换。
 10. 已存在 `vector_id` 时重建返回 `409 CHUNKS_ALREADY_INDEXED`，必须先清理向量索引。
+11. `index_run_id` 记录写入该 chunk 的索引运行；只有 `poems.active_index_run_id`
+    指向的运行生成的 chunks 才对线上检索可见。
+
+作品表额外保存 `active_index_run_id`，用于表示当前发布运行。该字段不通过公开 API
+暴露；没有 pointer 的历史数据保留旧版本可见性，完成新索引发布或执行回填脚本后
+切换到精确运行边界。
 
 #### 索引运行 `poem_index_runs`
 
@@ -787,6 +798,8 @@ updated_at
 pending -> running -> succeeded
                    -> failed
 pending/running -> failed
+pending/running -> cancelled
+failed -> pending (retry，且 attempt_count < max_attempts)
 ```
 
 阶段：
@@ -797,25 +810,38 @@ chunk -> embed -> upsert
 
 规则：
 
-1. `status` 使用 `pending`、`running`、`succeeded`、`failed`、`cancelled`；当前取消状态已建模，但取消流程尚未实现。
+1. `status` 使用 `pending`、`running`、`succeeded`、`failed`、`cancelled`。
 2. `stage` 使用 `chunk`、`embed`、`upsert`。
 3. `poem_version_id` 删除时级联删除运行记录；`created_by_id` 删除时设为 `NULL`，保留审计记录。
 4. 同一版本同一时间只允许一个 `pending` 或 `running` 运行；重复创建返回 `409 INDEX_RUN_ALREADY_ACTIVE`。
 5. `config_snapshot` 只保存非敏感配置。键名包含 `api_key`、`authorization`、`cookie`、`password`、`secret` 或 `token` 时，值写入 `[REDACTED]`。
 6. `embedding_dimension` 有值时必须大于 `0`；`embedded_count` 必须在 `0..chunk_count` 范围内。
 7. `error_message` 最多保存 2000 字符，不保存供应商完整请求、响应头或凭据。
-8. 当前仅实现 Service 和数据库记录，没有 HTTP 任务接口、Worker 租约、超时回收、自动重试或 active index 原子切换。
+8. Worker 每次领取增加 `attempt_count`，并由数据库 `max_attempts` 作为唯一重试上限。
+9. Worker 使用 `lease_owner`、`lease_expires_at` 和 `heartbeat_at` 持有并续租；租约失效后返回 `409 INDEX_RUN_LEASE_LOST`。
+10. `cancel_requested_at` 记录协作式取消；取消不会强制终止已经发出的 Provider 调用。
+11. API 先创建并提交运行，再向 Celery 入队；当前没有事务 outbox，但有默认关闭的
+    Celery Beat 补偿扫描，用于重新投递超时 `pending` 和过期租约运行。
+12. 运行成功只表示切块、Embedding 和 upsert 完成；在线检索只有在同一 MySQL
+    事务提交 chunk 标签和 `poems.active_index_run_id` 后才切换到该运行。
+13. 旧 Qdrant 点不随发布事务删除。内部 CLI 默认只盘点，`--apply` 前会锁定作品
+    发布目标并重新查询 `poem_chunks.vector_id`，只删除仍未被引用且所属运行已终态的
+    点；该能力没有公开 HTTP 接口。
 
-后续目标管理接口：
+当前已实现管理员接口：
 
 ```text
+GET  /api/v1/admin/index-runs
 POST /api/v1/admin/index-runs
-GET  /api/v1/admin/index-runs/{id}
-POST /api/v1/admin/index-runs/{id}/retry
-POST /api/v1/admin/index-runs/{id}/cancel
+GET  /api/v1/admin/index-runs/{run_id}
+POST /api/v1/admin/index-runs/{run_id}/retry
+POST /api/v1/admin/index-runs/{run_id}/cancel
 ```
 
-创建任务应返回 `202 Accepted`，并支持 `Idempotency-Key`。这些接口尚未实现，不能按已完成能力联调。
+创建和重试返回 `202 Accepted`，创建接口支持 `Idempotency-Key`。列表接口支持
+`page`、`page_size`、`status` 和 `poem_version_id`。任务队列默认关闭；队列未启用
+或 broker 不可用时返回 `503 TASK_QUEUE_UNAVAILABLE`。补偿扫描没有公开 HTTP
+接口，只由 Celery Beat 执行。
 
 ### 6.3 问答相关表
 
@@ -1608,6 +1634,10 @@ data: {"code":"MODEL_TIMEOUT","message":"模型响应超时，请稍后重试"}
 | `INDEX_RUN_NOT_FOUND` | 404 | 索引运行记录不存在 |
 | `INDEX_RUN_INVALID_STATUS` | 409 | 索引运行状态不允许当前转换 |
 | `INDEX_RUN_ALREADY_ACTIVE` | 409 | 同一版本已有待执行或执行中的索引运行 |
+| `INDEX_RUN_LEASE_LOST` | 409 | Worker 不再持有有效租约 |
+| `INDEX_RUN_LEASE_EXPIRED` | 运行记录 | Worker 租约过期，任务已重投或达到尝试上限 |
+| `INDEX_RUN_ATTEMPTS_EXHAUSTED` | 409 | 索引运行已达到最大尝试次数 |
+| `TASK_QUEUE_UNAVAILABLE` | 503 | 索引任务队列未启用或 broker 不可用 |
 | `CATEGORY_HAS_CHILDREN` | 409 | 分类仍有子分类 |
 | `CONVERSATION_NOT_FOUND` | 404 | 会话不存在或不属于当前用户 |
 | `CRAWL_SOURCE_DISABLED` | 409 | 爬取源未启用 |
@@ -1862,8 +1892,10 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 4. API Key 不得写入日志、`poem_index_runs.config_snapshot` 或错误报告。
 5. 当前已实现 chunks -> Qwen Embedding -> Qdrant upsert 的最小索引闭环，并回写 `vector_id`、模型和维度。
 6. 当前已实现 `dense-baseline-v1` 内部检索 Service，支持 Qdrant 查询、元数据过滤和 MySQL 可见性回查；它作为在线 Hybrid 的 Dense 分支使用，公开 HTTP 尚未暴露策略参数。
-7. 当前仍未实现旧向量清理、active index 切换和跨库对账；Qdrant 与 DashScope
-   真实烟测均已通过。
+7. active index 原子切换已实现；旧向量清理与跨库对账已实现为默认 dry-run 的内部
+   CLI，可识别终态孤儿、活跃保护、未知来源和缺失向量。真实库 12415 个 MySQL
+   引用与 12415 个 Qdrant 点只读盘点一致，真实 `--apply` 删除路径仍待在隔离
+   collection 验证；Qdrant 与 DashScope 真实烟测均已通过。
 
 ### 15.2 数据待确认项
 
@@ -1925,3 +1957,7 @@ Authorization: Bearer <DASHSCOPE_API_KEY>
 | 2026-09-24 | 新建第二批独立 holdout v2，修复结构化主题候选、多标题完整作品槽位和粒度感知 Dense 阈值 | 不修改公开 HTTP 接口、SSE 事件或数据库表结构；`poem`/`line` 主文本允许 `0.02` 容差，`note` 仍严格使用 `CHAT_DENSE_MIN_SCORE` | 后端全量 `173 passed, 3 warnings`、Ruff 通过；检索 45/46、生成 `26/26`；真实 Qdrant/Qwen/DeepSeek 联调 |
 | 2026-09-24 | 新增在线 RAG 阶段计时、请求级日志和 `CHAT_QUERY_VARIANT_LIMIT` | 不修改公开 HTTP 接口、SSE 事件或数据库表结构；`timing` 仅为内部事件，`done` 字段保持严格不变 | 后端全量 `176 passed, 3 warnings`、Ruff 通过；v2 检索 45/46、生成 `26/26`；真实 Qdrant/Qwen/DeepSeek 联调 |
 | 2026-09-24 | 在线检索完成资源复用与批量 Embedding，离线检索评估默认阈值口径对齐线上 | 不修改公开 HTTP、SSE 或数据库契约；Embedding Provider 与 Qdrant Client 进程级共享，检索仅内部批量化；`evaluate_retrieval.py --min-score` 默认读取 `CHAT_DENSE_MIN_SCORE` | 后端全量测试与 Ruff 通过；v2 检索 45/46、MRR `0.907895`，平均延迟 `483.760 ms`、P95 `1239.925 ms`；真实 Qdrant/Qwen/DeepSeek 联调 |
+| 2026-09-27 | 新增索引任务管理员 API、Celery 队列、租约、幂等创建、数据库重试上限和取消 | 新增管理员 API 和 `poem_index_runs` 控制字段；队列默认关闭，不改变公开问答 API、SSE 和现有检索结果 | 定向测试 `24 passed, 2 warnings`、Ruff 通过；真实 MySQL `0005 -> 0006 -> 0005 -> 0006` 往返验证通过 |
+| 2026-09-27 | 新增索引任务补偿扫描，恢复超时 `pending` 和过期租约 | 不修改公开 HTTP 接口、SSE、数据库表结构或在线检索；Beat 和扫描默认关闭，重复投递依赖原子 `claim` 去重 | 定向测试 `28 passed, 2 warnings`；完整门禁后端 `266 passed, 3 warnings`、Ruff/前端测试/构建通过 |
+| 2026-09-27 | 新增 active index MySQL pointer 原子发布、chunk 运行标签和历史回填 | 新增 `0007` 字段和检索过滤；不增加公开 HTTP 接口，pointer 为空时保留历史可见性 | 真实 MySQL `0006 -> 0007` 往返、1008 个 pointer/12410 个 chunk 回填、完整门禁后端 `274 passed, 3 warnings` |
+| 2026-09-27 | 新增 Qdrant 旧点 GC 与 MySQL/Qdrant 对账 CLI | 不修改公开 HTTP API、SSE、迁移和在线检索；默认 dry-run，apply 在发布锁内二次确认引用 | 定向测试 `24 passed, 3 warnings`、Ruff 通过；真实库 12415/12415 dry-run 一致，`--apply` 未对真实数据执行 |

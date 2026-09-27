@@ -39,3 +39,18 @@ data/eval/reports/*_after_structured_fix*.json
 data/eval/reports/*_after_entity_tail.json
 data/eval/reports/*_after_quote_prompt.json
 data/eval/reports/*_next.json
+
+# Repeated v0.9 smoke, slow-tail and query-variant diagnostics are local probes.
+# Named milestone reports used by feature documents are intentionally not ignored.
+data/eval/reports/graph_embedding_smoke_*.json
+data/eval/reports/graph_embedding_v3_slowtail*.json
+data/eval/reports/graph_embedding_v3_variant*.json
+data/eval/reports/retrieval_holdout_1000_v3_variant*.json
+data/eval/reports/retrieval_holdout_1000_v3_batch_limit_c1.json
+
+# Repeated v0.9 smoke, slow-tail and query-variant diagnostics are local probes.
+# Named milestone reports used by feature documents are intentionally not ignored.
+data/eval/reports/graph_embedding_smoke_*.json
+data/eval/reports/graph_embedding_v3_slowtail*.json
+data/eval/reports/graph_embedding_v3_variant*.json
+data/eval/reports/retrieval_holdout_1000_v3_variant*.json

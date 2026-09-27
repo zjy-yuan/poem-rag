@@ -6,8 +6,43 @@ param(
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $python = Join-Path $projectRoot ".venv\Scripts\python.exe"
+$webRoot = Join-Path $projectRoot "apps\web"
+$webBin = Join-Path $webRoot "node_modules\.bin"
 $pytestRunId = [guid]::NewGuid().ToString("N")
 $pytestTemp = Join-Path $projectRoot ".verify-tmp\pytest-$pytestRunId"
+
+function Invoke-FrontendCommand {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+        [Parameter(Mandatory = $true)]
+        [string]$DisplayName,
+        [Parameter(Mandatory = $true)]
+        [string[]]$LocalArguments,
+        [Parameter(Mandatory = $true)]
+        [string[]]$PnpmArguments
+    )
+
+    $localCommand = Join-Path $webBin "$Name.cmd"
+    if (Test-Path -LiteralPath $localCommand) {
+        Push-Location $webRoot
+        try {
+            & $localCommand @LocalArguments
+            $exitCode = $LASTEXITCODE
+        }
+        finally {
+            Pop-Location
+        }
+    }
+    else {
+        & pnpm --dir apps/web @PnpmArguments
+        $exitCode = $LASTEXITCODE
+    }
+
+    if ($exitCode -ne 0) {
+        throw "$DisplayName failed"
+    }
+}
 
 if (-not $BackendOnly -and -not $FrontendOnly) {
     $runBackend = $true
@@ -41,22 +76,25 @@ try {
 
     if ($runFrontend) {
         Write-Host "==> Frontend typecheck"
-        & pnpm --dir apps/web typecheck
-        if ($LASTEXITCODE -ne 0) {
-            throw "Frontend typecheck failed"
-        }
+        Invoke-FrontendCommand `
+            -Name "vue-tsc" `
+            -DisplayName "Frontend typecheck" `
+            -LocalArguments @("-b") `
+            -PnpmArguments @("typecheck")
 
         Write-Host "==> Frontend tests"
-        & pnpm --dir apps/web test
-        if ($LASTEXITCODE -ne 0) {
-            throw "Frontend tests failed"
-        }
+        Invoke-FrontendCommand `
+            -Name "vitest" `
+            -DisplayName "Frontend tests" `
+            -LocalArguments @("run") `
+            -PnpmArguments @("test")
 
         Write-Host "==> Frontend build"
-        & pnpm --dir apps/web build
-        if ($LASTEXITCODE -ne 0) {
-            throw "Frontend build failed"
-        }
+        Invoke-FrontendCommand `
+            -Name "vite" `
+            -DisplayName "Frontend build" `
+            -LocalArguments @("build") `
+            -PnpmArguments @("build")
     }
 }
 finally {
