@@ -244,10 +244,11 @@ ai:deepseek-chat:domain-label-v1
 | 当前关联 | 15 `approved` |
 | 从未在线可见的 active 标签 | 7 |
 
-首批 15 条标签经人工核对后全部批准。审核时发现 8 条证据行号沿用了另一套文本行结构，
+首批 15 条标签经人工核对后全部批准。审核时发现 7 条证据行号沿用了另一套文本行结构，
 其中《水调歌头·明月几时有》的 `theme:中秋` 还同时修正了证据文本；这些修正通过
-`DomainLabelService.review_assignment()` 完成，没有直接改数据库绕过状态机。除“7 个
-active 标签尚无在线可见关联”外，其余治理风险均为 `0`。这说明表结构、审核状态机、
+`DomainLabelService.review_assignment()` 完成，没有直接改数据库绕过状态机；第 11 条
+只修正了证据文本，行号仍为 `1-1`。除“7 个 active 标签尚无在线可见关联”外，其余
+治理风险均为 `0`。这说明表结构、审核状态机、
 批量导入、审核修正和审计口径已经可用，但当前覆盖率仍只有 5/1008 首，不能进入在线
 标签过滤或重排。
 
@@ -284,7 +285,8 @@ active 标签尚无在线可见关联”外，其余治理风险均为 `0`。这
 重复导入为 `5 unchanged / 15 assignments`。导入结果保存于
 `data/eval/reports/domain_label_import_20260927.json`，导入后审计保存于
 `data/eval/reports/domain_label_audit_20260927_after_import.json`，审核后审计保存于
-`data/eval/reports/domain_label_audit_20260927_reviewed.json`。
+`data/eval/reports/domain_label_audit_20260927_reviewed.json`。逐条复查材料见
+[首批 15 条领域标签人工复查单](../reviews/20260927-domain-label-first-batch-review.md)。
 
 ### 10.3 在线接入顺序
 
@@ -386,7 +388,7 @@ active 标签尚无在线可见关联”外，其余治理风险均为 `0`。这
   应用审核修正，并再次校验修正后的有效行号范围。
 - `apps/api/tests/test_domain_labels.py`：覆盖审核时修正证据、公开读取修正结果和
   非法行号范围返回 `422`。
-- `data/import/example_domain_labels_v1.json`：修正 8 条错误行号和 1 条证据文本，
+- `data/import/example_domain_labels_v1.json`：修正 7 条错误行号和 1 条证据文本，
   保证新环境重新导入时使用与当前快照一致的行结构。
 - `data/eval/reports/domain_label_audit_20260927_reviewed.json`：保存首批审核后的
   真实审计结果。

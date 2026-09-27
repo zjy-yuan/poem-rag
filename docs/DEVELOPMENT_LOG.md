@@ -5619,8 +5619,8 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
   `422 VALIDATION_ERROR`，不得先批准再补证据。
 - 当前数据库没有 active `admin` 用户，因此本轮 `reviewed_by_id` 保持为空；审核时间
   和状态仍正常记录。
-- 8 条行号按当前 `PoemVersion.snapshot` 的实际行结构修正；其中
-  《水调歌头·明月几时有》的 `theme:中秋` 同时修正为序言证据。
+- 7 条行号按当前 `PoemVersion.snapshot` 的实际行结构修正；其中
+  《水调歌头·明月几时有》的 `theme:中秋` 同时修正为序言证据，行号仍为 `1-1`。
 - 审核后仍不接入在线标签过滤、查询改写或重排；5/1008 的覆盖率只用于验证治理链路。
 
 #### 完成内容
@@ -5631,7 +5631,7 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
   后的有效行号范围。
 - `apps/api/tests/test_domain_labels.py`：覆盖审核修正、公开读取修正结果和非法行号
   返回 `422`。
-- `data/import/example_domain_labels_v1.json`：修正 8 条错误行号和 1 条证据文本，
+- `data/import/example_domain_labels_v1.json`：修正 7 条错误行号和 1 条证据文本，
   使后续新环境导入与当前快照一致。
 - 真实 MySQL：通过 Service 审核 15 条，最终 `approved=15`、`pending=0`、
   `rejected=0`、`archived=0`。
@@ -5643,7 +5643,7 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
 #### 验证结果
 
 - 领域标签定向测试：`5 passed, 2 warnings`。
-- 真实 MySQL 审核：15/15 条批准成功；8 条行号修正成功，其中 1 条证据文本修正成功。
+- 真实 MySQL 审核：15/15 条批准成功；7 条行号修正成功，其中 1 条证据文本修正成功。
 - 审核后审计：1008 首已发布作品中有 5 首存在在线可见标签，在线标签覆盖率
   `0.004960`；`imagery` 5 条关联、`emotion` 6 条关联、`theme` 4 条关联、
   `allusion` 0 条关联。
