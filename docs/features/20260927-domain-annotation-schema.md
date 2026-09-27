@@ -1,6 +1,6 @@
 # 领域标注 Schema 设计与治理边界
 
-> 状态：迁移、受控标签种子、管理 API、管理页、诗词编辑弹窗治理、离线语料审计和首批人工复查已实现；在线检索尚未接入
+> 状态：迁移、受控标签种子、管理 API、管理页、诗词编辑弹窗治理、离线语料审计、首批人工复查和标签金标准评估已实现；在线检索尚未接入
 > 创建日期：2026-09-27
 > 最近更新：2026-09-27
 > 关联任务：为意象、情感、题材和典故建立可追溯、可审核的版本级标签
@@ -304,7 +304,51 @@ ai:deepseek-chat:domain-label-v1
 
 ### 10.4 评估指标
 
-- 标签层：按维度统计 precision、recall、macro F1 和人工严重错误率。
+标签层已增加只读金标准评估 CLI。数据集先校验来源内容哈希、标签解析、证据行号和
+作品唯一性，再以 `(external_id, label_id)` 为最小匹配单位计算：
+
+- `micro`：对全部有金标准的维度汇总 TP、FP、FN，再计算全局 precision、recall 和
+  F1；别名或合并标签先解析到同一 active 规范标签。
+- `macro`：分别计算每个维度的 P/R/F1，再对当前存在金标准标签的维度等权平均。
+  没有金标准的维度不进入 macro 分母，避免用空集合压低或抬高总体分数。
+- `critical_error_rate`：`critical` 金标准标签漏标数 / `critical` 金标准标签总数；
+  分母为 0 时返回 `0.0`。
+- `evidence_error_rate`：已命中金标准标签但证据行号未落入任何金标准范围的记录数 /
+  micro TP；缺少证据文本或完整行号范围同样计为错误。
+- `coverage`：金标准作品数 / 当前已发布作品数、各维度目标覆盖率和目标缺口，用于
+  区分“评估器可运行”与“样本量足以支持策略切换”。
+
+复现命令：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_domain_labels.py `
+  --input data\eval\domain_label_gold_v1.json `
+  --json-output data\eval\reports\domain_label_gold_v1_20260927.json
+```
+
+首批 `domain-label-gold-v1` 覆盖《静夜思》《春晓》《登鹳雀楼》《水调歌头·明月几时
+有》和《天净沙·秋思》，共 5 首作品、14 条人工确认标签、8 条 `critical` 标签。
+当前离线结果：
+
+| 指标 | 结果 |
+| --- | ---: |
+| micro P/R/F1 | `1.0 / 1.0 / 1.0` |
+| macro P/R/F1 | `1.0 / 1.0 / 1.0` |
+| TP / FP / FN | `14 / 0 / 0` |
+| critical 漏标 / 严重错误率 | `0 / 0.0` |
+| 证据错误率 | `0.0` |
+| 已发布作品覆盖率 | `0.004960` |
+| macro 计划覆盖率 | `0.281250` |
+| 计划缺口 | `24` |
+| 有金标准的 macro 维度 | `imagery`、`emotion`、`theme` |
+
+这份金标准来自已完成人工审核与复查的样本，因此当前 `1.0` 只证明评估器、在线可见
+标签规则和已审核结果一致，属于同源一致性检查；它不能证明标签器或导入标签对未观察
+作品的泛化精度。当前按维度计划仍有缺口：imagery `5/12`、emotion `4/12`、
+theme `3/8`、allusion `0/4`。allusion 尚无金标准样本，其单维度 P/R/F1 保持
+`0.0`，但不进入 macro 平均。建立独立于 AI 与导入产物的人工样本前，标签过滤和重排
+继续保持关闭。
+
 - 检索层：标签过滤前后 Recall@5、MRR、nDCG@5 和拒答准确率。
 - 系统层：标签查询延迟、候选缩减率、无结果率和审核积压量。
 
@@ -317,7 +361,7 @@ ai:deepseek-chat:domain-label-v1
 | Service | 人工/数据集/AI 优先级和在线可见性 |
 | API | 权限、分页、默认只返回 approved |
 | 数据治理 | 重复 `origin_ref` 幂等和版本复制 |
-| 评估 | 人工金标准标签集与检索指标回归 |
+| 评估 | Schema、别名解析、优先级、P/R/F1、严重漏标、证据错误、内容哈希和冻结数据集回归 |
 
 ## 12. 风险与回滚
 
@@ -342,7 +386,7 @@ ai:deepseek-chat:domain-label-v1
 - [x] 实现领域标签批量导入、dry-run、别名解析和幂等写入
 - [x] 完成首批 15 条人工审核与复查，最终形成 `approved=14`、`archived=1`
 - [x] 新增复查修订版 v2 重放数据集，移除已归档的错误标签
-- [ ] 建立人工标签金标准并计算 precision、recall 和 macro F1
+- [x] 建立人工标签金标准并计算 precision、recall 和 macro F1
 - [ ] 再决定是否用于在线过滤和重排
 
 实现记录：
@@ -404,6 +448,18 @@ ai:deepseek-chat:domain-label-v1
   真实审计结果。
 - `data/eval/reports/domain_label_audit_20260927_human_review.json`：保存人工复查
   归档后的真实审计结果。
+- `apps/api/app/schemas/domain_label_gold.py`：定义冻结金标准、来源、证据、标签、
+  维度覆盖率、质量摘要和逐作品评估报告契约。
+- `apps/api/app/evaluation/domain_label_gold.py`：实现只读金标准评估、别名与合并
+  解析、人工/公开数据集/AI 优先级去重、micro/macro 指标、严重漏标和证据校验。
+- `apps/api/scripts/evaluate_domain_labels.py`：新增只读评估 CLI，支持控制台摘要和
+  完整 JSON 报告输出，不写数据库、不改审核状态、不重建索引。
+- `apps/api/tests/test_domain_label_gold.py`：覆盖 Schema、重复标签、空集合、micro
+  macro、critical 漏标、额外标签、证据行号、内容哈希、冻结数据集和语料哈希一致。
+- `data/eval/domain_label_gold_v1.json`：冻结 5 首作品、14 条人工确认标签、8 条
+  `critical` 标签及各维度目标数量。
+- `data/eval/reports/domain_label_gold_v1_20260927.json`：保存首次真实评估结果和
+  逐作品缺口。
 
 ## 14. 决策与变更记录
 
@@ -420,3 +476,5 @@ ai:deepseek-chat:domain-label-v1
 | 2026-09-27 | 使用来源键和外部 ID 定位作品 | 本地自增 ID 不可跨环境复用，公开数据集需要可重复导入 |
 | 2026-09-27 | 审核时可以修正证据文本和行号 | 导入数据的行结构可能与被审核版本快照不同，必须先修正证据再批准，避免公开错误行号 |
 | 2026-09-27 | 人工复查发现证据不足时通过 `approved -> archived` 退审，并单独维护 v2 重放数据集 | 状态机保留历史证据，同时避免新环境再次导入已确认错误的标签 |
+| 2026-09-27 | 金标准评估以 `(external_id, label_id)` 匹配，并只让有金标准的维度进入 macro | 避免同一作品重复来源抬高分值，也避免空维度稀释当前指标 |
+| 2026-09-27 | 首批金标准只用于验证评估链路，不用 `1.0` 证明泛化质量 | 样本与审核结果同源，且 allusion 尚无样本；独立样本建立前不能开启在线过滤 |

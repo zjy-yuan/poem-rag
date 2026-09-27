@@ -1,0 +1,204 @@
+{
+  "generated_at": "2026-09-27T12:50:39.725179Z",
+  "dataset_version": "domain-label-gold-v1",
+  "dataset_name": "领域标签人工金标准（首批 5 首）",
+  "selection_strategy": "取首批完成人工审核与人工复查的 5 首作品，逐条确认标签、证据文本和证据行号，并把影响检索误判的核心意象、核心情感和核心主题标记为 critical。",
+  "source_key": "project-manual-gold-standard",
+  "poem_source_key": "aopao-chinese-gushiwen",
+  "metrics": {
+    "micro": {
+      "true_positive": 14,
+      "false_positive": 0,
+      "false_negative": 0,
+      "gold_count": 14,
+      "predicted_count": 14,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "macro": {
+      "true_positive": 14,
+      "false_positive": 0,
+      "false_negative": 0,
+      "gold_count": 14,
+      "predicted_count": 14,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "macro_dimension_count": 3,
+    "dimensions": {
+      "imagery": {
+        "true_positive": 5,
+        "false_positive": 0,
+        "false_negative": 0,
+        "gold_count": 5,
+        "predicted_count": 5,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "dimension": "imagery"
+      },
+      "emotion": {
+        "true_positive": 6,
+        "false_positive": 0,
+        "false_negative": 0,
+        "gold_count": 6,
+        "predicted_count": 6,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "dimension": "emotion"
+      },
+      "theme": {
+        "true_positive": 3,
+        "false_positive": 0,
+        "false_negative": 0,
+        "gold_count": 3,
+        "predicted_count": 3,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "dimension": "theme"
+      },
+      "allusion": {
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 0,
+        "gold_count": 0,
+        "predicted_count": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "dimension": "allusion"
+      }
+    }
+  },
+  "coverage": {
+    "published_poem_count": 1008,
+    "gold_record_count": 5,
+    "gold_scope_coverage_rate": 0.00496,
+    "records_with_predictions": 5,
+    "records_without_predictions": 0,
+    "macro_plan_coverage_rate": 0.28125,
+    "total_plan_gap_count": 24,
+    "dimensions": {
+      "imagery": {
+        "dimension": "imagery",
+        "target_record_count": 12,
+        "gold_record_count": 5,
+        "predicted_record_count": 5,
+        "plan_coverage_rate": 0.416667,
+        "plan_gap_count": 7,
+        "predicted_in_scope_rate": 1.0
+      },
+      "emotion": {
+        "dimension": "emotion",
+        "target_record_count": 12,
+        "gold_record_count": 4,
+        "predicted_record_count": 4,
+        "plan_coverage_rate": 0.333333,
+        "plan_gap_count": 8,
+        "predicted_in_scope_rate": 1.0
+      },
+      "theme": {
+        "dimension": "theme",
+        "target_record_count": 8,
+        "gold_record_count": 3,
+        "predicted_record_count": 3,
+        "plan_coverage_rate": 0.375,
+        "plan_gap_count": 5,
+        "predicted_in_scope_rate": 1.0
+      },
+      "allusion": {
+        "dimension": "allusion",
+        "target_record_count": 4,
+        "gold_record_count": 0,
+        "predicted_record_count": 0,
+        "plan_coverage_rate": 0.0,
+        "plan_gap_count": 4,
+        "predicted_in_scope_rate": 0.0
+      }
+    }
+  },
+  "quality": {
+    "gold_label_count": 14,
+    "critical_gold_label_count": 8,
+    "predicted_label_count": 14,
+    "true_positive": 14,
+    "false_positive": 0,
+    "false_negative": 0,
+    "critical_missing_label_count": 0,
+    "critical_error_rate": 0.0,
+    "evidence_error_count": 0,
+    "evidence_error_rate": 0.0,
+    "approved_assignment_count": 14
+  },
+  "records": [
+    {
+      "external_id": "5b9a0254367d5caccce1aa1a",
+      "poem_id": 15,
+      "version_id": 15,
+      "title": "静夜思",
+      "author": "李白",
+      "gold_label_count": 2,
+      "predicted_label_count": 2,
+      "missing_labels": [],
+      "extra_labels": [],
+      "evidence_issues": [],
+      "critical_missing_label_count": 0
+    },
+    {
+      "external_id": "5b9a120c367d5c5b84062a98",
+      "poem_id": 163,
+      "version_id": 163,
+      "title": "春晓",
+      "author": "孟浩然",
+      "gold_label_count": 2,
+      "predicted_label_count": 2,
+      "missing_labels": [],
+      "extra_labels": [],
+      "evidence_issues": [],
+      "critical_missing_label_count": 0
+    },
+    {
+      "external_id": "5b9a1430367d5cab18668605",
+      "poem_id": 170,
+      "version_id": 170,
+      "title": "登鹳雀楼",
+      "author": "王之涣",
+      "gold_label_count": 2,
+      "predicted_label_count": 2,
+      "missing_labels": [],
+      "extra_labels": [],
+      "evidence_issues": [],
+      "critical_missing_label_count": 0
+    },
+    {
+      "external_id": "5b9a0136367d5c96f4cd2953",
+      "poem_id": 9,
+      "version_id": 9,
+      "title": "水调歌头·明月几时有",
+      "author": "苏轼",
+      "gold_label_count": 4,
+      "predicted_label_count": 4,
+      "missing_labels": [],
+      "extra_labels": [],
+      "evidence_issues": [],
+      "critical_missing_label_count": 0
+    },
+    {
+      "external_id": "5b9a0330367d5ca0f8313617",
+      "poem_id": 111,
+      "version_id": 111,
+      "title": "天净沙·秋思",
+      "author": "马致远",
+      "gold_label_count": 4,
+      "predicted_label_count": 4,
+      "missing_labels": [],
+      "extra_labels": [],
+      "evidence_issues": [],
+      "critical_missing_label_count": 0
+    }
+  ]
+}

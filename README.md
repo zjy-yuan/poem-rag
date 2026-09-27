@@ -42,6 +42,7 @@
 34. 领域标签批量导入已实现为 JSON CLI：使用 `PoemSource(source_key, external_id)` 定位作品，按维度解析规范标签和别名，写入当前 `PoemVersion` 的 `pending` 关联，并通过 `origin_ref` 保证幂等。5 首人工样本完成只读预检和正式导入，首次创建 15 条关联、重复导入返回 15 条 `unchanged`；导入当时在线覆盖率仍为 `0.0`，没有绕过审核。
 35. 首批 15 条领域标签关联已完成审核与人工复查：14 条保持 `approved`，序号 3 的《静夜思》`theme:羁旅` 因证据只能支持望月思乡而归档为 `archived`。当前 1008 首已发布作品中有 5 首拥有在线可见标签，在线标签覆盖率 `0.004960`；`theme` 保留 3 条在线关联、覆盖 3 首，仍有 7 个 active 标签没有在线可见关联，标签过滤和重排继续关闭。
 36. 独立 v5 holdout 已完成一次性真实盲测并转为观察集：检索在线组合为 45/46、Recall@5 `1.0`、nDCG@5 `0.917031`、MRR `0.888158`，唯一失败为领域内缺属性样本 `no-answer-v5-change-location-08`；生成层为 24/26、拒答 `10/10`、引用 P/R `1.0 / 1.0`，两条失败均为严格原文事实短语未命中。盲测后不根据 v5 修改阈值、权重、Prompt 或策略；后续样本级修复和策略比较必须另建 v6。
+37. 领域标签金标准评估已实现为只读 CLI：冻结 5 首作品、14 条人工确认标签和 8 条 `critical` 标签，按 `(external_id, label_id)` 计算 micro/macro P/R/F1、严重漏标率、证据错误率和维度覆盖缺口。首次真实结果为 micro/macro P/R/F1 `1.0`、TP/FP/FN `14/0/0`、critical 漏标 `0`、证据错误 `0`，但样本与审核结果同源且 allusion 仍为 `0/4`，因此只能证明评估链路一致，不能证明泛化精度，在线过滤和重排继续关闭。
 
 ## 文档入口
 
@@ -56,7 +57,7 @@
 接口的实际运行时定义以 FastAPI `/openapi.json` 和 `/docs` 为准，目标契约以
 `docs/FRONTEND_BACKEND_CONTRACT.md` 为准。两者不一致时应先修复差异，再继续扩展功能。
 
-领域标签批量导入与离线审计：
+领域标签批量导入、离线审计与金标准评估：
 
 ```powershell
 .\.venv\Scripts\python.exe apps\api\scripts\import_domain_labels.py `
@@ -66,13 +67,18 @@
   --input data\import\example_domain_labels_v2.json
 .\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
   --json-output data\eval\reports\domain_label_audit_20260927_human_review.json
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_domain_labels.py `
+  --input data\eval\domain_label_gold_v1.json `
+  --json-output data\eval\reports\domain_label_gold_v1_20260927.json
 ```
 
 导入命令默认只写入 `pending`，不自动审核、批准或覆盖已有审核状态；dry-run 只做
-数据库预检。审计命令只读 MySQL，不创建标签关联、不执行审核、不修改向量索引，也
-不接入在线检索。`v1` 保留为人工复查历史输入；`v2` 移除已归档的 `theme:羁旅`，
-并沿用稳定批次号以保证 `origin_ref` 幂等，新环境应默认导入 v2。首批样本的复查结果
-和修正明细见
+数据库预检。审计与金标准评估命令只读 MySQL，不创建标签关联、不执行审核、不修改
+向量索引，也不接入在线检索。`v1` 保留为人工复查历史输入；`v2` 移除已归档的
+`theme:羁旅`，并沿用稳定批次号以保证 `origin_ref` 幂等，新环境应默认导入 v2。
+当前金标准覆盖 imagery `5/12`、emotion `4/12`、theme `3/8`、allusion `0/4`；
+macro 只统计已有金标准的三个维度，allusion 不进入均值。首批样本的复查结果和修正
+明细见
 [领域标注 Schema 设计与治理边界](docs/features/20260927-domain-annotation-schema.md)。
 
 ## 本地开发

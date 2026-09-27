@@ -5764,3 +5764,67 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
 3. 下一阶段转向标签金标准与覆盖率建设，优先建立覆盖 imagery、emotion、theme 和
    allusion 的少量人工样本，再计算标签 precision、recall 和 macro F1。
 4. 在线标签过滤和重排继续保持关闭；达到质量和覆盖率门槛后再单独设计 v6 验证。
+
+### [2026-09-27] 领域标签人工金标准评估
+
+#### 本次目标
+
+- 把已完成人工审核与复查的首批标签冻结为可复现金标准，验证评估器、在线可见标签
+  规则和人工确认结果是否一致。
+- 计算标签层 micro/macro precision、recall、F1、critical 漏标率和证据错误率，
+  同时显式输出当前覆盖缺口。
+- 保持 CLI 只读：不写数据库、不改变审核状态、不重建索引、不接入在线检索。
+
+#### 做出的决定
+
+- 金标准作品使用 `poem_source_key + external_id` 定位，并记录当前正文的
+  `expected_source_content_hash`；正文变化后评估必须失败，不能静默对比不同版本。
+- 匹配单位固定为 `(external_id, label_id)`；别名和合并标签先解析到 active 规范
+  标签，同一标签的 `manual > public_dataset > ai` 优先级继续用于在线视图去重。
+- `micro` 汇总所有维度的 TP/FP/FN；`macro` 只平均当前有金标准标签的维度，避免
+  allusion 空集合进入分母。
+- `critical_error_rate` 使用 critical 漏标数 / critical 金标准标签数；
+  `evidence_error_rate` 使用证据异常数 / micro TP，两个分母为空时均返回 `0.0`。
+- 首批金标准与已审核样本同源，因此 `1.0` 只作为一致性基线；在独立、覆盖四维度的
+  20 至 30 首金标准建立前，不用该结果开启在线过滤或重排。
+
+#### 完成内容
+
+- `apps/api/app/schemas/domain_label_gold.py`：定义来源、证据、标签、作品、维度目标、
+  micro/macro 指标、覆盖率、质量摘要和逐作品报告 Schema。
+- `apps/api/app/evaluation/domain_label_gold.py`：实现只读评估、内容哈希校验、证据
+  行号边界、别名与合并解析、优先级去重、P/R/F1、critical 漏标和证据错误统计。
+- `apps/api/scripts/evaluate_domain_labels.py`：新增 CLI，支持控制台摘要和完整 JSON
+  报告输出。
+- `apps/api/tests/test_domain_label_gold.py`：覆盖 Schema、空集合、micro/macro、
+  critical 漏标、额外预测、证据行号、内容哈希、冻结数据集和转换语料哈希一致性。
+- `data/eval/domain_label_gold_v1.json`：冻结 5 首作品、14 条人工确认标签、8 条
+  `critical` 标签，目标覆盖 imagery `12`、emotion `12`、theme `8`、allusion `4`。
+- `data/eval/reports/domain_label_gold_v1_20260927.json`：保存真实运行报告。
+- `README.md`、`docs/PROJECT_GUIDE.md` 和
+  `docs/features/20260927-domain-annotation-schema.md`：同步命令、指标口径、
+  当前结果和解释边界。
+
+#### 验证结果
+
+- Ruff：`All checks passed!`。
+- 金标准定向测试：`13 passed, 2 warnings`；警告来自既存 LangGraph 和 Starlette
+  依赖。
+- 完整 `.\scripts\verify.ps1` 通过：后端 `312 passed, 1 skipped, 3 warnings`，
+  前端 typecheck 通过，Vitest `9 passed`，Vite 生产构建通过；仅有既存的主包超过
+  `500 kB` 警告。
+- 真实 MySQL 评估：micro P/R/F1 `1.0 / 1.0 / 1.0`，macro P/R/F1
+  `1.0 / 1.0 / 1.0`，TP/FP/FN `14/0/0`，critical 漏标 `0`，证据错误 `0`。
+- 覆盖率：已发布作品 `1008`、金标准作品 `5`、作品覆盖率 `0.004960`；维度覆盖为
+  imagery `5/12`、emotion `4/12`、theme `3/8`、allusion `0/4`，macro 计划覆盖率
+  `0.281250`，总缺口 `24`。
+- macro 当前只统计 imagery、emotion 和 theme；allusion 无样本，不进入均值。
+
+#### 风险与下一步
+
+1. 金标准来自已审核样本，`14/14` 只能证明评估链路与既有审核结果一致，不能证明
+   标签器或公开数据集标签对未观察作品的泛化精度。
+2. 当前 `theme` 计划覆盖不足一半，allusion 完全没有样本，5/1008 的作品覆盖率也
+   不足以支持在线结构化过滤。
+3. 下一步建立 20 至 30 首、覆盖四维度且独立于 AI/导入结果的人工金标准，再评估
+   过滤与重排；在线标签策略继续保持关闭。

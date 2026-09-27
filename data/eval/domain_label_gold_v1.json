@@ -1,0 +1,243 @@
+{
+  "version": "domain-label-gold-v1",
+  "name": "领域标签人工金标准（首批 5 首）",
+  "description": "冻结首批 5 首作品的 14 条人工确认标签，用于验证标签评估器链路并计算 precision、recall、macro F1、严重漏标率和证据错误率。",
+  "selection_strategy": "取首批完成人工审核与人工复查的 5 首作品，逐条确认标签、证据文本和证据行号，并把影响检索误判的核心意象、核心情感和核心主题标记为 critical。",
+  "source": {
+    "source_key": "project-manual-gold-standard",
+    "source_name": "项目人工金标准样本",
+    "source_url": null,
+    "license_note": "项目内人工确认标签，仅用于离线评估标签器与在线标签视图的一致性；不得作为公开数据集分发。"
+  },
+  "poem_source_key": "aopao-chinese-gushiwen",
+  "target_record_counts": {
+    "imagery": 12,
+    "emotion": 12,
+    "theme": 8,
+    "allusion": 4
+  },
+  "records": [
+    {
+      "external_id": "5b9a0254367d5caccce1aa1a",
+      "title": "静夜思",
+      "author": "李白",
+      "expected_source_content_hash": "ee11e4635f05e17aa1ef7b7c35b7346e969fc7a0e8a6b3fcd2dd44f84d33e53b",
+      "review_note": "首句与次句由“明月”统摄，全篇落在思乡；不含羁旅直接证据，故 theme:羁旅 不进入金标准。",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "月",
+          "severity": "critical",
+          "note": "核心意象，是“望月—思乡”的触发点。",
+          "evidence": [
+            {
+              "evidence_text": "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
+              "line_start": 1,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "思乡",
+          "severity": "critical",
+          "note": "“低头思故乡”是全篇落点。",
+          "evidence": [
+            {
+              "evidence_text": "低头思故乡",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a120c367d5c5b84062a98",
+      "title": "春晓",
+      "author": "孟浩然",
+      "expected_source_content_hash": "7bdcafef238d1239cd01563c9193ebfdaef0b086171c09f252da24b8fb42bf28",
+      "review_note": "“花落”是意象，“伤春”是全篇情绪落点。",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "落花",
+          "severity": "normal",
+          "evidence": [
+            {
+              "evidence_text": "花落知多少",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "伤春",
+          "severity": "critical",
+          "note": "核心情感，缺失会明显改变检索语义。",
+          "evidence": [
+            {
+              "evidence_text": "夜来风雨声，花落知多少。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1430367d5cab18668605",
+      "title": "登鹳雀楼",
+      "author": "王之涣",
+      "expected_source_content_hash": "2451496887e0f9deb70d63de7728741623f961024233b84f75a20db2ff1e45f8",
+      "review_note": "“白日依山尽”作为夕阳意象证据；“更上一层楼”落在登临主题。",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "夕阳",
+          "severity": "normal",
+          "evidence": [
+            {
+              "evidence_text": "白日依山尽",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "登临",
+          "severity": "critical",
+          "note": "核心主题，是这首诗区别于普通写景诗的关键。",
+          "evidence": [
+            {
+              "evidence_text": "欲穷千里目，更上一层楼。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a0136367d5c96f4cd2953",
+      "title": "水调歌头·明月几时有",
+      "author": "苏轼",
+      "expected_source_content_hash": "55d628ea1c451b43a644649f3a458b9c37aa038c80732fef935a9f5f426a6818",
+      "review_note": "序言在第 1 行，空行第 2 行计入行号，正文自第 3 行起。",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "月",
+          "severity": "critical",
+          "note": "全篇围绕问月、怨月、共月展开。",
+          "evidence": [
+            {
+              "evidence_text": "明月几时有？把酒问青天。",
+              "line_start": 3,
+              "line_end": 3
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "离别",
+          "severity": "normal",
+          "evidence": [
+            {
+              "evidence_text": "人有悲欢离合，月有阴晴圆缺，此事古难全。",
+              "line_start": 4,
+              "line_end": 4
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "severity": "critical",
+          "note": "结尾情绪落点，与“离别”共同构成情感张力。",
+          "evidence": [
+            {
+              "evidence_text": "但愿人长久，千里共婵娟。",
+              "line_start": 4,
+              "line_end": 4
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "中秋",
+          "severity": "normal",
+          "note": "证据取序言“丙辰中秋”，而非正文。",
+          "evidence": [
+            {
+              "evidence_text": "丙辰中秋，欢饮达旦，大醉，作此篇，兼怀子由。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a0330367d5ca0f8313617",
+      "title": "天净沙·秋思",
+      "author": "马致远",
+      "expected_source_content_hash": "5df2b4513a9ca46ffbaa5e623199c87f60d7f57ee44249bcb6514bd8e8710d9e",
+      "review_note": "前三句罗列意象，末两句落在思乡与羁旅；孤独作为并列情绪，严重级别低于思乡。",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "夕阳",
+          "severity": "normal",
+          "evidence": [
+            {
+              "evidence_text": "夕阳西下",
+              "line_start": 4,
+              "line_end": 4
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "思乡",
+          "severity": "critical",
+          "note": "“断肠人在天涯”是本曲的情绪落点。",
+          "evidence": [
+            {
+              "evidence_text": "断肠人在天涯",
+              "line_start": 5,
+              "line_end": 5
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "severity": "normal",
+          "evidence": [
+            {
+              "evidence_text": "断肠人在天涯",
+              "line_start": 5,
+              "line_end": 5
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "羁旅",
+          "severity": "critical",
+          "note": "“古道—西风—瘦马—天涯”构成客居漂泊主题。",
+          "evidence": [
+            {
+              "evidence_text": "古道西风瘦马。\n夕阳西下，断肠人在天涯。",
+              "line_start": 3,
+              "line_end": 5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
