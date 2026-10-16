@@ -39,7 +39,7 @@
 ### 人工标注位
 
 - imagery：
-- emotion：
+- emotion：孤独，思乡
 - theme：
 - allusion：
 - review_note：
@@ -66,11 +66,11 @@
 
 ### 人工标注位
 
-- imagery：
+- imagery：月
 - emotion：
 - theme：
 - allusion：
-- review_note：
+- review_note：结合背景有思乡等其他，但是纯文本无法得出
 
 ## 3. 山居秋暝
 
@@ -93,9 +93,9 @@
 
 ### 人工标注位
 
-- imagery：
-- emotion：
-- theme：
+- imagery：月
+- emotion：旷达
+- theme：山水田园
 - allusion：
 - review_note：
 
@@ -125,8 +125,8 @@
 ### 人工标注位
 
 - imagery：
-- emotion：
-- theme：
+- emotion：孤独、旷达
+- theme：登临
 - allusion：
 - review_note：
 
@@ -175,8 +175,8 @@
 ### 人工标注位
 
 - imagery：
-- emotion：
-- theme：
+- emotion：思乡，孤独
+- theme：羁旅
 - allusion：
 - review_note：
 
@@ -227,8 +227,8 @@
 ### 人工标注位
 
 - imagery：
-- emotion：
-- theme：
+- emotion：孤独，离别
+- theme：羁旅
 - allusion：
 - review_note：
 
@@ -252,7 +252,7 @@
 ### 人工标注位
 
 - imagery：
-- emotion：
+- emotion：孤独
 - theme：
 - allusion：
 - review_note：
@@ -337,7 +337,7 @@
 
 ### 人工标注位
 
-- imagery：
+- imagery：月
 - emotion：
 - theme：
 - allusion：
@@ -365,8 +365,8 @@
 ### 人工标注位
 
 - imagery：
-- emotion：
-- theme：
+- emotion：思乡，离别
+- theme：羁旅
 - allusion：
 - review_note：
 
@@ -390,8 +390,8 @@
 
 ### 人工标注位
 
-- imagery：
-- emotion：
+- imagery：月
+- emotion：孤独
 - theme：
 - allusion：
 - review_note：
@@ -420,7 +420,7 @@
 
 ### 人工标注位
 
-- imagery：
+- imagery：杨柳
 - emotion：
 - theme：
 - allusion：
@@ -481,7 +481,7 @@
 
 - imagery：
 - emotion：
-- theme：
+- theme：山水田园
 - allusion：
 - review_note：
 
@@ -511,9 +511,9 @@
 
 ### 人工标注位
 
-- imagery：
-- emotion：
-- theme：
+- imagery：月
+- emotion：孤独，思乡
+- theme：羁旅
 - allusion：
 - review_note：
 
@@ -537,7 +537,7 @@
 ### 人工标注位
 
 - imagery：
-- emotion：
+- emotion：离别
 - theme：
 - allusion：
 - review_note：
@@ -586,9 +586,9 @@
 
 ### 人工标注位
 
-- imagery：
-- emotion：
-- theme：
+- imagery：杨柳
+- emotion：思乡，旷达
+- theme：登临
 - allusion：
 - review_note：
 
@@ -611,8 +611,8 @@
 
 ### 人工标注位
 
-- imagery：
-- emotion：
+- imagery：杨柳
+- emotion：伤春，离别，孤独
 - theme：
 - allusion：
 - review_note：
@@ -636,11 +636,11 @@
 
 ### 人工标注位
 
-- imagery：
-- emotion：
+- imagery：落花
+- emotion：伤春，旷达
 - theme：
 - allusion：
-- review_note：
+- review_note：“等闲离别易销魂”为泛论离别之苦，非具体送别或别后情境；若 emotion：离别 要求具体事件，则不宜标。
 
 ## 24. 临桂尉杨渭夫以诗来因次其韵兼简同僚
 
@@ -672,7 +672,7 @@
 ### 人工标注位
 
 - imagery：
-- emotion：
+- emotion：离别
 - theme：
 - allusion：
 - review_note：

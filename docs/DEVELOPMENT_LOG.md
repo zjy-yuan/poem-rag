@@ -5954,3 +5954,57 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
 3. 下一阶段由用户完成 24 首人工标注和独立复核，再将结果转换为
    `domain-label-gold-v2`，另行冻结正文哈希、证据、critical 规则和维度目标。
 4. 在线标签过滤和重排继续保持关闭；独立金标准建立并达到覆盖门槛后再设计实验。
+
+### [2026-09-27] 领域标签 v2 独立人工盲标填写与校验
+
+#### 本次目标
+
+- 将用户在独立审阅稿中填写的 24 首正文盲标逐字转录为可校验草稿。
+- 校验受控标签、证据行号和采样清单哈希绑定，确认人工结果仍对应冻结样本。
+- 记录 41 条标签的维度分布、空标签结论和背景知识分歧，为独立复核与 v2 冻结做准备。
+
+#### 做出的决定
+
+- 逐字转录人工填写结果，不新增、删除或推断标签；用户没有填写的维度继续保持为空。
+- 冻结的 `data/eval/domain_label_gold_v2_sampling.json` 保持只读，人工结果只写入
+  `data/eval/domain_label_gold_v2_annotation.json`。
+- 单标注者填写完成只把草稿置为 `ready_for_review`，不直接冻结为
+  `domain-label-gold-v2`。
+- 正文盲标与背景知识分层：作者生平、编年和创作背景是独立证据来源，后续另建知识
+  增强评估层，不回填当前数据集。
+
+#### 完成内容
+
+- `data/eval/domain_label_gold_v2_annotation.json`：24 首全部 `reviewed`，共 41 条
+  标签，`status=ready_for_review`，仍绑定采样清单 SHA-256
+  `6888e0c79748dff90a14005592845f9ae501992cef7d93b38d8e8ef84838fe15`。
+- `docs/reviews/20260927-domain-label-v2-annotation.md`：保留用户填写的人工标注位和
+  两条 `review_note`。
+- `docs/features/20260927-domain-label-annotation-workspace.md`：新增人工结果、
+  背景知识分层和 v2 冻结步骤，更新任务清单与决策记录。
+- `docs/features/20260927-domain-annotation-schema.md`、
+  `docs/features/20260927-independent-domain-label-sampling.md`、
+  `docs/PROJECT_GUIDE.md` 和 `README.md`：同步状态、校验输出和 v2 边界。
+
+#### 验证结果
+
+- `manage_domain_label_annotation.py --validate`：`records=24 reviewed=24 pending=0
+  labels=41 critical=0`；维度为 imagery 9、emotion 24、theme 8、allusion 0。
+- 分布：imagery 为月 5、杨柳 3、落花 1；emotion 为孤独 8、思乡 5、离别 5、
+  旷达 4、伤春 2；theme 为羁旅 4、登临 2、山水田园 2。
+- 18 首作品有标签，6 首作品人工结论为空标签：《江南春》《春日》
+  《晓出净慈寺送林子方》《海气》《粤大饥》《蝶恋花·春景》。
+- 每条 `evidence_text` 都能在对应冻结正文行中匹配，采样清单哈希未变化。
+- 领域标签定向测试：`16 passed, 2 warnings`；`git diff --check` 通过。
+- 完整 `.\scripts\verify.ps1` 通过：后端 `328 passed, 1 skipped, 3 warnings`，Ruff、
+  前端 typecheck、Vitest `9 passed` 和 Vite 生产构建均通过；仅保留既存的主包
+  超过 `500 kB` 警告。
+
+#### 风险与下一步
+
+1. 单标注者结果不构成金标准，`ready_for_review` 只表示填写完成。
+2. 41 条标签的证据边界和 6 首空标签结论仍需独立复核，避免遗漏或越界标注。
+3. 两条 `review_note` 记录了纯文本与背景知识的天然分歧，说明依赖作者履历的标签
+   需要单独的增强评估层。
+4. 后续先完成独立复核，再冻结 `domain-label-gold-v2` 与 `critical` 规则；在线标签
+   过滤和重排继续保持关闭。

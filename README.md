@@ -44,7 +44,7 @@
 36. 独立 v5 holdout 已完成一次性真实盲测并转为观察集：检索在线组合为 45/46、Recall@5 `1.0`、nDCG@5 `0.917031`、MRR `0.888158`，唯一失败为领域内缺属性样本 `no-answer-v5-change-location-08`；生成层为 24/26、拒答 `10/10`、引用 P/R `1.0 / 1.0`，两条失败均为严格原文事实短语未命中。盲测后不根据 v5 修改阈值、权重、Prompt 或策略；后续样本级修复和策略比较必须另建 v6。
 37. 领域标签金标准评估已实现为只读 CLI：冻结 5 首作品、14 条人工确认标签和 8 条 `critical` 标签，按 `(external_id, label_id)` 计算 micro/macro P/R/F1、严重漏标率、证据错误率和维度覆盖缺口。首次真实结果为 micro/macro P/R/F1 `1.0`、TP/FP/FN `14/0/0`、critical 漏标 `0`、证据错误 `0`，但样本与审核结果同源且 allusion 仍为 `0/4`，因此只能证明评估链路一致，不能证明泛化精度，在线过滤和重排继续关闭。
 38. 领域标签独立盲标采样已实现为只读 CLI：从 `aopao-chinese-gushiwen` 的已发布作品排除 v1 的 5 首同源样本后，按唐代诗、宋代作品、其他朝代、长文本或词曲四层各取 6 首，并校验来源内容哈希。冻结清单共 24 首、全部 `pending` 且人工标签位为空；它只建立独立候选池，不写数据库、不产生标签，也不代表 v2 金标准已经完成。
-39. 领域标签独立人工盲标工作区已实现为离线 CLI：从冻结采样清单确定性生成 24 首空白标注草稿和人工审阅稿，草稿绑定清单版本、生成时间和文件 SHA-256，并强制精确覆盖、受控标签、证据行号边界和 `ready_for_review` 完整性。当前草稿全部 `pending`、标签数为 0；该工作区不调用模型、不连接 MySQL，也不会代填人工金标准。
+39. 领域标签独立人工盲标工作区已实现为离线 CLI：从冻结采样清单确定性生成 24 首标注草稿和人工审阅稿，草稿绑定清单版本、生成时间和文件 SHA-256，并强制精确覆盖、受控标签、证据行号边界和 `ready_for_review` 完整性。用户已按冻结正文完成 24 首人工盲标，校验输出为 24 首 `reviewed`、0 首 `pending`、41 条标签（imagery 9、emotion 24、theme 8、allusion 0）和 6 首空标签结论，另有 2 首记录正文证据与背景知识的分歧。该工作区不调用模型、不连接 MySQL；`ready_for_review` 只表示填写完成，独立复核前不等同于金标准。
 
 ## 文档入口
 
@@ -91,8 +91,11 @@ macro 只统计已有金标准的三个维度，allusion 不进入均值。首�
 人工标签位保持空白。`--init` 另外生成
 `data/eval/domain_label_gold_v2_annotation.json` 和
 `docs/reviews/20260927-domain-label-v2-annotation.md`；`--validate` 可在填写过程中
-反复校验，但不会生成任何标签。人工标注和二次复核完成后，才能另行冻结
-`domain-label-gold-v2` 并参与独立质量评估。设计边界见
+反复校验，但不会生成任何标签。人工填写已完成：24 首 `reviewed`、41 条标签、
+6 首空标签结论，`--validate` 输出 `records=24 reviewed=24 pending=0 labels=41
+critical=0`，草稿状态为 `ready_for_review`。独立复核通过后，才能另行冻结
+`domain-label-gold-v2` 并参与独立质量评估；依赖作者生平与创作背景的标签另建知识
+增强评估层，不回填该数据集。设计边界见
 [领域标签独立盲标采样](docs/features/20260927-independent-domain-label-sampling.md)
 和
 [领域标签独立人工盲标工作区](docs/features/20260927-domain-label-annotation-workspace.md)。
