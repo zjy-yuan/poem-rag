@@ -3,7 +3,7 @@
 > 项目代号：Poem RAG  
 > 文档状态：持续开发日志 v1.0  
 > 创建日期：2026-09-19  
-> 最后更新：2026-09-27
+> 最后更新：2026-10-16
 > 技术方向：Vue 3 全栈 + Python/FastAPI + LangChain/LangGraph + RAG  
 > 默认领域：中国诗词知识库与智能问答
 
@@ -6008,3 +6008,73 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
    需要单独的增强评估层。
 4. 后续先完成独立复核，再冻结 `domain-label-gold-v2` 与 `critical` 规则；在线标签
    过滤和重排继续保持关闭。
+
+### [2026-10-16] 领域标签 v2 独立复核工作区
+
+#### 本次目标
+
+- 在冻结 `domain-label-gold-v2` 前，为 24 首独立人工盲标建立可校验的独立复核流程。
+- 把复核决定从标注草稿中分离出来，保留原始盲标证据，同时记录修正和拒绝过程。
+- 只准备空白复核 JSON 和复核单，不代填任何决定，也不接入在线标签策略。
+
+#### 做出的决定
+
+- 复核结果独立写入 `data/eval/domain_label_gold_v2_review.json`，不再修改冻结采样
+  清单和人工盲标草稿。
+- 复核绑定标注草稿与采样清单的版本和文件字节级 SHA-256；任一上游文件变化都使旧
+  复核失效。
+- `original_label` 不可变；只有 `needs_change` 可以提交 `corrected_label`，空标签
+  结论文成 `corrected_labels`。
+- `approve` 与修正标签都要通过证据预审：行号落在冻结正文内，证据文本能在对应行中
+  匹配；`needs_change` 的修正证据不匹配时直接失败，避免写入错误证据。
+- `pending / uncertain` 和空标签 `reject` 都是阻塞项；空标签结论应改用
+  `needs_change` 补充正确标签。
+- 全部决定完成后最终金标准仍须至少保留一条标签，避免空标签金标准削弱指标判别力。
+- 当前只建立工作区和空白产物，不冻结 v2、不定义 `critical` 规则和维度目标，在线
+  标签过滤、查询改写和重排继续保持关闭。
+
+#### 完成内容
+
+- `apps/api/app/schemas/domain_label_review.py`：定义复核决定、状态、标签复核、
+  空标签复核、复核数据集和校验摘要，并约束决定与修正标签的一致性。
+- `apps/api/app/evaluation/domain_label_review.py`：实现哈希绑定、确定性生成、精确
+  覆盖、不可变原标签、证据预审、冻结边界、Markdown 复核单导出和摘要格式化。
+- `apps/api/scripts/manage_domain_label_review.py`：新增 `--init` 和 `--validate`
+  离线入口，拒绝覆盖已有复核文件；命令不调用模型、不连接 MySQL、不改变在线
+  标签可见性。
+- `apps/api/tests/test_domain_label_review.py`：覆盖 41+6 初始化、哈希不一致、覆盖
+  缺失/额外项、不可变原标签、证据错误、未决状态、`needs_change`、空标签结论、冻结
+  条件和最终零标签拒绝。
+- `data/eval/domain_label_gold_v2_review.json`：空白复核 JSON，41 条标签复核、
+  6 条空标签复核，47 条决定全部 `pending`，绑定标注草稿 SHA-256
+  `17283005f45a895eac606ca284b2a6e7eec4a8e3379e6008c896dd035337bcbc`。
+- `docs/reviews/20261016-domain-label-v2-independent-review.md`：人工复核单，只包含
+  正文、原标签、原证据和空白复核位，不包含预测或标签 JSON 字段。
+- `docs/features/20261016-domain-label-independent-review.md`：记录目标、非目标、
+  复核契约、数据设计、冻结边界、测试计划、风险和决策。
+- `README.md`、`docs/PROJECT_GUIDE.md`、`docs/features/README.md`、
+  `docs/features/20260927-domain-label-annotation-workspace.md` 和
+  `docs/features/20260927-domain-annotation-schema.md`：同步命令、当前状态和说明。
+
+#### 验证结果
+
+- `manage_domain_label_review.py --validate`：`status=pending`、`labels=41
+  decided_labels=0`、`empty_records=6 decided_empty_records=0`、`pending=47`、
+  `ready_to_freeze=false`，47 条阻塞 ID 全部列出。
+- 复核 JSON 绑定标注草稿 SHA-256
+  `17283005f45a895eac606ca284b2a6e7eec4a8e3379e6008c896dd035337bcbc` 和采样清单
+  SHA-256 `6888e0c79748dff90a14005592845f9ae501992cef7d93b38d8e8ef84838fe15`，
+  与冻结文件一致。
+- 领域标签复核定向测试：`13 passed, 2 warnings`；警告来自既存 LangGraph 和
+  Starlette 依赖。领域标签复核定向 Ruff：`All checks passed!`。
+- PowerShell 控制台打印中文 `review_id` 时可能受代码页影响而显示乱码，JSON 和
+  Markdown 均为正常 UTF-8，不影响复核文件内容。
+
+#### 风险与下一步
+
+1. 复核只降低单标注者偏差，24 首样本不能证明标签体系本身完备。
+2. 复核必须逐条给出决定，批量 `approve` 会弱化复核价值，应在复核单上保留依据。
+3. 复核完成前不冻结 `domain-label-gold-v2`；冻结后仍需定义 v2 的 `critical` 规则和
+   `target_record_counts`，再单独计算独立泛化指标。
+4. 依赖作者生平与创作背景的标签继续另建知识增强评估层，不回填正文盲标数据集。
+5. 在线标签过滤、查询改写和重排继续保持关闭，待 v2 冻结并达标后再设计单独实验。

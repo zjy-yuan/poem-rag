@@ -1,8 +1,8 @@
 # 领域标注 Schema 设计与治理边界
 
-> 状态：迁移、受控标签种子、管理 API、管理页、诗词编辑弹窗治理、离线语料审计、首批人工复查、标签金标准评估、独立盲标采样和 24 首独立人工盲标填写已实现；在线检索尚未接入
+> 状态：迁移、受控标签种子、管理 API、管理页、诗词编辑弹窗治理、离线语料审计、首批人工复查、标签金标准评估、独立盲标采样、24 首独立人工盲标填写和 v2 独立复核工作区已实现；在线检索尚未接入
 > 创建日期：2026-09-27
-> 最近更新：2026-09-27
+> 最近更新：2026-10-16
 > 关联任务：为意象、情感、题材和典故建立可追溯、可审核的版本级标签
 
 ## 1. 背景与问题
@@ -407,6 +407,30 @@ labels=41 critical=0`，四个维度为 imagery 9、emotion 24、theme 8、allus
 创作背景的标签另建知识增强评估层，不回填进正文盲标数据集。完整契约见
 [领域标签独立人工盲标工作区](20260927-domain-label-annotation-workspace.md)。
 
+### 10.7 v2 独立复核工作区（已实现，47 条决定待人工填写）
+
+单标注者完成填写只把草稿置为 `ready_for_review`，不等于金标准。独立复核工作区把
+复核决定从标注草稿中分离出来，生成 41 条标签复核和 6 条空标签复核，并绑定标注草稿
+与采样清单的版本和文件字节级 SHA-256：
+
+```powershell
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --init
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --validate
+```
+
+复核校验必须精确覆盖全部人工标签和空标签结论，`original_label` 不可变，只有
+`needs_change` 可以提交修正标签。`approve` 和修正标签都要通过证据预审：行号落在
+冻结正文内，证据文本能在对应行中匹配。`pending / uncertain` 和空标签 `reject` 都会
+阻塞冻结，全部决定完成后最终仍须至少保留一条标签。
+
+当前 `data/eval/domain_label_gold_v2_review.json` 和
+[复核单](../reviews/20261016-domain-label-v2-independent-review.md) 均为空白待填写
+产物，`--validate` 输出 `status=pending`、`pending=47`、`ready_to_freeze=false`。
+复核未完成前不冻结 `domain-label-gold-v2`，不定义 v2 的 `critical` 规则和维度目标，
+在线标签过滤、查询改写和重排继续保持关闭。依赖作者生平与创作背景的标签仍另建知识
+增强评估层。完整契约见
+[领域标签 v2 独立复核工作区](20261016-domain-label-independent-review.md)。
+
 ## 11. 测试计划
 
 | 层级 | 覆盖内容 |
@@ -444,6 +468,7 @@ labels=41 critical=0`，四个维度为 imagery 9、emotion 24、theme 8、allus
 - [x] 建立人工标签金标准并计算 precision、recall 和 macro F1
 - [x] 建立独立于 v1 的 24 首盲标采样清单
 - [x] 完成 24 首独立盲标的人工填写与草稿校验
+- [x] 建立 v2 独立复核工作区，生成空白复核 JSON 和复核单
 - [ ] 独立复核并冻结 `domain-label-gold-v2`
 - [ ] 再决定是否用于在线过滤和重排
 
@@ -532,6 +557,18 @@ labels=41 critical=0`，四个维度为 imagery 9、emotion 24、theme 8、allus
   `reviewed`、41 条标签、6 首空标签结论，状态为 `ready_for_review`。
 - `docs/reviews/20260927-domain-label-v2-annotation.md`：人工盲标审阅稿，只包含
   正文、来源和人工标注位。
+- `apps/api/app/schemas/domain_label_review.py`：定义复核决定、状态、标签复核、
+  空标签复核和校验摘要，并约束决定与修正标签的一致性。
+- `apps/api/app/evaluation/domain_label_review.py`：实现哈希绑定、确定性生成、
+  精确覆盖、不可变原标签、证据预审、冻结边界和 Markdown 复核单导出。
+- `apps/api/scripts/manage_domain_label_review.py`：新增 `--init` 和 `--validate`
+  离线入口，拒绝覆盖已有复核文件。
+- `apps/api/tests/test_domain_label_review.py`：覆盖初始化、哈希不一致、覆盖缺失/
+  额外项、不可变原标签、证据错误、未决状态、`needs_change`、空标签结论和冻结边界。
+- `data/eval/domain_label_gold_v2_review.json`：空白复核 JSON，41 条标签复核、
+  6 条空标签复核，47 条决定全部 `pending`。
+- `docs/reviews/20261016-domain-label-v2-independent-review.md`：人工复核单，只包含
+  正文、原标签、原证据和空白复核位。
 
 ## 14. 决策与变更记录
 
@@ -556,3 +593,7 @@ labels=41 critical=0`，四个维度为 imagery 9、emotion 24、theme 8、allus
 | 2026-09-27 | 人工填写结果写入独立草稿并逐字转录 | 冻结清单保持只读，人工判断可复现且不被推断标签污染 |
 | 2026-09-27 | 正文盲标与作者生平、创作背景分层 | 背景知识是独立证据来源，需要单独的增强评估层 |
 | 2026-09-27 | `ready_for_review` 不视为金标准 | 单标注者结果需独立复核后才能冻结 v2 |
+| 2026-10-16 | 复核决定独立成文件并绑定标注与采样双哈希 | 保留原始盲标证据，修正过程可追溯，上游变化即失效 |
+| 2026-10-16 | `original_label` 不可变，修正只走 `corrected_label` | 禁止复核静默改写原标注 |
+| 2026-10-16 | `approve` 也执行证据行号与文本预审 | 错误证据不能仅凭人工确认进入金标准 |
+| 2026-10-16 | 空标签 `reject` 阻塞冻结，最终至少保留一条标签 | 空标签金标准会削弱指标判别力，漏标必须显式补标签 |

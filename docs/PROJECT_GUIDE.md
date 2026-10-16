@@ -213,7 +213,11 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
 标签、6 首人工结论为空标签，2 首保留正文与背景知识分歧的 `review_note`；草稿状态
 为 `ready_for_review`，只表示标注者完成填写，不调用模型、不连接 MySQL，独立复核
 通过前不能冻结为 `domain-label-gold-v2`。依赖作者生平与创作背景的标签另建知识增强
-评估层，不回填正文盲标数据集。
+评估层，不回填正文盲标数据集。v2 独立复核工作区已把这 41 条标签和 6 条空标签结论
+拆成独立复核文件，绑定标注草稿与采样清单双哈希，`original_label` 不可变，只有
+`needs_change` 可以提交修正标签，`approve` 和修正标签都要通过证据行号与文本预审；
+当前 47 条决定全部为 `pending`、`ready_to_freeze=false`，复核完成前不冻结 v2、也
+不开启在线标签过滤和重排。
 结构化切块、MySQL 词法检索、Embedding Provider、Qdrant 最小索引
 闭环、Dense/Hybrid 在线检索已经实现；真实库现有 1008 首已发布作品、1009 个作品
 版本和 12415 个 chunks。固定来源的 1000 首分层语料完成 902 个新建和 98 个未变化
@@ -254,6 +258,7 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
 | 领域标签金标准评估 | 已实现（CLI，默认只读） | 校验内容哈希、标签解析和证据行号后，按 `(external_id, label_id)` 计算 micro P/R/F1、有金标准维度的 macro P/R/F1、critical 漏标率、证据错误率和维度覆盖缺口；首批 5 首、14 条标签结果为 `1.0 / 1.0 / 1.0`、TP/FP/FN `14/0/0`，但样本同源且 allusion 为 `0/4`，只证明链路一致，不证明泛化精度 |
 | 领域标签独立盲标采样 | 已实现（CLI，候选已冻结） | 排除 v1 的 5 首后，从 1008 首已发布作品按四层各 6 首采样，使用固定种子、作者上限和正文哈希校验；冻结清单保持 24 首全空白标签位，不写数据库、不生成标签，也不改变在线检索策略 |
 | 领域标签独立人工盲标工作区 | 已实现（CLI，24 首人工标注完成，待独立复核） | 从冻结采样清单生成 24 首草稿和只含正文/来源的审阅稿；草稿绑定清单版本、生成时间和 SHA-256，并校验精确覆盖、受控标签、证据行号和 `ready_for_review` 完整性。人工填写结果为 24 首 `reviewed`、41 条标签（imagery 9、emotion 24、theme 8、allusion 0）、6 首空标签结论；不调用模型、不连接 MySQL，独立复核前不等同金标准 |
+| 领域标签 v2 独立复核工作区 | 已实现（CLI，47 条决定待人工填写） | 从标注草稿确定性生成 41 条标签复核和 6 条空标签复核，绑定标注与采样清单双哈希；`original_label` 不可变，只有 `needs_change` 可提交修正标签，`approve` 与修正标签都要通过证据行号和文本预审；未决、`uncertain` 和空标签 `reject` 阻塞冻结。当前 47 条决定全部 `pending`、`ready_to_freeze=false`，复核完成前不冻结 v2 |
 | 诗词 CRUD 与发布状态 | 已实现 | 草稿、发布、撤回、软删除、恢复 |
 | 诗词公开浏览与基础搜索 | 已实现 | 基于 MySQL 的目录查询 |
 | MySQL 迁移与种子 | 已实现 | Alembic head 为 `20260927_0008`；真实 MySQL 已完成 `0006 -> 0007` 往返和 `0007 -> 0008` 升级，`alembic check` 无待生成操作 |
@@ -314,6 +319,8 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
 .\.venv\Scripts\python.exe apps\api\scripts\prepare_domain_label_gold_sampling.py
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --init
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --validate
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --init
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --validate
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --top-k 5
 .\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
   --json-output data\eval\reports\domain_label_audit_20260927_human_review.json

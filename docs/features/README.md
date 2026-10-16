@@ -60,6 +60,7 @@ docs/features/20260925-hybrid-retrieval-baseline.md
 37. `20260927-domain-annotation-schema.md`
 38. `20260927-independent-domain-label-sampling.md`
 39. `20260927-domain-label-annotation-workspace.md`
+40. `20261016-domain-label-independent-review.md`
 
 ## 2. 模板
 

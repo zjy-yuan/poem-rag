@@ -45,6 +45,7 @@
 37. 领域标签金标准评估已实现为只读 CLI：冻结 5 首作品、14 条人工确认标签和 8 条 `critical` 标签，按 `(external_id, label_id)` 计算 micro/macro P/R/F1、严重漏标率、证据错误率和维度覆盖缺口。首次真实结果为 micro/macro P/R/F1 `1.0`、TP/FP/FN `14/0/0`、critical 漏标 `0`、证据错误 `0`，但样本与审核结果同源且 allusion 仍为 `0/4`，因此只能证明评估链路一致，不能证明泛化精度，在线过滤和重排继续关闭。
 38. 领域标签独立盲标采样已实现为只读 CLI：从 `aopao-chinese-gushiwen` 的已发布作品排除 v1 的 5 首同源样本后，按唐代诗、宋代作品、其他朝代、长文本或词曲四层各取 6 首，并校验来源内容哈希。冻结清单共 24 首、全部 `pending` 且人工标签位为空；它只建立独立候选池，不写数据库、不产生标签，也不代表 v2 金标准已经完成。
 39. 领域标签独立人工盲标工作区已实现为离线 CLI：从冻结采样清单确定性生成 24 首标注草稿和人工审阅稿，草稿绑定清单版本、生成时间和文件 SHA-256，并强制精确覆盖、受控标签、证据行号边界和 `ready_for_review` 完整性。用户已按冻结正文完成 24 首人工盲标，校验输出为 24 首 `reviewed`、0 首 `pending`、41 条标签（imagery 9、emotion 24、theme 8、allusion 0）和 6 首空标签结论，另有 2 首记录正文证据与背景知识的分歧。该工作区不调用模型、不连接 MySQL；`ready_for_review` 只表示填写完成，独立复核前不等同于金标准。
+40. 领域标签 v2 独立复核工作区已实现为离线 CLI：从标注草稿确定性生成 41 条标签复核和 6 条空标签复核，绑定标注草稿与采样清单的版本和文件 SHA-256。`original_label` 不可变，只有 `needs_change` 可以提交修正标签；`approve` 和修正标签都要通过证据行号与文本预审，`pending / uncertain` 和空标签 `reject` 阻塞冻结，最终金标准至少保留一条标签。当前 47 条决定全部为 `pending`、`ready_to_freeze=false`；复核完成前不冻结 `domain-label-gold-v2`，在线标签过滤、查询改写和重排继续保持关闭。
 
 ## 文档入口
 
@@ -65,6 +66,8 @@
 .\.venv\Scripts\python.exe apps\api\scripts\prepare_domain_label_gold_sampling.py
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --init
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --validate
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --init
+.\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --validate
 .\.venv\Scripts\python.exe apps\api\scripts\import_domain_labels.py `
   --input data\import\example_domain_labels_v2.json `
   --dry-run
@@ -99,6 +102,14 @@ critical=0`，草稿状态为 `ready_for_review`。独立复核通过后，才�
 [领域标签独立盲标采样](docs/features/20260927-independent-domain-label-sampling.md)
 和
 [领域标签独立人工盲标工作区](docs/features/20260927-domain-label-annotation-workspace.md)。
+
+独立复核对上一步的 41 条标签和 6 条空标签结论逐条给出决定，默认输出
+`data/eval/domain_label_gold_v2_review.json` 和
+`docs/reviews/20261016-domain-label-v2-independent-review.md`；`--init` 拒绝覆盖
+已有复核文件，`--validate` 输出已决定数量、阻塞 ID 和 `ready_to_freeze`。当前
+`--validate` 为 `status=pending`、`pending=47`、`ready_to_freeze=false`，说明复核
+单仍是空白待填写产物，尚未冻结 v2。绑定与冻结边界见
+[领域标签 v2 独立复核工作区](docs/features/20261016-domain-label-independent-review.md)。
 
 ## 本地开发
 
