@@ -157,11 +157,9 @@ class DomainLabelGoldV2ReviewWorkspace:
                     f"external_id={item.external_id}"
                 )
 
-        final_labels = self._build_final_label_map(
+        final_labels = build_final_label_map(
             review,
             record_by_id=annotation_by_id,
-            expected_labels=expected_labels,
-            expected_empty_ids=expected_empty_ids,
         )
         self._validate_final_labels(final_labels)
         evidence_issues = self._preflight_label_reviews(
@@ -471,35 +469,6 @@ class DomainLabelGoldV2ReviewWorkspace:
                 + "; ".join(details)
             )
 
-    @staticmethod
-    def _build_final_label_map(
-        review: DomainLabelGoldV2Review,
-        *,
-        record_by_id: dict[str, DomainLabelAnnotationRecord],
-        expected_labels: dict[
-            str,
-            tuple[DomainLabelAnnotationRecord, DomainLabelGoldLabel],
-        ],
-        expected_empty_ids: set[str],
-    ) -> dict[str, list[DomainLabelGoldLabel]]:
-        final: dict[str, list[DomainLabelGoldLabel]] = {
-            external_id: [] for external_id in record_by_id
-        }
-        for item in review.label_reviews:
-            if item.decision == DomainLabelReviewDecision.APPROVE:
-                final[item.external_id].append(item.original_label)
-            elif item.decision == DomainLabelReviewDecision.NEEDS_CHANGE:
-                if item.corrected_label is None:
-                    raise ValueError(
-                        f"needs_change 标签复核缺少 corrected_label: {item.review_id}"
-                    )
-                final[item.external_id].append(item.corrected_label)
-
-        for item in review.empty_record_reviews:
-            if item.decision == DomainLabelReviewDecision.NEEDS_CHANGE:
-                final[item.external_id].extend(item.corrected_labels)
-        return final
-
     def _validate_final_labels(
         self,
         final_labels: dict[str, list[DomainLabelGoldLabel]],
@@ -592,6 +561,32 @@ class DomainLabelGoldV2ReviewWorkspace:
     @staticmethod
     def _empty_record_review_id(external_id: str) -> str:
         return f"empty:{external_id}"
+
+
+def build_final_label_map(
+    review: DomainLabelGoldV2Review,
+    *,
+    record_by_id: dict[str, DomainLabelAnnotationRecord],
+) -> dict[str, list[DomainLabelGoldLabel]]:
+    """Merge approved and corrected labels into the frozen label map."""
+
+    final: dict[str, list[DomainLabelGoldLabel]] = {
+        external_id: [] for external_id in record_by_id
+    }
+    for item in review.label_reviews:
+        if item.decision == DomainLabelReviewDecision.APPROVE:
+            final[item.external_id].append(item.original_label)
+        elif item.decision == DomainLabelReviewDecision.NEEDS_CHANGE:
+            if item.corrected_label is None:
+                raise ValueError(
+                    f"needs_change 标签复核缺少 corrected_label: {item.review_id}"
+                )
+            final[item.external_id].append(item.corrected_label)
+
+    for item in review.empty_record_reviews:
+        if item.decision == DomainLabelReviewDecision.NEEDS_CHANGE:
+            final[item.external_id].extend(item.corrected_labels)
+    return final
 
 
 def format_domain_label_review_summary(

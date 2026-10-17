@@ -6078,3 +6078,69 @@ Embedding HTTP 批量结果都从 Redis 命中，物理 HTTP 调用降为 `0`。
    `target_record_counts`，再单独计算独立泛化指标。
 4. 依赖作者生平与创作背景的标签继续另建知识增强评估层，不回填正文盲标数据集。
 5. 在线标签过滤、查询改写和重排继续保持关闭，待 v2 冻结并达标后再设计单独实验。
+
+### [2026-10-17] 领域标签金标准 v2 冻结
+
+#### 本次目标
+
+- 复核完成后冻结 `domain-label-gold-v2` 金标准，为在线领域标签建立独立于 v1 的
+  泛化评估基线。
+- 用规则表统一 severity 赋值，消除 v1 逐首主观定级的不一致。
+- 冻结前后用正则审计校验 critical 标签与正文触发词的一致性。
+
+#### 做出的决定
+
+- severity 只由（dimension, name）是否命中 critical 规则表决定，不做“证据必须含触发
+  词”的硬校验；正则仅用于冻结前的审计报告。
+- critical 规则表共 11 条：意象 6（夕阳、月、杨柳/柳、流水、落花、鸿雁/雁）+ 题材
+  5（中秋、边塞、山水田园、登临、羁旅）。
+- 规则表只提升不降级：命中规则的标签直接定为 critical，未命中的保持人工复核结论。
+- 审计发现的问题如实记录为规则表软肋，不回填标签，冻结产物保持复核后的原样。
+- 冻结命令不连 MySQL、不调模型，只读 manifest、标注草稿和复核文件，绑定上游文件
+  字节级 SHA-256；产物文件已存在时拒绝覆盖。
+
+#### 完成内容
+
+- `apps/api/app/evaluation/domain_label_gold_freeze.py`：实现规则表、审计、冻结边界和
+  产物组装，`label_counts` 此前恒为 0 的统计 bug 已修复。
+- `apps/api/app/schemas/domain_label_gold_freeze.py`：定义冻结产物、审计结果和冻结
+  摘要的校验结构。
+- `apps/api/scripts/freeze_domain_label_gold.py`：离线 CLI，默认读取 manifest、标注
+  草稿、复核文件并写入金标准与审计报告，拒绝覆盖已有产物。
+- `apps/api/tests/test_domain_label_gold_freeze.py`：18 个用例覆盖规则表赋值、排除
+  语义、审计、冻结边界、产物不变量、确定性和 CLI 拒绝覆盖。
+- `data/eval/domain_label_gold_v2.json`：冻结产物，24 条记录、45 条标签（意象 10、
+  情感 27、题材 8、典故 0）、18 条 critical、4 条空标签记录；17 条标签由规则表从
+  normal 提升为 critical；文件 SHA-256
+  `9c15f59fcb6623f538c8b73bb059fbd3f30d9ea1ca84f39a5fd497874d12901f`。
+- `data/eval/reports/domain_label_gold_v2_critical_audit.json`：仅 1 条审计问题
+  （`5b9a147f367d5cab1866880f` 题材“羁旅”证据“桃李春风一杯酒，江湖夜雨十年灯。”不含
+  强触发词，记为规则表软肋）。
+- `data/eval/reports/domain_label_gold_v2_20261017.json`：首个独立泛化评估报告。
+- `docs/features/20261017-domain-label-gold-v2-freeze.md`：完整记录规则表设计、冻结
+  契约与零覆盖基线解读。
+- `README.md`、`docs/PROJECT_GUIDE.md`、`docs/features/README.md`、标注工作区和
+  Schema 功能文档：同步命令、任务勾选与状态叙述。
+
+#### 验证结果
+
+- `freeze_domain_label_gold.py`：成功生成金标准与审计报告，产物 SHA-256 与上述一致；
+  二次执行因拒绝覆盖以退出码 2 结束。
+- 规则表补漏后重新冻结：意象“柳”字符类补充“斜”（此前“风细柳斜斜”漏审计），只剩
+  1 条审计问题。
+- `domain_label_gold_v2_20261017.json`：micro/macro precision、recall、F1 全为 0.0，
+  tp=0、fp=0、fn=45，critical_missing=18、critical_rate=1.0，gold_scope=0.023810，
+  predicted_records=0。
+- 零覆盖根因：数据库 `PoemVersionDomainLabel` 仅 15 条 v1 导入记录，AI 标签生成
+  管线在代码中尚不存在（`GenerationMethod.AI` 只有枚举值，无生成服务或 CLI）。v1
+  的 1.0 分是回环自洽（金标准从在线标签导入再评估自身），v2 零覆盖是真实基线。
+- 领域标签冻结定向测试：`18 passed`；复核测试 `13 passed`；定向 Ruff 全部通过。
+
+#### 风险与下一步
+
+1. 零覆盖只说明 AI 标签管线缺失，不是标签质量结论；下一步需实现 AI 标签生成服务
+   与 CLI，再跑独立泛化评估。
+2. 规则表覆盖 11 条（dimension, name），情感维度全部不在表内，依赖人工复核结论。
+3. 审计发现的“羁旅”软肋说明 theme 的 critical 白名单仍需按语料逐步校准。
+4. 知识增强评估层（依赖作者生平与创作背景）仍未建设，不回填正文盲标数据集。
+5. 在线标签过滤、查询改写和重排继续保持关闭，待 AI 标签管线产出可评估结果后再定。

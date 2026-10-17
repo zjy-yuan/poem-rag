@@ -1,0 +1,818 @@
+{
+  "version": "domain-label-gold-v2",
+  "name": "领域标签人工金标准 v2（24 首独立泛化样本）",
+  "description": "冻结 24 首独立人工盲标作品经独立复核后的最终标签，作为在线已审核标签的泛化评估金标准。标签与证据来自人工标注和独立复核，severity 由 critical 规则表按标签名确定性赋值，正文哈希沿用冻结采样清单。",
+  "selection_strategy": "沿用 v1 同源分层随机采样，seed=domain-label-gold-v2，排除 v1 已冻结的 5 首；24 首全部完成人工盲标与独立复核，target_record_counts 沿用项目级金标准覆盖计划以保持跨版本可比。",
+  "source": {
+    "source_key": "project-manual-gold-standard",
+    "source_name": "项目人工金标准样本",
+    "source_url": null,
+    "license_note": "项目内人工确认标签，仅用于离线评估标签器与在线标签视图的一致性；不得作为公开数据集分发。"
+  },
+  "poem_source_key": "aopao-chinese-gushiwen",
+  "target_record_counts": {
+    "imagery": 12,
+    "emotion": 12,
+    "theme": 8,
+    "allusion": 4
+  },
+  "records": [
+    {
+      "external_id": "5b9a1458367d5cab1866870c",
+      "title": "回乡偶书二首",
+      "author": "贺知章",
+      "expected_source_content_hash": "cf8d4ee4e7a298cd12660059bf59bd344afb64c0a42eb2a0d3d2022ec10b8ef5",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "儿童相见不相识，笑问客从何处来。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "思乡",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "离别家乡岁月多，近来人事半消磨。",
+              "line_start": 4,
+              "line_end": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1430367d5cab18668603",
+      "title": "忆江南词三首",
+      "author": "白居易",
+      "expected_source_content_hash": "d9c37d8fe390a3e1be5c48762b17efb80902b3aa0e5defa14836d69c66bc9351",
+      "review_note": "盲标备注：结合背景有思乡等其他，但是纯文本无法得出",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "月",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "山寺月中寻桂子，郡亭枕上看潮头。",
+              "line_start": 3,
+              "line_end": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a04a1367d5cae5c9bff58",
+      "title": "山居秋暝",
+      "author": "王维",
+      "expected_source_content_hash": "19d3dc75e2fea2637e6f753173dbf2d960584a376a6691cb8ddd8a6009feff30",
+      "review_note": "复核备注：行1“空山新雨后”直接支持山水田园主题；行3“浣女”“渔舟”可补强",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "月",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "明月松间照，清泉石上流。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "随意春芳歇，王孙自可留。",
+              "line_start": 4,
+              "line_end": 4
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "山水田园",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "空山新雨后，天气晚来秋。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a17d8367d5c0f40d22a57",
+      "title": "长歌行",
+      "author": "王昌龄",
+      "expected_source_content_hash": "db81e0aa809df652c6255315abc5fc9963d29a78c49b94b0f4d88eb605be98d2",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "系马倚白杨，谁知我怀抱。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "人生须达命，有酒且长歌。",
+              "line_start": 8,
+              "line_end": 8
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "登临",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "北登汉家陵，南望长安道。",
+              "line_start": 4,
+              "line_end": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a120a367d5c5b84062a89",
+      "title": "江南春",
+      "author": "杜牧",
+      "expected_source_content_hash": "b773673b4b9440fc6b22e500fb944613b84ebe48e82c3f32f1944052f83350dc",
+      "review_note": null,
+      "labels": []
+    },
+    {
+      "external_id": "5b9a0651367d5c98b4e02a21",
+      "title": "九月九日忆山东兄弟",
+      "author": "王维",
+      "expected_source_content_hash": "197f52905a9be419a3189dded1ca4f3deffb84dcbbe43fea510c7cdf1fa5beeb",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "emotion",
+          "name": "思乡",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "独在异乡为异客，每逢佳节倍思亲。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "遥知兄弟登高处，遍插茱萸少一人。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "羁旅",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "独在异乡为异客，每逢佳节倍思亲。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a0255367d5caccce1aa1c",
+      "title": "春日",
+      "author": "朱熹",
+      "expected_source_content_hash": "faab76e2f4ae03d99b9a504ddee49fe09f73a6d09d77a7e391c9d9650b3c93e3",
+      "review_note": null,
+      "labels": []
+    },
+    {
+      "external_id": "5b9a147f367d5cab1866880f",
+      "title": "寄黄几复",
+      "author": "黄庭坚",
+      "expected_source_content_hash": "e72db2641eefa60c2ec05d31e4d92ab47c823ee5105bccaff782c8479773d76a",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "桃李春风一杯酒，江湖夜雨十年灯。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "离别",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "我居北海君南海，寄雁传书谢不能。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "羁旅",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "桃李春风一杯酒，江湖夜雨十年灯。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a145e367d5cab1866873b",
+      "title": "端午即事",
+      "author": "文天祥",
+      "expected_source_content_hash": "9a1be008acaf2894dfb3913e186ccba4769baf1307de60cf9580d98494997339",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "五月五日午，赠我一枝艾。 故人不可见，新知万里外。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a0f31367d5c3b48e948fa",
+      "title": "晓出净慈寺送林子方",
+      "author": "杨万里",
+      "expected_source_content_hash": "3576e352854fd4b2547d18dbf98d02b11fca73cde9ca3501bdce2aa97f7b9092",
+      "review_note": null,
+      "labels": []
+    },
+    {
+      "external_id": "5b9a186a367d5c0f40d22e25",
+      "title": "海气",
+      "author": "陆游",
+      "expected_source_content_hash": "dec7b0f0f11d95531f0aafa5defbff812a06bfd4dd3b73253fe59e5e5c7ce8a4",
+      "review_note": "复核备注：只补“旷达”；不建议补 theme:山水田园，正文主要是海气奇观。",
+      "labels": [
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "世事正如此，何者非强名？",
+              "line_start": 6,
+              "line_end": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a191c367d5c0f40d232d5",
+      "title": "禅人并化主写真求赞",
+      "author": "释正觉",
+      "expected_source_content_hash": "fda5b0daa50a344080329e21eec672bf7fdd3aff4b8892b9f6be412efe7415f3",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "月",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "山林眉目，水月身心。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1461367d5cab1866874d",
+      "title": "别云间",
+      "author": "夏完淳",
+      "expected_source_content_hash": "2f937b926e0d3c151d4c03cf18024c7ef2f0508732e136323be9bb880eabb1bd",
+      "review_note": "复核备注：结合全文可支持：行1“三年羁旅客”写羁旅在外，行3“欲别故乡难”直写对故乡的难舍，行4“毅魄归来日”强化归乡眷恋。此处思乡偏临死诀别故乡的乡愁，与“离别”标签可并存。",
+      "labels": [
+        {
+          "dimension": "emotion",
+          "name": "思乡",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "已知泉路近，欲别故乡难。",
+              "line_start": 3,
+              "line_end": 3
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "离别",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "已知泉路近，欲别故乡难。",
+              "line_start": 3,
+              "line_end": 3
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "羁旅",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "三年羁旅客，今日又南冠。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1868367d5c0f40d22e15",
+      "title": "病",
+      "author": "王宠",
+      "expected_source_content_hash": "5d5cf3e281b1703bb6ba93aa23f090bcc52134db2270dcc6f96dcf643764ef45",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "月",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "声华浑似梦，水月欲窥禅。鼎鼎百年内，千金诚可怜。",
+              "line_start": 3,
+              "line_end": 3
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "长卿复何望，祗守茂陵田。玉历梅花外，春心药裹边。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a18d2367d5c0f40d230df",
+      "title": "玉漏迟 明湖白莲",
+      "author": "林修竹",
+      "expected_source_content_hash": "39838b0063b3be0df4575f8b4e54d33d8f2c9ca976d1b7910442c4ba420488c4",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "杨柳",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "绿柳垂杨，花绰约波心荡。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a19fb367d5c0f40d238ae",
+      "title": "粤大饥",
+      "author": "欧主遇",
+      "expected_source_content_hash": "e9d4ee712f5231e35e076ff0bac145f0a6383f34562bcc7d2dae8087025e9cbb",
+      "review_note": null,
+      "labels": []
+    },
+    {
+      "external_id": "5b9a1866367d5c0f40d22e0c",
+      "title": "题马文璧秋山图为卢仲章赋",
+      "author": "鲁渊",
+      "expected_source_content_hash": "333f030d56a241afae656f455921e95aadf6fd45009253a5d02763e98b946e09",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "theme",
+          "name": "山水田园",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "野馆空山里，林泉象外幽。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a17ee367d5c0f40d22aeb",
+      "title": "元夕二首",
+      "author": "王守仁",
+      "expected_source_content_hash": "afc0d2475aab2de5f88c87d2262cd0957e344a5c827644440308f236b5fe0396",
+      "review_note": "复核备注：行8“炎荒万里频回首”可支持身居荒远异乡的羁旅主题；行1“独向蛮村坐寂寥”、行4“一身遥”更直接，可作补强。",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "月",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "春还草阁梅先动，月满虚庭雪未消。",
+              "line_start": 3,
+              "line_end": 3
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "故园今夕是元宵，独向蛮村坐寂寥。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "思乡",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "堂上花灯诸第集，重闱应念一身遥。",
+              "line_start": 4,
+              "line_end": 4
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "羁旅",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "炎荒万里频回首，羌笛三更谩自哀。",
+              "line_start": 8,
+              "line_end": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1817367d5c0f40d22bf6",
+      "title": "行路难·缚虎手",
+      "author": "贺铸",
+      "expected_source_content_hash": "a670a023803998677b4141f5c7bd38df8f56fe93e5c64538c9d10ac7604c4ba3",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "emotion",
+          "name": "离别",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "衰兰送客咸阳道，天若有情天亦老。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1430367d5cab18668600",
+      "title": "蝶恋花·春景",
+      "author": "苏轼",
+      "expected_source_content_hash": "d150cceb32c774adba0cd7d04c0bafbe6549f153abfad1937d86e94a0db6d584",
+      "review_note": "复核备注：不建议补“落花”“流水”“孤独”：正文没有足够直接的受控词证据。",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "杨柳",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "枝上柳绵吹又少。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "伤春",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "花褪残红青杏小。燕子飞时，绿水人家绕。枝上柳绵吹又少。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "天涯何处无芳草！",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a144e367d5cab186686cc",
+      "title": "望江南·超然台作",
+      "author": "苏轼",
+      "expected_source_content_hash": "28145bd461337514ca19c5d045ec886250a29879c308675b97d0dbe9b6c1951a",
+      "review_note": "复核备注：“故国”在此可作故乡/故园解；“休对故人思故国”是劝慰自己不要思乡，实际仍含思乡，后句转为旷达，与“旷达”标签可并存。",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "杨柳",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "春未老，风细柳斜斜。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "思乡",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "休对故人思故国，且将新火试新茶。诗酒趁年华。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "且将新火试新茶。诗酒趁年华。",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "theme",
+          "name": "登临",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "试上超然台上看",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1802367d5c0f40d22b71",
+      "title": "定风波·自春来",
+      "author": "柳永",
+      "expected_source_content_hash": "17d8c2f2c8fca8586082a309e059c6dc51e536930f8bf14a76ccf65cdad696c8",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "杨柳",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "莺穿柳带",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "伤春",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "自春来、惨绿愁红，芳心是事可可。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "离别",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "恨薄情一去，音书无个。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "孤独",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "终日厌厌倦梳裹。无那。恨薄情一去，音书无个。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1476367d5cab186687d5",
+      "title": "浣溪沙·一向年光有限身",
+      "author": "晏殊",
+      "expected_source_content_hash": "595e57da92d1eb32c4133e07be42a0876e7eb805e465bc326d043b35323ef2f0",
+      "review_note": "盲标备注：“等闲离别易销魂”为泛论离别之苦，非具体送别或别后情境；若 emotion：离别 要求具体事件，则不宜标。；复核备注：末句“不如怜取眼前人”由伤春念远转为珍惜当下、自我宽解，可支持温和/达观式旷达；非豪放型旷达，证据强度中等偏弱。",
+      "labels": [
+        {
+          "dimension": "imagery",
+          "name": "落花",
+          "severity": "critical",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "落花风雨更伤春",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "伤春",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "落花风雨更伤春",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "不如怜取眼前人",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "external_id": "5b9a1877367d5c0f40d22e79",
+      "title": "临桂尉杨渭夫以诗来因次其韵兼简同僚",
+      "author": "陈傅良",
+      "expected_source_content_hash": "0159519ca2873007bd9ba46e7b6fa29465063ed41e0a895e7baa244c2bc3b583",
+      "review_note": null,
+      "labels": [
+        {
+          "dimension": "emotion",
+          "name": "离别",
+          "severity": "normal",
+          "note": null,
+          "evidence": [
+            {
+              "evidence_text": "子方及归期，客复搅离思。",
+              "line_start": 11,
+              "line_end": 11
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

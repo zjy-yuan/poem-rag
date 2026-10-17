@@ -61,6 +61,7 @@ docs/features/20260925-hybrid-retrieval-baseline.md
 38. `20260927-independent-domain-label-sampling.md`
 39. `20260927-domain-label-annotation-workspace.md`
 40. `20261016-domain-label-independent-review.md`
+41. `20261017-domain-label-gold-v2-freeze.md`
 
 ## 2. 模板
 

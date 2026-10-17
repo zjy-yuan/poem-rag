@@ -1,0 +1,17 @@
+{
+  "version": "domain-label-gold-v2-critical-audit",
+  "generated_at": "2026-10-17T07:06:07.167725Z",
+  "dataset_version": "domain-label-gold-v2",
+  "critical_rule_count": 11,
+  "audited_critical_label_count": 18,
+  "issue_count": 1,
+  "issues": [
+    {
+      "external_id": "5b9a147f367d5cab1866880f",
+      "dimension": "theme",
+      "name": "羁旅",
+      "evidence_text": "桃李春风一杯酒，江湖夜雨十年灯。",
+      "reason": "证据文本未命中 critical 规则表强触发词"
+    }
+  ]
+}

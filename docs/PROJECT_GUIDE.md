@@ -321,12 +321,16 @@ P/R/F1、critical 漏标、证据错误和维度覆盖缺口。在线结构化�
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --validate
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --init
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --validate
+.\.venv\Scripts\python.exe apps\api\scripts\freeze_domain_label_gold.py
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_retrieval.py --top-k 5
 .\.venv\Scripts\python.exe apps\api\scripts\audit_domain_labels.py `
   --json-output data\eval\reports\domain_label_audit_20260927_human_review.json
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_domain_labels.py `
   --input data\eval\domain_label_gold_v1.json `
   --json-output data\eval\reports\domain_label_gold_v1_20260927.json
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_domain_labels.py `
+  --input data\eval\domain_label_gold_v2.json `
+  --json-output data\eval\reports\domain_label_gold_v2_20261017.json
 ```
 
 固定来源 1000 首语料转换、导入与索引：

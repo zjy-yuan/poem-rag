@@ -68,6 +68,7 @@
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_annotation.py --validate
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --init
 .\.venv\Scripts\python.exe apps\api\scripts\manage_domain_label_review.py --validate
+.\.venv\Scripts\python.exe apps\api\scripts\freeze_domain_label_gold.py
 .\.venv\Scripts\python.exe apps\api\scripts\import_domain_labels.py `
   --input data\import\example_domain_labels_v2.json `
   --dry-run
@@ -78,6 +79,9 @@
 .\.venv\Scripts\python.exe apps\api\scripts\evaluate_domain_labels.py `
   --input data\eval\domain_label_gold_v1.json `
   --json-output data\eval\reports\domain_label_gold_v1_20260927.json
+.\.venv\Scripts\python.exe apps\api\scripts\evaluate_domain_labels.py `
+  --input data\eval\domain_label_gold_v2.json `
+  --json-output data\eval\reports\domain_label_gold_v2_20261017.json
 ```
 
 导入命令默认只写入 `pending`，不自动审核、批准或覆盖已有审核状态；dry-run 只做
@@ -107,8 +111,15 @@ critical=0`，草稿状态为 `ready_for_review`。独立复核通过后，才�
 `data/eval/domain_label_gold_v2_review.json` 和
 `docs/reviews/20261016-domain-label-v2-independent-review.md`；`--init` 拒绝覆盖
 已有复核文件，`--validate` 输出已决定数量、阻塞 ID 和 `ready_to_freeze`。当前
-`--validate` 为 `status=pending`、`pending=47`、`ready_to_freeze=false`，说明复核
-单仍是空白待填写产物，尚未冻结 v2。绑定与冻结边界见
+`--validate` 为 `status=ready_to_freeze`，41 条标签复核全部 `approve`、6 条空标签
+结论中 2 条 `needs_change` 补齐标签。金标准已冻结为 `domain-label-gold-v2`：24 首、
+45 条标签、18 条 critical（severity 由规则表确定性赋值），产出
+`data/eval/domain_label_gold_v2.json` 与 critical 审计报告。首个独立泛化评估为
+零覆盖基线（micro F1=0，在线标签器在金标准范围内没有任何已批准分配，AI 标签生成
+管线尚未构建），v1 的 1.0 分则是金标准从在线标签导入的回环自洽，两者对比说明
+v2 才是第一个真实泛化测试。绑定、规则表与冻结边界见
+[领域标签金标准 v2 冻结](docs/features/20261017-domain-label-gold-v2-freeze.md)
+和
 [领域标签 v2 独立复核工作区](docs/features/20261016-domain-label-independent-review.md)。
 
 ## 本地开发
