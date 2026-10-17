@@ -4,7 +4,7 @@
   "source_annotation_sha256": "17283005f45a895eac606ca284b2a6e7eec4a8e3379e6008c896dd035337bcbc",
   "source_manifest_version": "domain-label-gold-v2-sampling",
   "source_manifest_sha256": "6888e0c79748dff90a14005592845f9ae501992cef7d93b38d8e8ef84838fe15",
-  "status": "pending",
+  "status": "ready_to_freeze",
   "label_reviews": [
     {
       "review_id": "label:5b9a1458367d5cab1866870c:emotion:孤独",
@@ -22,7 +22,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -42,7 +42,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -62,7 +62,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -82,7 +82,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -102,7 +102,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -122,9 +122,9 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
-      "review_note": null
+      "review_note": "行1“空山新雨后”直接支持山水田园主题；行3“浣女”“渔舟”可补强"
     },
     {
       "review_id": "label:5b9a17d8367d5c0f40d22a57:emotion:孤独",
@@ -142,7 +142,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -162,7 +162,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -182,7 +182,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -202,7 +202,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -222,7 +222,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -242,7 +242,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -262,7 +262,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -282,7 +282,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -302,7 +302,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -322,7 +322,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -342,7 +342,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -362,9 +362,9 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
-      "review_note": null
+      "review_note": "结合全文可支持：行1“三年羁旅客”写羁旅在外，行3“欲别故乡难”直写对故乡的难舍，行4“毅魄归来日”强化归乡眷恋。此处思乡偏临死诀别故乡的乡愁，与“离别”标签可并存。"
     },
     {
       "review_id": "label:5b9a1461367d5cab1866874d:emotion:离别",
@@ -382,7 +382,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -402,7 +402,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -422,7 +422,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -442,7 +442,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -462,7 +462,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -482,7 +482,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -502,7 +502,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -522,7 +522,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -542,7 +542,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -562,9 +562,9 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
-      "review_note": null
+      "review_note": "行8“炎荒万里频回首”可支持身居荒远异乡的羁旅主题；行1“独向蛮村坐寂寥”、行4“一身遥”更直接，可作补强。"
     },
     {
       "review_id": "label:5b9a1817367d5c0f40d22bf6:emotion:离别",
@@ -582,7 +582,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -602,7 +602,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -622,9 +622,9 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
-      "review_note": null
+      "review_note": "“故国”在此可作故乡/故园解；“休对故人思故国”是劝慰自己不要思乡，实际仍含思乡，后句转为旷达，与“旷达”标签可并存。"
     },
     {
       "review_id": "label:5b9a144e367d5cab186686cc:emotion:旷达",
@@ -642,7 +642,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -662,7 +662,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -682,7 +682,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -702,7 +702,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -722,7 +722,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -742,7 +742,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -762,7 +762,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -782,7 +782,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     },
@@ -802,9 +802,9 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
-      "review_note": null
+      "review_note": "末句“不如怜取眼前人”由伤春念远转为珍惜当下、自我宽解，可支持温和/达观式旷达；非豪放型旷达，证据强度中等偏弱。"
     },
     {
       "review_id": "label:5b9a1877367d5c0f40d22e79:emotion:离别",
@@ -822,7 +822,7 @@
           }
         ]
       },
-      "decision": "pending",
+      "decision": "approve",
       "corrected_label": null,
       "review_note": null
     }
@@ -831,44 +831,90 @@
     {
       "review_id": "empty:5b9a120a367d5c5b84062a89",
       "external_id": "5b9a120a367d5c5b84062a89",
-      "decision": "pending",
+      "decision": "approve",
       "corrected_labels": [],
       "review_note": null
     },
     {
       "review_id": "empty:5b9a0255367d5caccce1aa1c",
       "external_id": "5b9a0255367d5caccce1aa1c",
-      "decision": "pending",
+      "decision": "approve",
       "corrected_labels": [],
       "review_note": null
     },
     {
       "review_id": "empty:5b9a0f31367d5c3b48e948fa",
       "external_id": "5b9a0f31367d5c3b48e948fa",
-      "decision": "pending",
+      "decision": "approve",
       "corrected_labels": [],
       "review_note": null
     },
     {
       "review_id": "empty:5b9a186a367d5c0f40d22e25",
       "external_id": "5b9a186a367d5c0f40d22e25",
-      "decision": "pending",
-      "corrected_labels": [],
-      "review_note": null
+      "decision": "needs_change",
+      "corrected_labels": [
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "evidence": [
+            {
+              "evidence_text": "世事正如此，何者非强名？",
+              "line_start": 6,
+              "line_end": 6
+            }
+          ]
+        }
+      ],
+      "review_note": "只补“旷达”；不建议补 theme:山水田园，正文主要是海气奇观。"
     },
     {
       "review_id": "empty:5b9a19fb367d5c0f40d238ae",
       "external_id": "5b9a19fb367d5c0f40d238ae",
-      "decision": "pending",
+      "decision": "approve",
       "corrected_labels": [],
       "review_note": null
     },
     {
       "review_id": "empty:5b9a1430367d5cab18668600",
       "external_id": "5b9a1430367d5cab18668600",
-      "decision": "pending",
-      "corrected_labels": [],
-      "review_note": null
+      "decision": "needs_change",
+      "corrected_labels": [
+        {
+          "dimension": "imagery",
+          "name": "杨柳",
+          "evidence": [
+            {
+              "evidence_text": "枝上柳绵吹又少。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "伤春",
+          "evidence": [
+            {
+              "evidence_text": "花褪残红青杏小。燕子飞时，绿水人家绕。枝上柳绵吹又少。",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        },
+        {
+          "dimension": "emotion",
+          "name": "旷达",
+          "evidence": [
+            {
+              "evidence_text": "天涯何处无芳草！",
+              "line_start": 1,
+              "line_end": 1
+            }
+          ]
+        }
+      ],
+      "review_note": "不建议补“落花”“流水”“孤独”：正文没有足够直接的受控词证据。"
     }
   ]
 }
